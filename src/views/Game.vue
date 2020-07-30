@@ -1,16 +1,14 @@
 <template>
-  <div class="home">
+  <div class="game">
     <h1>Let's play a game!</h1>
     <GameInstance type="hearts" />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
 import GameInstance from '@/components/GameInstance.vue'
 
 export default {
-  name: 'Home',
   components: {
     GameInstance
   }
