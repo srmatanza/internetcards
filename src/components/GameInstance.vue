@@ -13,7 +13,7 @@
     </div>
 
     <GameState v-if="!bGameSetup" :state="currentGame"/>
-    <RuleSet :rules="currentGame.currentRuleSet" :currentphase="currentphase" @update-currentphase="this.efChangePhase"/>
+    <RuleSet :rules="currentGame.currentRuleSet" :currentphase="currentphase" @update-currentphase="this.changePhase"/>
 
     <div id="divPlayers" class="statebox player" v-if="numPlayers">
       <h3>Players</h3>
@@ -94,14 +94,17 @@ export default {
       }
       return -1
     },
-    isCurrentPlayer: function(playerName) {
-      return this.getPlayerNameForIdx(this.currentGame.currentPlayerIdx) === playerName
-    },
     getPlayerNameForIdx: function(pidx) {
       if(pidx>=0) {
         return this.currentGame.players[pidx].playerName
       }
       return ''
+    },
+    isCurrentPlayer: function(pn) {
+      return this.currentGame.isCurrentPlayer(pn)
+    },
+    changePhase: function(newPhase) {
+      this.currentGame = Effects.changePhase(this.currentGame, newPhase)
     },
     drawCard: function(playerName) {
       const pIdx = this.getIdxForPlayerName(playerName)
@@ -110,67 +113,12 @@ export default {
       const _n = numCards || 1
       Actions.draw(this.currentGame, pIdx, _n)
     },
-    efSetVar: function(vars, player) {
-      console.log('set var', vars)
-      for(const vn in vars) {
-        if(typeof vars[vn] === 'object') {
-          vars[vn] = Logic.computeRule(vars[vn], this.glomVars(player))
-        }
-      }
-      this.currentGame = Effects.setVar(this.currentGame, vars)
-    },
-    efSetVarPlayer: function(vars, player) {
-      console.log('set var for player', vars, player)
-      const newVars = _.cloneDeep(vars)
-      for(const vn in newVars) {
-        if(typeof newVars[vn] === 'object') {
-          newVars[vn] = Logic.computeRule(newVars[vn], this.glomVars(player))
-        }
-      }
-
-      this.currentGame = Effects.setVarPlayer(this.currentGame, newVars, player)
-    },
-    efSetVarEachPlayer: function(vars, fromPlayer) {
-      console.log('set each var for player', vars)
-      for(const player of this.currentGame.players) {
-        this.efSetVarPlayer(vars, player)
-      }
-    },
-    efChangePhase: function(newPhase, player) {
-      console.debug('change phase', arguments)
-      this.currentGame = Effects.changePhase(this.currentGame, newPhase)
-    },
-    efIncrementVar: function(vars, player) {
-      console.debug('increment var', arguments)
-      for(const vn in vars) {
-        if(typeof vars[vn] === 'object') {
-          vars[vn] = Logic.computeRule(vars[vn], this.glomVars(player))
-        }
-      }
-      this.currentGame = Effects.incrementVar(this.currentGame, vars)
-    },
-    efAdvancePlayer: function(incr, player) {
-      console.debug('advance player', incr)
-      if(typeof incr === 'object') {
-        incr = Logic.computeRule(incr, this.glomVars(player))
-      }
-      this.currentGame = Effects.advancePlayer(this.currentGame, incr)
-    },
-    efSetPlayer: function(idx, player) {
-      console.debug('set player', idx)
-      let newIdx = idx
-      if(typeof newIdx === 'object') {
-        newIdx = Logic.computeRule(newIdx, this.glomVars(player))
-      }
-      newIdx = parseInt(newIdx)
-      this.currentGame = Effects.setPlayer(this.currentGame, newIdx)
-    },
     handleEffect: function(effect, player) {
       if(this.isSatisfied(effect.given, player)) {
         for(const ef in effect) {
           const fn = this.setupEffectHandlers[ef]
           if(typeof fn === 'function') {
-            fn.call(this, effect[ef], player)
+            this.currentGame = fn.call({}, this.currentGame, effect[ef], player)
           } else if(_.isUndefined(fn)) {
             console.error('Undefined function for effect: ', ef)
           }
@@ -187,63 +135,15 @@ export default {
       }
     },
     glomVars: function(player) {
-      const phaseVars = {}
-      const playerVars = _.clone(this.currentGame.currentRuleSet.playerVars)
-      const pv = {
-        $player: player,
-        $playerVars: _.assign(playerVars, player.playerVariables),
-        $isYourTurn: this.isCurrentPlayer(player.playerName)
-      }
-
-      return _.assign({}, this.gameRules.gameVariables, this.globalVarsForPlayer, phaseVars, pv)
+      return this.currentGame.glomVars(player)
     },
-    isSatisfied: function(given, player, bIsYourTurn, gameRules, globalVars) {
+    isSatisfied: function(given, player) {
       // console.log('isSatisfied: ', given)
       if(!_.isUndefined(given)) {
         const bSat = Logic.isSatisfied(given, this.glomVars(player))
         return !_.includes(bSat, false)
       }
       return true
-    },
-    paNewRound: function(e, player) {
-      const newGame = Actions.newRound(this.currentGame)
-      this.currentGame = newGame
-    },
-    paCustomAction: function(e, player) {
-      const newGame = Actions.customAction(this.currentGame)
-      this.currentGame = newGame
-    },
-    paDeal: function(e, player) {
-      const newGame = Actions.deal(this.currentGame, e.cards)
-      this.currentGame = newGame
-    },
-    paPass: function(e, player) {
-      const fromPlayerIdx = this.getIdxForPlayerName(player.playerName)
-      const toPlayerIdx = this.getIdxForPlayerName(player.selectedPlayer)
-      const newGame = Actions.pass(this.currentGame, fromPlayerIdx, player.selectedCards, toPlayerIdx)
-      this.currentGame = newGame
-
-      this.currentGame.players[fromPlayerIdx].selectedPlayer = ''
-      this.currentGame.players[fromPlayerIdx].selectedCards = []
-    },
-    paLead: function(e, player) {
-      const playerIdx = this.getIdxForPlayerName(player.playerName)
-      this.currentGame = Actions.playCard(this.currentGame, playerIdx, player.selectedCards[0])
-
-      this.currentGame.players[playerIdx].selectedPlayer = ''
-      this.currentGame.players[playerIdx].selectedCards = []
-    },
-    paPlayCard: function(e, player) {
-      const playerIdx = this.getIdxForPlayerName(player.playerName)
-      this.currentGame = Actions.playCard(this.currentGame, playerIdx, player.selectedCards[0])
-
-      this.currentGame.players[playerIdx].selectedPlayer = ''
-      this.currentGame.players[playerIdx].selectedCards = []
-    },
-    paTakeTrick: function(e, player) {
-      const playerIdx = this.getIdxForPlayerName(player.playerName)
-      this.currentGame = Actions.takeTrick(this.currentGame, playerIdx, this.currentGame.trick)
-      this.currentGame.trick = []
     },
     paSelectCard: function(card, playerName) {
       // console.log('paSelectCard event handler', card, playerName)
@@ -302,13 +202,13 @@ export default {
     },
     setupEffectHandlers: function() {
       return {
-        set_var: this.efSetVar,
-        set_var_player: this.efSetVarPlayer,
-        set_var_each_player: this.efSetVarEachPlayer,
-        change_phase: this.efChangePhase,
-        increment_var: this.efIncrementVar,
-        advance_player: this.efAdvancePlayer,
-        set_player: this.efSetPlayer,
+        set_var: Effects.setVar,
+        set_var_player: Effects.setVarPlayer,
+        set_var_each_player: Effects.setVarEachPlayer,
+        change_phase: Effects.changePhase,
+        increment_var: Effects.incrementVar,
+        advance_player: Effects.advancePlayer,
+        set_player: Effects.setPlayer,
         given: Symbol('given')
       }
     },
@@ -317,19 +217,19 @@ export default {
       function wrapListener(fn, name) {
         return (e, p) => {
           console.log(name + ' event handler: ', e, p)
-          fn.call(mm, e, p)
+          mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx)
           mm.handleEffects(e.effect, p)
         }
       }
       return {
         'draw-card': this.drawCard,
-        __deal: wrapListener(this.paDeal, '__deal'),
-        __pass: wrapListener(this.paPass, '__pass'),
-        __lead: wrapListener(this.paLead, '__lead'),
-        __play_card: wrapListener(this.paPlayCard, '__play_card'),
-        __take_trick: wrapListener(this.paTakeTrick, '__take_trick'),
-        __new_round: wrapListener(this.paNewRound, '__new_round'),
-        __custom_action: wrapListener(this.paCustomAction, '__custom_action'),
+        __deal: wrapListener(Actions.deal, '__deal'),
+        __pass: wrapListener(Actions.pass, '__pass'),
+        __lead: wrapListener(Actions.playCard, '__lead'),
+        __play_card: wrapListener(Actions.playCard, '__play_card'),
+        __take_trick: wrapListener(Actions.takeTrick, '__take_trick'),
+        __new_round: wrapListener(Actions.newRound, '__new_round'),
+        __custom_action: wrapListener(Actions.customAction, '__custom_action'),
         __select_card: this.paSelectCard,
         __select_player: this.paSelectPlayer
       }

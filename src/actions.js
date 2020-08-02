@@ -25,20 +25,20 @@ function _filterOutCardsFromHand(selectedCards, hand) {
 }
 
 export default {
-  newRound: function(gameState) {
+  newRound: function(gameState, event, playerIdx) {
     const gs = _.cloneDeep(gameState)
 
     gs.resetRound()
-
     return gs
   },
-  customAction: function(gameState) {
+  customAction: function(gameState, event, playerIdx) {
     const gs = _.cloneDeep(gameState)
     return gs
   },
-  deal: function(gameState, numCards) {
+  deal: function(gameState, event, playerIdx) {
     const gs = _.cloneDeep(gameState)
     const numPlayers = gs.getPlayerCount()
+    const numCards = event.cards
 
     for(let i = 0; i < numCards; i++) {
       const curPlayer = gs.players[i%numPlayers]
@@ -47,66 +47,75 @@ export default {
 
     return gs
   },
-  draw: function(gameState, playerIdx, numCards) {
-    const playerState = gameState.players[playerIdx]
+  draw: function(gameState, event, playerIdx) {
+    const gs = _.cloneDeep(gameState)
+    const player = gs.players[playerIdx]
+    const numCards = event.cards
 
     for(let i = 0; i < numCards; i++) {
-      _drawCardFromDeckToHand(gameState.deck, playerState.hand)
+      _drawCardFromDeckToHand(gameState.deck, player.hand)
     }
 
-    return [gameState, playerState]
+    return gs
   },
-  discard: function(gameState, playerIdx, selectedCards) {
-    const playerState = gameState.players[playerIdx]
+  discard: function(gameState, event, playerIdx) {
+    const gs = _.cloneDeep(gameState)
+    const player = gs.players[playerIdx]
 
     // remove the selected cards from the player's hand
-    _filterOutCardsFromHand(selectedCards, playerState.hand)
+    _filterOutCardsFromHand(player.selectedCards, player.hand)
 
     // Add the removed cards to the discard pile
-    for (let i = 0; i < selectedCards.length; i++) {
-      gameState.discard.push(selectedCards[i])
+    for (let i = 0; i < player.selectedCards.length; i++) {
+      gs.discard.push(player.selectedCards[i])
     }
 
-    return [gameState, playerState]
+    return gs
   },
-  pass: function(gameState, fromPlayerIdx, selectedCards, toPlayerIdx) {
-    // Maybe assert that fromPlayerIdx and toPlayerIdx should be different
+  pass: function(gameState, event, playerIdx) {
     const gs = _.cloneDeep(gameState)
-    const fromPlayer = gs.players[fromPlayerIdx]
+    const player = gs.getPlayer(playerIdx)
+    const toPlayer = gs.getPlayer(player.selectedPlayer)
 
     // remove the selected cards from the player's hand
-    fromPlayer.hand = _filterOutCardsFromHand(selectedCards, fromPlayer.hand)
+    player.hand = _filterOutCardsFromHand(player.selectedCards, player.hand)
 
     // add them to the indicated player's hand
-    const toPlayer = gs.players[toPlayerIdx]
-    toPlayer.hand = _.concat(toPlayer.hand, selectedCards)
+    toPlayer.hand = _.concat(toPlayer.hand, player.selectedCards)
+    player.selectedPlayer = ''
+    player.selectedCards = []
+
     return gs
   },
-  takeTrick: function(gameState, playerIdx, trick) {
+  takeTrick: function(gameState, event, playerIdx) {
     const gs = _.cloneDeep(gameState)
     const player = gs.players[playerIdx]
 
-    player.tricks = _.concat(player.tricks, trick)
+    player.tricks = _.concat(player.tricks, gs.trick)
+    gs.trick = []
 
     return gs
   },
-  playCard: function(gameState, playerIdx, selectedCard) {
+  playCard: function(gameState, event, playerIdx) {
+    const gs = _.cloneDeep(gameState)
+    const player = gs.players[playerIdx]
+
+    player.hand = _filterOutCardsFromHand(player.selectedCards, player.hand)
+
+    gs.trick = _.concat(gs.trick, player.selectedCards)
+    player.selectedPlayer = ''
+    player.selectedCards = []
+
+    return gs
+  },
+  meld: function(gameState, event, playerIdx) {
     const gs = _.cloneDeep(gameState)
 
-    const player = gs.players[playerIdx]
-    player.hand = _filterOutCardsFromHand([selectedCard], player.hand)
-
-    gs.trick = _.concat(gs.trick, selectedCard)
     return gs
   },
-  meld: function(gameState, playerIdx, cardGroups) {
-    const playerState = gameState.players[playerIdx]
+  layoff: function(gameState, event, playerIdx) {
+    const gs = _.cloneDeep(gameState)
 
-    return [gameState, playerState]
-  },
-  layoff: function(gameState, playerIdx, selectedCards, toPlayer) {
-    const playerState = gameState.players[playerIdx]
-
-    return [gameState, playerState]
+    return gs
   }
 }

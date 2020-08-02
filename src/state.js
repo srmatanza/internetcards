@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import * as Cards from '@/cards.js'
+import * as Cards from '../src/cards.js'
 
 function RuleSet() {
   this.gameVariables = {}
@@ -38,12 +38,23 @@ function PlayerState(playerName) {
 }
 
 function GameState() {
-  this.currentPlayerIdx = 0
   this.getPlayerCount = function() {
     return this.players.length
   }
   this.getCurrentPlayer = function() {
     return this.players[this.currentPlayerIdx]
+  }
+  this.getPlayer = function(pid) {
+    if(typeof pid === 'string') {
+      for(const player of this.players) {
+        if(pid === player.playerName) {
+          return player
+        }
+      }
+    } else if(typeof pid === 'number') {
+      return this.players[pid]
+    }
+    return undefined
   }
   this.addPlayer = function(playerName) {
     const p = new PlayerState(playerName)
@@ -68,6 +79,26 @@ function GameState() {
       this.players[i].resetPlayer()
     }
   }
+  this.isCurrentPlayer = function(playerName) {
+    return this.currentPlayerIdx === this.getPlayer(playerName).idx
+  }
+  this.glomVars = function(player) {
+    const phaseVars = {}
+    const playerVars = _.clone(this.currentRuleSet.playerVars)
+    const pv = {
+      $player: player,
+      $playerVars: _.assign(playerVars, player.playerVariables),
+      $isYourTurn: this.isCurrentPlayer(player.playerName)
+    }
+    const globalVarsForPlayer = {
+      $playerCount: this.getPlayerCount(),
+      $otherPlayers: this.players
+    }
+
+    return _.assign({}, this.currentRuleSet.gameVariables, globalVarsForPlayer, phaseVars, pv)
+  }
+
+  this.currentPlayerIdx = 0
   this.players = []
   this.deck = new Cards.Deck()
   this.trick = []
