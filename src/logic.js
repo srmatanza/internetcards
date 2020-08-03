@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import * as CC from '@/cards.js'
+import * as CC from '../src/cards.js'
 import jsonLogic from 'json-logic-js'
 
 function _valSuit(card) {
