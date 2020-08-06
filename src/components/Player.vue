@@ -7,18 +7,18 @@
     <span v-for="card in this.player.hand"
           :key="printCard(card)"
           :class="{ selected: isSelected(card) }"
-          @click="$emit('__select_card', card, player.playerName)">[{{ printCard(card) }}]</span>
+          @click="$emit('__' + 'select-card', card, player)">[{{ printCard(card) }}]</span>
   </span>
   <br/>
   <ul>
     <li v-for="op in this.otherplayers"
         :key="op.playerName"
         :class="{ selected: isPlayerSelected(op.playerName) }"
-        @click="$emit('__select_player', op.playerName, player.playerName)">{{ op.playerName }}</li>
+        @click="$emit('__' + 'select-player', op.playerName, player)">{{ op.playerName }}</li>
   </ul>
   <br/>
   <button v-if="bDebug" click="$emit('draw-card', player.playerName)">Draw</button>
-  <button :disabled="!isSatisfied(obj.given)" @click="$emit('__'+name, obj, player)" v-for="(obj, name) in this.playerActions" :key="name">{{ obj.name ? obj.name : name }}</button>
+  <button :disabled="!isSatisfied(obj.given)" @click="$emit('__'+name, obj, player, playerSelection)" v-for="(obj, name) in this.playerActions" :key="name">{{ obj.name ? obj.name : name }}</button>
   </li>
 </div>
 </template>
@@ -38,6 +38,7 @@ export default {
     'player',
     'otherplayers',
     'gamerules',
+    'playerselections',
     'currentphase',
     'currentplayer',
     'globalvars'
@@ -48,10 +49,15 @@ export default {
       return CC.printCard(card)
     },
     isPlayerSelected: function(opName) {
-      return _.isEqual(opName, this.player.selectedPlayer)
+      return _.isEqual(opName, this.playerSelection.selectedPlayer)
     },
     isSelected: function(card) {
-      return _.includes(this.player.selectedCards, card)
+      for(const cc of this.playerSelection.selectedCards) {
+        if(cc.val === card.val && cc.suit === card.suit) {
+          return true
+        }
+      }
+      return false
     },
     isSatisfied: function(given) {
       // console.log('isSatisfied: ', given)
@@ -61,6 +67,8 @@ export default {
           $player: this.player,
           $isYourTurn: this.currentplayer
         }
+        playerVars.$player.selectedCards = this.playerSelection.selectedCards
+        playerVars.$player.selectedPlayer = this.playerSelection.selectedPlayer
         _.assign(playerVars, this.player.playerVariables)
 
         const glomVars = _.assign({}, this.gamerules.gameVariables, this.globalvars, phaseVars, playerVars)
@@ -75,6 +83,9 @@ export default {
   computed: {
     bDebug: function() {
       return false
+    },
+    playerSelection: function() {
+      return this.playerselections[this.player.playerName] || { selectedCards: [], selectedPlayer: '' }
     },
     bEmptyHand: function() {
       return (this.player.hand.length === 0)

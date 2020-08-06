@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import * as Cards from '../src/cards.js'
+import * as State from '../src/state.js'
 
 function RuleSet() {
   this.gameVariables = {}
@@ -18,8 +19,6 @@ function PlayerState(playerName) {
   this.idx = 0
 
   this.hand = []
-  this.selectedCards = []
-  this.selectedPlayer = ''
   this.playerVariables = {}
   this.tricks = []
 
@@ -29,8 +28,6 @@ function PlayerState(playerName) {
 
   this.resetPlayer = function() {
     this.hand = []
-    this.selectedCards = []
-    this.selectedPlayer = ''
     this.tricks = []
   }
 
@@ -48,11 +45,11 @@ function GameState() {
     if(typeof pid === 'string') {
       for(const player of this.players) {
         if(pid === player.playerName) {
-          return player
+          return _.assign(new State.PlayerState(), player)
         }
       }
     } else if(typeof pid === 'number') {
-      return this.players[pid]
+      return _.assign(new State.PlayerState(), this.players[pid])
     }
     return undefined
   }
@@ -62,7 +59,7 @@ function GameState() {
     for(let i=0; i<this.players.length; i++) {
       if(this.players[i].playerName === playerName) {
         console.error('A player with this name already exists.')
-        return
+        return undefined
       }
     }
     const playerVars = this.currentRuleSet.playerVariables

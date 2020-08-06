@@ -6,7 +6,15 @@ const GameCache = {} // This is our database for now... It's fine
 export default {
   getGamestate: function (gameId) {
     if (GameCache.hasOwnProperty(gameId)) {
-      return GameCache[gameId]
+      const gi = GameCache[gameId]
+      console.log(gi)
+      /*
+      if(gi.currentGame.players) {
+        console.debug('Players: ', gi.currentGame.players)
+        gi.currentGame.players = gi.currentGame.players.map(p=>p.playerName)
+      }
+      */
+      return gi
     }
     return undefined
   },
@@ -15,17 +23,10 @@ export default {
     GameCache[newGame.gameIdentifier] = newGame
     return newGame
   },
-  postJoingame: function (gameId, playerName) {
-    if (GameCache.hasOwnProperty(gameId)) {
-      const gi = GameCache[gameId]
-      const gs = gi.currentGame
-
-      gs.addPlayer(playerName)
-      return gi
-    }
-    return undefined
+  postJoingame: function (gs, gameId, playerName) {
+    return gs.addPlayer(playerName)
   },
-  postPlayeraction: function (gameId, actionName, player) {
+  postPlayeraction: function (gameId, actionName, player, playerSelections) {
     if (GameCache.hasOwnProperty(gameId)) {
       const gi = GameCache[gameId]
       const gs = gi.currentGame
@@ -39,10 +40,8 @@ export default {
         return undefined
       }
       const p = gs.getPlayer(player.playerName)
-      p.selectedCards = _.cloneDeep(player.selectedCards)
-      p.selectedPlayer = _.cloneDeep(player.selectedPlayer)
 
-      return gi.runAction(actionName, action, p)
+      return gi.runAction(actionName, action, player, playerSelections)
     }
     console.debug(`Unknown game ${gameId}`)
     return undefined

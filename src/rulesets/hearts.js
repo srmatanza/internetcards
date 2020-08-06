@@ -1,4 +1,7 @@
 const ruleset = {
+  name: 'Hearts',
+  author: 'Mike McEuen',
+  contact: 'srmatanza@gmail.com',
   gameVariables: {
     playersPassed: 0,
     playersPlayedTrick: 0,

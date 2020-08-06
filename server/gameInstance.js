@@ -27,7 +27,7 @@ export default function (ruleset) {
   this.isSatisfied = function(given, player) {
     // console.log('isSatisfied: ', given)
     if(!_.isUndefined(given)) {
-      const bSat = Logic.isSatisfied(given, this.glomVars(player))
+      const bSat = Logic.isSatisfied(given, this.currentGame.glomVars(player))
       return !_.includes(bSat, false)
     }
     return true
@@ -36,7 +36,7 @@ export default function (ruleset) {
   this.handleEffect = function (effect, player) {
     if (this.isSatisfied(effect.given, player)) {
       for (const ef in effect) {
-        const fn = this.efHandlers[ef]
+        const fn = this.efHandlers()[ef]
         if (typeof fn === 'function') {
           this.currentGame = fn.call({}, this.currentGame, effect[ef], player)
         } else if (_.isUndefined(fn)) {
@@ -72,9 +72,10 @@ export default function (ruleset) {
   this.paListeners = function () {
     const mm = this
     function wrapListener(fn, name) {
-      return (e, p) => {
-        console.debug(name + ' event handler: ', e, p)
-        mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx)
+      return (e, p, ps) => {
+        console.debug(name + ' event handler: ', e, p, ps)
+        _.assign(p, ps)
+        mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx, ps)
         mm.handleEffects(e.effect, p)
       }
     }
@@ -99,10 +100,10 @@ export default function (ruleset) {
     return undefined
   }
 
-  this.runAction = function(actionName, action, player) {
+  this.runAction = function(actionName, action, player, ps) {
     const fn = this.paListeners()['__'+actionName]
     if(typeof fn === 'function') {
-      fn(action, player)
+      fn(action, player, ps)
       return this
     } else {
       console.error(`${actionName} is not a function`)

@@ -22,6 +22,7 @@
             :key="player.playerName"
             :player="player"
             :otherplayers="otherPlayers"
+            :playerselections="playerSelections"
             :gamerules="gameRules"
             :currentphase="currentphase"
             :currentplayer="isCurrentPlayer(player.playerName)"
@@ -53,6 +54,7 @@ export default {
   data: function() {
     return {
       currentGame: {},
+      playerSelections: {},
       phaseorder: 0,
       newPlayerName: '',
       Cards: CC
@@ -145,27 +147,29 @@ export default {
       }
       return true
     },
-    paSelectCard: function(card, playerName) {
-      // console.log('paSelectCard event handler', card, playerName)
-      const pIdx = this.getIdxForPlayerName(playerName)
-      const player = this.currentGame.players[pIdx]
+    paSelectCard: function(card, thisPlayer) {
+      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
       let sc
       if(_.includes(player.selectedCards, card)) {
         sc = _.filter(player.selectedCards, c => !_.isEqual(c, card))
       } else {
         sc = _.concat(player.selectedCards, card)
       }
-      this.currentGame.players[pIdx].selectedCards = sc
+      player.selectedCards = sc
+      this.playerSelections[thisPlayer.playerName] = player
+      this.playerSelections = _.assign({}, this.playerSelections)
+      console.log('paSelectCard event handler', card, sc, this.playerSelections)
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
-      // console.log('paSelectPlayer event handler', otherPlayer, thisPlayer)
-      const pIdx = this.getIdxForPlayerName(thisPlayer)
-      const player = this.currentGame.players[pIdx]
+      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
       if(_.isEqual(player.selectedPlayer, otherPlayer)) {
-        this.currentGame.players[pIdx].selectedPlayer = ''
+        player.selectedPlayer = ''
       } else {
-        this.currentGame.players[pIdx].selectedPlayer = otherPlayer
+        player.selectedPlayer = otherPlayer
       }
+      this.playerSelections[thisPlayer.playerName] = player
+      this.playerSelections = _.assign({}, this.playerSelections)
+      console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
     shuffleDeck: function() {
       const newDeck = CC.shuffleDeck(this.currentGame.deck)
@@ -215,10 +219,11 @@ export default {
     setupListeners: function() {
       const mm = this
       function wrapListener(fn, name) {
-        return (e, p) => {
-          console.log(name + ' event handler: ', e, p)
-          mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx)
+        return (e, p, ps) => {
+          console.log(name + ' action handler: ', e, p)
+          mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx, ps)
           mm.handleEffects(e.effect, p)
+          mm.playerSelections = {}
         }
       }
       return {
@@ -230,8 +235,8 @@ export default {
         __take_trick: wrapListener(Actions.takeTrick, '__take_trick'),
         __new_round: wrapListener(Actions.newRound, '__new_round'),
         __custom_action: wrapListener(Actions.customAction, '__custom_action'),
-        __select_card: this.paSelectCard,
-        __select_player: this.paSelectPlayer
+        '__select-card': this.paSelectCard,
+        '__select-player': this.paSelectPlayer
       }
     }
   }
