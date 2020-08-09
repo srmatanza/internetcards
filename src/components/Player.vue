@@ -10,7 +10,7 @@
           @click="$emit('__' + 'select-card', card, player)">[{{ printCard(card) }}]</span>
   </span>
   <br/>
-  <ul>
+  <ul v-if="bShowPlayers">
     <li v-for="op in this.otherplayers"
         :key="op.playerName"
         :class="{ selected: isPlayerSelected(op.playerName) }"
@@ -36,6 +36,7 @@ export default {
   },
   props: [
     'player',
+    'bShowPlayers',
     'otherplayers',
     'gamerules',
     'playerselections',
@@ -67,8 +68,10 @@ export default {
           $player: this.player,
           $isYourTurn: this.currentplayer
         }
-        playerVars.$player.selectedCards = this.playerSelection.selectedCards
-        playerVars.$player.selectedPlayer = this.playerSelection.selectedPlayer
+        playerVars.$selectedCards = this.playerSelection.selectedCards
+        const sp = this.otherplayers.filter(p => p.playerName === this.playerSelection.selectedPlayer)[0]
+        playerVars.$selectedPlayer = sp || {}
+
         _.assign(playerVars, this.player.playerVariables)
 
         const glomVars = _.assign({}, this.gamerules.gameVariables, this.globalvars, phaseVars, playerVars)

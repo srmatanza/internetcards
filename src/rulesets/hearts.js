@@ -7,16 +7,18 @@ const ruleset = {
     playersPlayedTrick: 0,
     trickWinner: '',
     ledCard: '',
-    passRecipient: [1, -1, 2, 0],
+    passRecipient: [1, 3, 2, 0],
     roundIdx: 0,
     maxPoints: 100,
     heartsBroken: false,
     cardsDealt: false,
     trickTaken: false,
-    doneScoring: false
+    doneScoring: false,
+    trick: []
   },
   playerVariables: {
-    points: 0
+    points: 0,
+    tricksTaken: []
   },
   possiblePlayers: [
     4
@@ -38,12 +40,31 @@ const ruleset = {
             }
           }
         },
-        pass: {
+        custom_action: {
           name: 'Pass Cards',
           effect: [
             {
               increment_var: {
                 playersPassed: 1
+              }
+            },
+            {
+              move_cards: {
+                fromPlayerIdx: { var: '$player.idx' },
+                fromHand: 'hand',
+                toPlayerIdx: {
+                  '%': [
+                    {
+                      '+': [
+                        { var: '$player.idx' },
+                        { getAt: [{ var: 'roundIdx' }, { var: 'passRecipient' }] }
+                      ]
+                    },
+                    4
+                  ]
+                },
+                toHand: 'hand',
+                cards: { var: '$selectedCards' }
               }
             }
           ],
@@ -53,14 +74,13 @@ const ruleset = {
             },
             {
               '==': [
-                { var: '$player.selectedCards.length' }, 3
+                { var: '$selectedCards.length' }, 3
               ]
-            },
+            }/* ,
             {
               isOtherPlayerSelected: []
-            }
-          ],
-          mandatory: true
+            } */
+          ]
         },
         lead: {
           name: 'Lead',
@@ -72,7 +92,7 @@ const ruleset = {
               playersPassed: 0,
               playersPlayedTrick: 1,
               trickWinner: { var: '$player' },
-              ledCard: { var: '$player.selectedCards.0' }
+              ledCard: { var: '$selectedCards.0' }
             },
             set_player: {
               '+': [{ var: '$player.idx' }, 1]
@@ -80,10 +100,10 @@ const ruleset = {
           },
           given: [
             {
-              handContainsCard: ['2C', { var: '$player.selectedCards' }]
+              handContainsCard: ['2C', { var: '$selectedCards' }]
             },
             {
-              '==': [{ var: '$player.selectedCards.length' }, 1]
+              '==': [{ var: '$selectedCards.length' }, 1]
             },
             {
               '==': [
@@ -119,25 +139,25 @@ const ruleset = {
               },
               given: [
                 {
-                  handContainsSuit: ['H', { var: '$player.selectedCards' }]
+                  handContainsSuit: ['H', { var: '$selectedCards' }]
                 }
               ]
             },
             {
               set_var: {
                 trickWinner: { var: '$player' },
-                ledCard: { var: '$player.selectedCards.0' }
+                ledCard: { var: '$selectedCards.0' }
               },
               given: [
                 {
                   '==': [
-                    { var: '$player.selectedCards.0.suit' },
+                    { var: '$selectedCards.0.suit' },
                     { var: 'ledCard.suit' }
                   ]
                 },
                 {
                   isHighCard: [
-                    { var: '$player.selectedCards.0' },
+                    { var: '$selectedCards.0' },
                     { var: 'ledCard' }
                   ]
                 }
@@ -170,14 +190,14 @@ const ruleset = {
               var: '$isYourTurn'
             },
             {
-              '==': [{ var: '$player.selectedCards.length' }, 1]
+              '==': [{ var: '$selectedCards.length' }, 1]
             },
             {
               or: [
                 { // SC is same suit as ledCard
                   '==': [
                     { var: 'ledCard.suit' },
-                    { var: '$player.selectedCards.0.suit' }
+                    { var: '$selectedCards.0.suit' }
                   ]
                 },
                 { // You have no ledCard.suit cards in your hand
@@ -235,7 +255,7 @@ const ruleset = {
                 playersPlayedTrick: 1,
                 trickTaken: false,
                 trickWinner: { var: '$player' },
-                ledCard: { var: '$player.selectedCards.0' }
+                ledCard: { var: '$selectedCards.0' }
               },
               set_player: {
                 '+': [{ var: '$player.idx' }, 1]
@@ -247,14 +267,14 @@ const ruleset = {
               },
               given: [
                 {
-                  handContainsSuit: ['H', { var: '$player.selectedCards' }]
+                  handContainsSuit: ['H', { var: '$selectedCards' }]
                 }
               ]
             }
           ],
           given: [
             {
-              '==': [{ var: '$player.selectedCards.length' }, 1]
+              '==': [{ var: '$selectedCards.length' }, 1]
             },
             {
               '==': [{ var: 'trickWinner.playerName' }, { var: '$player.playerName' }]
@@ -265,7 +285,7 @@ const ruleset = {
             {
               or: [
                 { var: 'heartsBroken' },
-                { '!': [{ handContainsSuit: ['H', { var: '$player.selectedCards' }] }] }
+                { '!': [{ handContainsSuit: ['H', { var: '$selectedCards' }] }] }
               ]
             }
           ]

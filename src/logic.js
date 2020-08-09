@@ -57,13 +57,14 @@ function isYourTurn(currentplayer) {
 
 function isOtherPlayerSelected() {
   // console.log('isOtherPlayerSelected', this, arguments)
-  if(this.$player.selectedPlayer === this.$player.playerName) {
+  const otherPlayerName = this.$selectedPlayer.playerName || ''
+  if(otherPlayerName === this.$player.playerName) {
     return false
   }
   const op = this.$otherPlayers
   for(const pidx in op) {
     const opn = op[pidx].playerName
-    if(opn === this.$player.selectedPlayer) {
+    if(opn === otherPlayerName) {
       return true
     }
   }
@@ -112,6 +113,10 @@ function playerVar(varName) {
   return this.$playerVars[varName]
 }
 
+function getAt(idx, arr) {
+  return arr[idx]
+}
+
 jsonLogic.add_operation('handContainsCard', handContainsCard)
 jsonLogic.add_operation('handContainsSuit', handContainsSuit)
 jsonLogic.add_operation('handContainsVal', handContainsVal)
@@ -123,6 +128,7 @@ jsonLogic.add_operation('isHighCard', isHighCard)
 jsonLogic.add_operation('flatten', flatten)
 jsonLogic.add_operation('playerVar', playerVar)
 jsonLogic.add_operation('cardEq', cardEq)
+jsonLogic.add_operation('getAt', getAt)
 
 export default {
   isSatisfied: function(given, gameVariables) {

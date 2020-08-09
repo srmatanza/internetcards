@@ -85,7 +85,9 @@ function GameState() {
     const pv = {
       $player: player,
       $playerVars: _.assign(playerVars, player.playerVariables),
-      $isYourTurn: this.isCurrentPlayer(player.playerName)
+      $isYourTurn: this.isCurrentPlayer(player.playerName),
+      $selectedCards: player.selectedCards,
+      $selectedPlayer: this.getPlayer(player.selectedPlayer)
     }
     const globalVarsForPlayer = {
       $playerCount: this.getPlayerCount(),
@@ -98,10 +100,13 @@ function GameState() {
   this.currentPlayerIdx = 0
   this.players = []
   this.deck = new Cards.Deck()
-  this.trick = []
-  this.discard = []
+
   this.currentPhase = ''
   this.currentRuleSet = new RuleSet()
+
+  // These should be game specific global hands
+  this.trick = []
+  this.discard = []
 
   return this
 }

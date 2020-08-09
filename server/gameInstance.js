@@ -64,6 +64,7 @@ export default function (ruleset) {
       change_phase: Effects.changePhase,
       increment_var: Effects.incrementVar,
       advance_player: Effects.advancePlayer,
+      move_cards: Effects.moveCards,
       set_player: Effects.setPlayer,
       given: Symbol('given')
     }
@@ -76,6 +77,8 @@ export default function (ruleset) {
         console.debug(name + ' event handler: ', e, p, ps)
         _.assign(p, ps)
         mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx, ps)
+        p.selectedCards = ps.selectedCards
+        p.selectedPlayer = ps.selectedPlayer
         mm.handleEffects(e.effect, p)
       }
     }

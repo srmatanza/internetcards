@@ -42,18 +42,18 @@ import Player from '@/components/Player.vue'
 
 import Actions from '@/actions.js'
 import Effects from '@/effects.js'
-import Logic from '@/logic.js'
 
 import Hearts from '@/rulesets/hearts.js'
 
 import * as CC from '@/cards.js'
-import * as State from '@/state.js'
+// import * as State from '@/state.js'
+import Instance from '@/instance.js'
 
 export default {
   name: 'gameInstance',
   data: function() {
     return {
-      currentGame: {},
+      instance: new Instance(),
       playerSelections: {},
       phaseorder: 0,
       newPlayerName: '',
@@ -81,11 +81,7 @@ export default {
     },
     setupGameState: function(ruleset) {
       console.log('method: setupGameState')
-      this.currentGame = new State.GameState()
-      if(ruleset) {
-        this.currentGame.currentRuleSet = ruleset
-        this.currentGame.currentPhase = ruleset.initialPhase
-      }
+      this.instance.setupGameState(ruleset)
     },
     getIdxForPlayerName: function(playerName) {
       for(const pidx in this.currentGame.players) {
@@ -114,38 +110,6 @@ export default {
       console.log('drawing card for ', playerName, pIdx)
       const _n = numCards || 1
       Actions.draw(this.currentGame, pIdx, _n)
-    },
-    handleEffect: function(effect, player) {
-      if(this.isSatisfied(effect.given, player)) {
-        for(const ef in effect) {
-          const fn = this.setupEffectHandlers[ef]
-          if(typeof fn === 'function') {
-            this.currentGame = fn.call({}, this.currentGame, effect[ef], player)
-          } else if(_.isUndefined(fn)) {
-            console.error('Undefined function for effect: ', ef)
-          }
-        }
-      }
-    },
-    handleEffects: function(effects, player) {
-      if(Array.isArray(effects)) {
-        for(const ef in effects) {
-          this.handleEffect(effects[ef], player)
-        }
-      } else {
-        this.handleEffect(effects, player)
-      }
-    },
-    glomVars: function(player) {
-      return this.currentGame.glomVars(player)
-    },
-    isSatisfied: function(given, player) {
-      // console.log('isSatisfied: ', given)
-      if(!_.isUndefined(given)) {
-        const bSat = Logic.isSatisfied(given, this.glomVars(player))
-        return !_.includes(bSat, false)
-      }
-      return true
     },
     paSelectCard: function(card, thisPlayer) {
       const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
@@ -177,6 +141,14 @@ export default {
     }
   },
   computed: {
+    currentGame: {
+      get: function() {
+        return this.instance.gs
+      },
+      set: function(newGS) {
+        this.instance.setGameState(newGS)
+      }
+    },
     bGameSetup: function() {
       return _.isEqual({}, this.currentGame)
     },
@@ -204,40 +176,15 @@ export default {
         $otherPlayers: this.otherPlayers
       }
     },
-    setupEffectHandlers: function() {
-      return {
-        set_var: Effects.setVar,
-        set_var_player: Effects.setVarPlayer,
-        set_var_each_player: Effects.setVarEachPlayer,
-        change_phase: Effects.changePhase,
-        increment_var: Effects.incrementVar,
-        advance_player: Effects.advancePlayer,
-        set_player: Effects.setPlayer,
-        given: Symbol('given')
-      }
-    },
     setupListeners: function() {
-      const mm = this
-      function wrapListener(fn, name) {
-        return (e, p, ps) => {
-          console.log(name + ' action handler: ', e, p)
-          mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx, ps)
-          mm.handleEffects(e.effect, p)
-          mm.playerSelections = {}
-        }
-      }
-      return {
-        'draw-card': this.drawCard,
-        __deal: wrapListener(Actions.deal, '__deal'),
-        __pass: wrapListener(Actions.pass, '__pass'),
-        __lead: wrapListener(Actions.playCard, '__lead'),
-        __play_card: wrapListener(Actions.playCard, '__play_card'),
-        __take_trick: wrapListener(Actions.takeTrick, '__take_trick'),
-        __new_round: wrapListener(Actions.newRound, '__new_round'),
-        __custom_action: wrapListener(Actions.customAction, '__custom_action'),
+      const ret = this.instance.paListeners(() => {
+        this.playerSelections = {}
+      })
+      const giHandlers = {
         '__select-card': this.paSelectCard,
         '__select-player': this.paSelectPlayer
       }
+      return _.assign(ret, giHandlers)
     }
   }
 }
