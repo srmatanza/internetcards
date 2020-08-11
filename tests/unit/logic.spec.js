@@ -17,7 +17,7 @@ describe('Five player Action tests', () => {
         gs = new State.GameState()
         gs.players.push(new State.PlayerState('Mike'))
         gs.players.push(new State.PlayerState('Comfort'))
-        gs = Actions.deal(gs, 52)
+        gs = Actions.deal(gs, { cards: 52 })
     })
 
     test('handContainsCard is satisfied', () => {
