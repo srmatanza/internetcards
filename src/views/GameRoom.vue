@@ -1,22 +1,37 @@
 <template>
-  <div>
-    <h1>Game Joined!</h1>
-    <p>{{ whoami.playerName }}: {{ whoami.gid }}</p>
-    <ul>
-      <li v-for="(gVar, idx) in this.getPlayerVars" :key="idx">{{ idx + ': ' + gVar }}</li>
-    </ul>
-    <GameState v-if="bGameLoaded" :state="this.gameInstance.currentGame"/>
-    <ul v-if="bGameLoaded">
-      <Player
-          :player="player"
-          :otherplayers="otherPlayers"
-          :playerselections="playerSelections"
-          :gamerules="gameRules"
-          :currentphase="currentphase"
-          :currentplayer="isCurrentPlayer(player.playerName)"
-          :globalvars="globalVarsForPlayer"
-          v-on="setupListeners" />
-    </ul>
+  <div id="gameRoom">
+  <div class="pure-g">
+    <div class="pure-u-1 pure-u-lg-1">
+      <h1>Game Joined!</h1>
+      <p>{{ whoami.playerName }}: {{ whoami.gid }}</p>
+    </div>
+  </div>
+
+  <div class="pure-g">
+    <div class="pure-u-1 pure-u-lg-1">
+      <ul>
+        <li v-for="(gVar, idx) in this.getPlayerVars" :key="idx">{{ idx + ': ' + gVar }}</li>
+      </ul>
+      <GameState v-if="bGameLoaded" :state="this.currentGame"/>
+    </div>
+  </div>
+
+  <div class="pure-g">
+    <div class="pure-u-1 pure-u-lg-1">
+      <ul v-if="bGameLoaded">
+        <Player
+            :player="player"
+            :otherplayers="otherPlayers"
+            :playerselections="playerSelections"
+            :gamerules="gameRules"
+            :currentphase="currentphase"
+            :currentplayer="isCurrentPlayer(player.playerName)"
+            :globalvars="globalVarsForPlayer"
+            v-on="setupListeners" />
+      </ul>
+    </div>
+  </div>
+
   </div>
 </template>
 <script>
@@ -36,9 +51,9 @@ export default {
   data() {
     return {
       whoami: {},
-      gameInstance: {},
+      instance: {},
       playerSelections: {},
-      rtms: 5000
+      rtms: 1000
     }
   },
   created() {
@@ -51,20 +66,25 @@ export default {
         this.whoami = res.data
       })
     this.reloadGameState()
+    console.log('pure: ', pure)
   },
   computed: {
     bGameLoaded: function() {
-      return !_.isUndefined(this.gameInstance.currentGame)
+      return !_.isUndefined(this.currentGame)
     },
-    currentGame: function() {
-      if(this.bGameLoaded) {
-        return this.gameInstance.currentGame
+    currentGame: {
+      get: function() {
+        return this.instance.gs
+      },
+      set: function(newGS) {
+        this.instance.gs = newGS
       }
-      return undefined
     },
     player: function() {
       if(this.bGameLoaded) {
-        return this.currentGame.getPlayer(this.whoami.playerName)
+        const p = this.currentGame.getPlayer(this.whoami.playerName)
+        console.log('player cv: ', this.currentGame, p, this.whoami.playerName)
+        return p
       }
       return undefined
     },
@@ -105,9 +125,7 @@ export default {
       const mm = this
       function wrapListener(name) {
         return (e, p) => {
-          console.log(name + ' event handler: ', e, p)
-          // mm.currentGame = fn.call(mm, mm.currentGame, e, p.idx)
-          // mm.handleEffects(e.effect, p)
+          console.log(name + ' client event handler: ', e, p)
           axios
             .post('/api/playeraction/' + name, mm.playerSelections[mm.player.playerName])
             .then(response => {
@@ -131,17 +149,8 @@ export default {
   },
   methods: {
     setGameState: function(newState) {
-      const tmpGame = _.assign(new State.GameState(), newState.currentGame)
-      if(!_.isUndefined(this.player)) {
-        const ps = this.playerSelections[this.player.playerName]
-        if(!_.isUndefined(ps)) {
-          tmpGame.players[this.player.idx].selectedCards = ps.selectedCards
-          tmpGame.players[this.player.idx].selectedPlayer = ps.selectedPlayer
-        }
-        console.log('setGameState: ', ps, tmpGame.players[this.player.idx])
-      }
-      this.gameInstance = newState
-      this.gameInstance.currentGame = tmpGame
+      this.instance = newState
+      this.currentGame = _.assign(new State.GameState(), newState.instance.gs)
     },
     reloadGameState: function() {
       console.log('Reloading gamestate...')
@@ -151,8 +160,8 @@ export default {
           console.log('then: ', res)
           this.setGameState(res.data)
           if(this.rtms < 20000) {
-            this.rtms *= 1.2
-            // setTimeout(this.reloadGameState.bind(this), this.rtms)
+            this.rtms += 1000
+            setTimeout(this.reloadGameState.bind(this), this.rtms)
           }
         })
         .catch(err => {
@@ -191,6 +200,11 @@ export default {
 }
 </script>
 <style>
+
+div {
+  padding: 2px;
+}
+
 button {
   margin: 2px;
 }
@@ -206,18 +220,4 @@ button {
   padding: 6px 8px;
 }
 
-.statebox {
-  /*
-    border: 1px solid black;
-    margin: 10px;
-    padding: 4px;
-  */
-  width: 22em;
-  text-align: start;
-  float: left;
-}
-
-#divPlayers {
-  clear: both;
-}
 </style>

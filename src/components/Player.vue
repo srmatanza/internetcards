@@ -3,11 +3,11 @@
   <li :class="{ currentPlayer: currentplayer }">
   {{ this.player.playerName }}
   <br/>
-  <span v-if="!bEmptyHand">
+  <span v-if="!bEmptyHand" class="playerHand">
     <span v-for="card in this.player.hand"
           :key="printCard(card)"
           :class="{ selected: isSelected(card) }"
-          @click="$emit('__' + 'select-card', card, player)">[{{ printCard(card) }}]</span>
+          @click="$emit('__' + 'select-card', card, player)"> [{{ printCard(card) }}] </span>
   </span>
   <br/>
   <ul v-if="bShowPlayers">
@@ -106,6 +106,11 @@ export default {
 </script>
 
 <style scoped>
+
+.playerHand {
+  font-size: 1.25em;
+}
+
 li.currentPlayer {
   border: 2px solid forestgreen;
 }

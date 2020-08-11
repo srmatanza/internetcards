@@ -8,12 +8,6 @@ export default {
     if (GameCache.hasOwnProperty(gameId)) {
       const gi = GameCache[gameId]
       console.log(gi)
-      /*
-      if(gi.currentGame.players) {
-        console.debug('Players: ', gi.currentGame.players)
-        gi.currentGame.players = gi.currentGame.players.map(p=>p.playerName)
-      }
-      */
       return gi
     }
     return undefined
@@ -29,7 +23,7 @@ export default {
   postPlayeraction: function (gameId, actionName, player, playerSelections) {
     if (GameCache.hasOwnProperty(gameId)) {
       const gi = GameCache[gameId]
-      const gs = gi.currentGame
+      const gs = gi.instance.gs
 
       // Get the action from the current phase
       const action = gi.getActionForCurrentPhase(actionName)
@@ -39,7 +33,7 @@ export default {
         console.debug(`Invalid playerName for: ${player}\n`)
         return undefined
       }
-      const p = gs.getPlayer(player.playerName)
+      // const p = gs.getPlayer(player.playerName)
 
       return gi.runAction(actionName, action, player, playerSelections)
     }

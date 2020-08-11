@@ -76,7 +76,9 @@ export default function() {
           p.selectedCards = ps.selectedCards
           p.selectedPlayer = ps.selectedPlayer
           handleEffects.call(mm, e.effect, p)
-          callbackFn()
+          if(typeof callbackFn === 'function') {
+            callbackFn()
+          }
         }
       }
       return {

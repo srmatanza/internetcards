@@ -137,7 +137,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
         res.status(400).send(errRet)
         return
     }
-    const gs = gi.currentGame
+    const gs = gi.instance.gs
     if(gs.getPlayer(playerName)) {
         const errRet = new ErrMsg(`A player named ${playerName} already joined this game.`)
         console.log(errRet)
@@ -168,7 +168,7 @@ app.post('/api/playeraction/:action', (req,res) => {
         return
     }
     const action = req.params.action
-    const player = gi.currentGame.getPlayer(playerName)
+    const player = gi.instance.gs.getPlayer(playerName)
     if(_.isUndefined(player) || typeof player !== 'object') {
         res.status(400).send(new ErrMsg('Unable to find your player.'))
         return

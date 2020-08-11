@@ -17,6 +17,7 @@ function _valSuit(card) {
 }
 
 function handContainsCard(card, hand) {
+  // console.debug('handContainsCard: ', card, hand)
   const val = parseInt(card[0])
   const suit = _.indexOf('_SHDC', card[1])
   const c = new CC.Card(suit, val)
@@ -30,6 +31,7 @@ function handContainsCard(card, hand) {
 }
 
 function handContainsSuit(suit, hand) {
+  // console.debug('handContainsSuit: ', suit, hand)
   const suitIndex = typeof suit === 'number' ? suit : _.indexOf('_SHDC', suit)
   for(let i = 0; i < hand.length; i++) {
     const card = hand[i]
