@@ -3,22 +3,23 @@ const ruleset = {
   author: 'Mike McEuen',
   contact: 'srmatanza@gmail.com',
   gameVariables: {
-    playersPassed: 0,
-    playersPlayedTrick: 0,
-    trickWinner: '',
-    ledCard: '',
-    passRecipient: [1, 3, 2, 0],
-    roundIdx: 0,
-    maxPoints: 100,
-    heartsBroken: false,
-    cardsDealt: false,
-    trickTaken: false,
-    doneScoring: false,
-    trick: []
+    gPlayersPassed: 0,
+    gPlayedTrick: 0,
+    gTrickWinner: '',
+    gLedCard: '',
+    gPassRecipient: [1, 3, 2, 0],
+    gRoundIdx: 0,
+    gMaxPoints: 100,
+    gHeartsBroken: false,
+    gCardsDealt: false,
+    gTrickTaken: false,
+    gDoneScoring: false,
+    gTrick: []
   },
   playerVariables: {
-    points: 0,
-    tricksTaken: []
+    pPoints: 0,
+    pPassCards: true,
+    pTricksTaken: []
   },
   possiblePlayers: [
     4
@@ -32,11 +33,11 @@ const ruleset = {
           name: 'Deal',
           cards: 52,
           given: [
-            { '!': { var: 'cardsDealt' } }
+            { '!': { var: 'gCardsDealt' } }
           ],
           effect: {
             set_var: {
-              cardsDealt: true
+              gCardsDealt: true
             }
           }
         },
@@ -45,7 +46,12 @@ const ruleset = {
           effect: [
             {
               increment_var: {
-                playersPassed: 1
+                gPlayersPassed: 1
+              }
+            },
+            {
+              set_var_player: {
+                pPassCards: false
               }
             },
             {
@@ -57,7 +63,7 @@ const ruleset = {
                     {
                       '+': [
                         { var: '$player.idx' },
-                        { getAt: [{ var: 'roundIdx' }, { var: 'passRecipient' }] }
+                        { getAt: [{ var: 'gRoundIdx' }, { var: 'gPassRecipient' }] }
                       ]
                     },
                     4
@@ -70,16 +76,16 @@ const ruleset = {
           ],
           given: [
             {
-              var: 'cardsDealt'
+              var: 'gCardsDealt'
             },
             {
               '==': [
                 { var: '$selectedCards.length' }, 3
               ]
-            }/* ,
+            },
             {
-              isOtherPlayerSelected: []
-            } */
+              var: 'pPassCards'
+            }
           ]
         },
         lead: {
@@ -89,10 +95,10 @@ const ruleset = {
           effect: {
             change_phase: 'trick_taking',
             set_var: {
-              playersPassed: 0,
-              playersPlayedTrick: 1,
-              trickWinner: { var: '$player' },
-              ledCard: { var: '$selectedCards.0' }
+              gPlayersPassed: 0,
+              gPlayedTrick: 1,
+              gTrickWinner: { var: '$player' },
+              gLedCard: { var: '$selectedCards.0' }
             },
             set_player: {
               '+': [{ var: '$player.idx' }, 1]
@@ -108,7 +114,7 @@ const ruleset = {
             {
               '==': [
                 {
-                  var: 'playersPassed'
+                  var: 'gPlayersPassed'
                 },
                 {
                   var: '$playerCount'
@@ -130,12 +136,12 @@ const ruleset = {
             },
             {
               increment_var: {
-                playersPlayedTrick: 1
+                gPlayedTrick: 1
               }
             },
             {
               set_var: {
-                heartsBroken: true
+                gHeartsBroken: true
               },
               given: [
                 {
@@ -145,20 +151,20 @@ const ruleset = {
             },
             {
               set_var: {
-                trickWinner: { var: '$player' },
-                ledCard: { var: '$selectedCards.0' }
+                gTrickWinner: { var: '$player' },
+                gLedCard: { var: '$selectedCards.0' }
               },
               given: [
                 {
                   '==': [
                     { var: '$selectedCards.0.suit' },
-                    { var: 'ledCard.suit' }
+                    { var: 'gLedCard.suit' }
                   ]
                 },
                 {
                   isHighCard: [
                     { var: '$selectedCards.0' },
-                    { var: 'ledCard' }
+                    { var: 'gLedCard' }
                   ]
                 }
               ]
@@ -166,16 +172,16 @@ const ruleset = {
             {
               change_phase: 'trick_scoring',
               set_var: {
-                playersPlayedTrick: 0
+                gPlayedTrick: 0
               },
               set_player: {
-                var: 'trickWinner.idx'
+                var: 'gTrickWinner.idx'
               },
               given: [
                 {
                   '==': [
                     {
-                      var: 'playersPlayedTrick'
+                      var: 'gPlayedTrick'
                     },
                     {
                       var: '$playerCount'
@@ -194,17 +200,17 @@ const ruleset = {
             },
             {
               or: [
-                { // SC is same suit as ledCard
+                { // SC is same suit as gLedCard
                   '==': [
-                    { var: 'ledCard.suit' },
+                    { var: 'gLedCard.suit' },
                     { var: '$selectedCards.0.suit' }
                   ]
                 },
-                { // You have no ledCard.suit cards in your hand
+                { // You have no gLedCard.suit cards in your hand
                   '!': [
                     {
                       handContainsSuit: [
-                        { var: 'ledCard.suit' },
+                        { var: 'gLedCard.suit' },
                         { var: '$player.hand' }
                       ]
                     }
@@ -225,7 +231,7 @@ const ruleset = {
           effect: [
             {
               set_var: {
-                trickTaken: true
+                gTrickTaken: true
               }
             },
             {
@@ -237,10 +243,10 @@ const ruleset = {
           ],
           given: [
             {
-              '==': [{ var: 'trickWinner.playerName' }, { var: '$player.playerName' }]
+              '==': [{ var: 'gTrickWinner.playerName' }, { var: '$player.playerName' }]
             },
             {
-              '!': [{ var: 'trickTaken' }]
+              '!': [{ var: 'gTrickTaken' }]
             }
           ]
         },
@@ -251,11 +257,11 @@ const ruleset = {
             {
               change_phase: 'trick_taking',
               set_var: {
-                playersPassed: 0,
-                playersPlayedTrick: 1,
-                trickTaken: false,
-                trickWinner: { var: '$player' },
-                ledCard: { var: '$selectedCards.0' }
+                gPlayersPassed: 0,
+                gPlayedTrick: 1,
+                gTrickTaken: false,
+                gTrickWinner: { var: '$player' },
+                gLedCard: { var: '$selectedCards.0' }
               },
               set_player: {
                 '+': [{ var: '$player.idx' }, 1]
@@ -263,7 +269,7 @@ const ruleset = {
             },
             {
               set_var: {
-                heartsBroken: true
+                gHeartsBroken: true
               },
               given: [
                 {
@@ -277,14 +283,14 @@ const ruleset = {
               '==': [{ var: '$selectedCards.length' }, 1]
             },
             {
-              '==': [{ var: 'trickWinner.playerName' }, { var: '$player.playerName' }]
+              '==': [{ var: 'gTrickWinner.playerName' }, { var: '$player.playerName' }]
             },
             {
-              var: 'trickTaken'
+              var: 'gTrickTaken'
             },
             {
               or: [
-                { var: 'heartsBroken' },
+                { var: 'gHeartsBroken' },
                 { '!': [{ handContainsSuit: ['H', { var: '$selectedCards' }] }] }
               ]
             }
@@ -299,10 +305,10 @@ const ruleset = {
           name: 'Score Round',
           effect: {
             set_var: {
-              doneScoring: true
+              gDoneScoring: true
             },
             set_var_each_player: {
-              points: {
+              pPoints: {
                 reduce: [
                   { flatten: [{ var: '$player.tricks' }] },
                   {
@@ -319,12 +325,13 @@ const ruleset = {
                   },
                   0
                 ]
-              }
+              },
+              pPassCards: true
             }
           },
           given: [
             {
-              '!': [{ var: 'doneScoring' }]
+              '!': [{ var: 'gDoneScoring' }]
             }
           ]
         },
@@ -332,19 +339,19 @@ const ruleset = {
           name: 'New Round',
           effect: {
             set_var: {
-              heartsBroken: false,
-              cardsDealt: false,
-              trickTaken: false,
-              doneScoring: false,
-              roundIdx: {
-                '%': [{ '+': [1, { var: 'roundIdx' }] }, 4]
+              gHeartsBroken: false,
+              gCardsDealt: false,
+              gTrickTaken: false,
+              gDoneScoring: false,
+              gRoundIdx: {
+                '%': [{ '+': [1, { var: 'gRoundIdx' }] }, 4]
               }
             },
             change_phase: 'setup'
           },
           given: [
             {
-              var: 'doneScoring'
+              var: 'gDoneScoring'
             }
           ]
         }
