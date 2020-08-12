@@ -66,7 +66,6 @@ export default {
         this.whoami = res.data
       })
     this.reloadGameState()
-    console.log('pure: ', pure)
   },
   computed: {
     bGameLoaded: function() {

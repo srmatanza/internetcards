@@ -195,6 +195,10 @@ button {
   margin: 2px;
 }
 
+.gameInstance {
+  padding: 12px;
+}
+
 .player ul {
   list-style-type: none;
   padding: 2px;
