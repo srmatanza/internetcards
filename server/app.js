@@ -1,11 +1,14 @@
 import uuid from 'uuid-random'
 import _ from 'lodash'
 
+import http from 'http'
+import WebSocket from 'ws'
 import express from 'express'
 import session from 'express-session'
 import cors from 'cors'
 
 import Handlers from './handlers.js'
+import WSServer from './wsserver.js'
 
 function ErrMsg(strMsg) {
     this.Msg = strMsg
@@ -32,8 +35,71 @@ app.use(session({
     },
     resave: false,
     saveUninitialized: false
-  }))
-  
+}))
+
+const server = http.createServer(app)
+const wss = new WebSocket.Server({ server: server, path: '/wsgame' })
+
+wss.on('connection', (ws) => {
+    ws.on('message', function(message) {
+        const jmsg = JSON.parse(message)
+        console.log('Received a message: ', jmsg)
+        switch(jmsg.do) {
+            case 'connect': {
+                if(_.isUndefined(jmsg.gameId) ||
+                   _.isUndefined(jmsg.playerSecret)) {
+                    ws.send(JSON.stringify(new ErrMsg("Invalid connection message")))
+                    return
+                }
+                const gi = Handlers.getGamestate(jmsg.gameId)
+                if(!gi) {
+                    ws.send(JSON.stringify(new ErrMsg("This connection is not associated with any game state.")))
+                    return
+                }
+                WSServer.connectPlayer(jmsg.gameId, jmsg.playerSecret, ws)
+                ws.send(JSON.stringify(gi))
+                return
+            }
+            case 'playerAction':
+                break
+            default:
+                console.error('Unknown action')
+        }
+        if(_.isUndefined(jmsg.gameId) ||
+           _.isUndefined(jmsg.playerSecret) ||
+           _.isUndefined(jmsg.playerName) ||
+           _.isUndefined(jmsg.action)) {
+            ws.send(JSON.stringify(new ErrMsg("Empty message")))
+            return
+        }
+        const action = jmsg.action
+
+        const gi = Handlers.getGamestate(jmsg.gameId)
+        if(!gi) {
+            ws.send(JSON.stringify(new ErrMsg("This connection is not associated with any game state.")))
+            return
+        }
+        const player = gi.instance.gs.getPlayer(jmsg.playerName)
+        if(_.isUndefined(player) || typeof player !== 'object') {
+            ws.send(JSON.stringify(new ErrMsg('Unable to find your player.')))
+            return
+        }
+        
+        const playerSelections = jmsg.playerSelections || {
+            selectedCards: [],
+            selectedPlayer: ''
+        }
+
+        const ret = Handlers.postPlayeraction(jmsg.gameId, jmsg.action, player, playerSelections)
+        if(_.isUndefined(ret)) {
+            ws.send(JSON.stringify(new ErrMsg('Unable to post player action')))
+        }
+
+        WSServer.updateClients(jmsg.gameId, gi)
+    })
+
+    ws.send(JSON.stringify({ Msg: 'Hi there, I am a WebSocket server' }))
+})
 
 app.get('/api', (req,res) => {
     const views = (req.session.views || 0) + 1
@@ -45,6 +111,7 @@ app.get('/api/whoami', (req,res) => {
     const ret = {
         gid: req.session.gameId,
         playerName: req.session.playerName,
+        playerSecret: req.session.playerSecret,
         authd: req.session.authd
     }
 
@@ -145,11 +212,13 @@ app.post('/api/joingame/:gameId', (req,res) => {
         return
     }
     const player = Handlers.postJoingame(gs, _gid, playerName)
+    const playerSecret = uuid()
 
     req.session.gameId = _gid
     req.session.playerName = playerName
+    req.session.playerSecret = playerSecret
     console.debug(`Joining ${_gid} as ${playerName}\n`)
-    res.send(`Joining ${_gid} as ${playerName}!\n`)
+    res.send({ gameId: _gid, playerName: playerName, playerSecret: playerSecret })
 })
 
 app.post('/api/playeraction/:action', (req,res) => {
@@ -187,4 +256,5 @@ app.post('/api/playeraction/:action', (req,res) => {
     res.send(ret)
 })
 
-app.listen(port, () => console.log('Example app listening at http://localhost:', port))
+// app.listen(port, () => console.log('Example app listening at http://localhost:', port))
+server.listen(process.env.PORT || port, () => console.log('Example app listening at http://localhost:', port))

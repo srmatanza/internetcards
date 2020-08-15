@@ -3,10 +3,8 @@
     <h3>Game State</h3>
     <div>
       <div>
-        <span>currentPlayer: </span>
-        <span>{{ this.state.currentPlayerIdx }}</span>
-        <span>&nbsp;of&nbsp;</span>
-        <span>{{ this.state.players.length }}</span>
+        <span>players: </span>
+        <span v-for="player in state.players" :key="player.playerName">{{ player.playerName }}, </span>
       </div>
       <div><span>deck: </span><span>{{ this.state.deck.cards.length }}</span></div>
       <div><span>discardPile: </span><span>{{ this.state.discard.length }}</span></div>

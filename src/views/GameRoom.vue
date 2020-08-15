@@ -41,6 +41,9 @@ import _ from 'lodash'
 import axios from 'axios'
 
 import * as State from '@/state.js'
+import WSClient from '@/wsclient.js'
+
+const WS_CONNECTION_STRING = 'ws://192.168.1.2/wsgame'
 
 export default {
   name: 'gameRoom',
@@ -53,7 +56,8 @@ export default {
       whoami: {},
       instance: {},
       playerSelections: {},
-      rtms: 1000
+      reconnectionLimit: 15,
+      ws: {}
     }
   },
   created() {
@@ -64,8 +68,8 @@ export default {
           this.$router.push('/')
         }
         this.whoami = res.data
+        this.reloadGameState()
       })
-    this.reloadGameState()
   },
   computed: {
     bGameLoaded: function() {
@@ -125,11 +129,14 @@ export default {
       function wrapListener(name) {
         return (e, p) => {
           console.log(name + ' client event handler: ', e, p)
-          axios
-            .post('/api/playeraction/' + name, mm.playerSelections[mm.player.playerName])
-            .then(response => {
-              mm.setGameState(response.data)
-            })
+          mm.ws.send(JSON.stringify({
+            do: 'playerAction',
+            action: name,
+            gameId: mm.whoami.gid,
+            playerSecret: mm.whoami.playerSecret,
+            playerName: mm.whoami.playerName,
+            playerSelections: mm.playerSelections[mm.player.playerName]
+          }))
           mm.playerSelections = {}
         }
       }
@@ -152,21 +159,34 @@ export default {
       this.currentGame = _.assign(new State.GameState(), newState.instance.gs)
     },
     reloadGameState: function() {
-      console.log('Reloading gamestate...')
-      axios
-        .get('/api/gamestate')
-        .then(res => {
-          console.log('then: ', res)
-          this.setGameState(res.data)
-          if(this.rtms < 20000) {
-            this.rtms += 1000
-            setTimeout(this.reloadGameState.bind(this), this.rtms)
+      this.ws = _.assign(new WebSocket(WS_CONNECTION_STRING),
+        new WSClient(res => {
+          if(res.gameIdentifier === this.whoami.gid) {
+            this.setGameState(res)
+          } else if(res.type === 'connection') {
+            console.log('Received a connection response')
+          } else {
+            console.debug('Message does not contain game state.')
           }
-        })
-        .catch(err => {
-          console.error('Reload catch: ', err)
-          this.$router.push('/')
-        })
+        },
+        res => {
+          const openMsg = JSON.stringify({
+            do: 'connect',
+            gameId: this.whoami.gid,
+            playerSecret: this.whoami.playerSecret
+          })
+          console.log('Opening a connection: ', openMsg)
+          this.ws.send(openMsg)
+        },
+        res => {
+          if(this.reconnectionLimit > 0) {
+            console.log('Attempting to reconect')
+            this.reconnectionLimit = this.reconnectionLimit-1
+            this.reloadGameState()
+          } else {
+            console.log('No longer attempting to reconnect, please manually refresh the page')
+          }
+        }))
     },
     isCurrentPlayer: function(pn) {
       return this.currentGame.isCurrentPlayer(pn)
