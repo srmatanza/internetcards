@@ -1,34 +1,129 @@
 <template>
-  <div>
-    <h1>Game Dashboard</h1>
-    <button @click="createGame">Create a New Game</button>
-    <ul>
-      <li v-for="game in this.currentGames" :key="game.gameId">{{ game.gameId }}</li>
-    </ul>
+  <div class="pure-g">
+    <div class="pure-u-1 pure-u-md-1-3">
+      &nbsp;
+    </div>
+
+    <div class="pure-u-1 pure-u-md-1-3">
+      <h1>Set up a new game!</h1>
+      <form id="creategame" class="pure-form pure-form-stacked" @submit.prevent="createGame">
+        <fieldset>
+          <div class="pure-control-group">
+            <select v-model="selectedGame">
+              <option disabled value="">Select a game type</option>
+              <option v-for="rs in ruleSets" :key="rs">{{ rs }}</option>
+            </select>
+          </div>
+
+          <div class="pure-control-group">
+            <label for="checkjoin" class="pure-checkbox">
+            <input type="checkbox" id="checkjoin" v-model="toggleJoin">
+            Join game immediately
+            </label>
+            <span v-if="toggleJoin">
+              <label for="form-playername">Player Name</label>
+              <input type="text" v-model="playerName" id="form-playername" placeholder="Be nice" />
+            </span>
+          </div>
+
+          <div class="pure-control-group">
+             <button type="submit" class="pure-button pure-button-primary" :disabled="bCantSubmit">Create a New Game</button>
+          </div>
+
+          <div class="pure-control-group">
+            <p>Current Games</p>
+            <ul>
+              <li v-for="game in this.currentGames" :key="game.gameId">{{ game.gameId }}</li>
+            </ul>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+
+    <div class="pure-u-1 pure-u-md-1-3">
+      &nbsp;
+    </div>
   </div>
 </template>
 <script>
+import _ from 'lodash'
 import axios from 'axios'
 
 export default {
+  name: 'dashboard',
   data: function() {
     return {
-      currentGames: []
+      currentGames: [],
+      ruleSets: [],
+      selectedGame: '',
+      toggleJoin: false,
+      playerName: '',
+      bSubmitted: false
+    }
+  },
+  created: function() {
+    axios
+      .get('/api/rulesets')
+      .then(res => {
+        if(!_.isUndefined(res.data)) {
+          this.ruleSets = res.data
+        }
+      })
+    axios
+      .get('/api/whoami')
+      .then(res => {
+        if(!res.data.authd) {
+          console.debug('You don\'t appear to be logged in.')
+          this.$router.push('/login')
+        }
+      })
+      .catch(err => {
+        console.debug('Catch: ', err.response)
+        this.$router.push('/login')
+      })
+  },
+  computed: {
+    bCantSubmit: function() {
+      if(this.toggleJoin) {
+        return (this.selectedGame === '' || !this.bPlayerNameValid || this.bSubmitted)
+      } else {
+        return (this.selectedGame === '' || this.bSubmitted)
+      }
+    },
+    bPlayerNameValid: function() {
+      return /^[a-zA-Z]+$/.test(this.playerName.trim())
     }
   },
   methods: {
     createGame: function() {
+      this.bSubmitted = true
+      const postData = {
+        ruleset: this.selectedGame
+      }
+      if(this.toggleJoin) {
+        postData.playerName = this.playerName.trim()
+      }
+      console.log('Creating game: ', postData)
       axios
-        .post('/api/newgame')
+        .post('/api/newgame', postData)
         .then(response => {
           console.log('We created a new game!', response)
-          this.currentGames.push(response.data)
+          if(this.toggleJoin) {
+            this.$router.push('/game')
+          } else {
+            this.currentGames.push(response.data)
+            this.bSubmitted = false
+          }
         })
         .catch(err => {
           console.debug('Catch: ', err.response)
-          this.$router.push('/login')
         })
     }
   }
 }
 </script>
+<style scoped>
+div {
+  padding: 5px;
+}
+</style>

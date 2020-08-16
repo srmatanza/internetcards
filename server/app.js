@@ -1,6 +1,10 @@
 import uuid from 'uuid-random'
 import _ from 'lodash'
 
+import fs from 'fs'
+import path from 'path'
+const __dirname = path.resolve()
+
 import http from 'http'
 import WebSocket from 'ws'
 import express from 'express'
@@ -72,7 +76,6 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify(new ErrMsg("Empty message")))
             return
         }
-        const action = jmsg.action
 
         const gi = Handlers.getGamestate(jmsg.gameId)
         if(!gi) {
@@ -149,6 +152,48 @@ app.get('/api/gamestate/:gameId', (req,res) => {
     }
 })
 
+const RuleSetNames = ['hearts']
+function getJSONRuleSet(ruleset) {
+    const retObj = {
+        status: 200,
+        content: ''
+    }
+
+    try {
+        const content = fs.readFileSync(ruleset)
+        retObj.content = content.toString()
+    } catch(ex) {
+        console.log(ex.code)
+        if(ex.code === 'ENOENT') {
+            retObj.status = 404
+        } else {
+            retObj.status = 500
+        }
+    }
+
+    return retObj
+}
+
+app.get('/api/rulesets', (req, res) => {
+    res.send(RuleSetNames)
+})
+
+app.get('/api/rulesets/:ruleset', async function(req, res) {
+    const fileName = req.params.ruleset + '.json'
+    const ret = getJSONRuleSet(path.join(__dirname, 'src/rulesets', fileName))
+    console.log(`GET rulesets/${fileName}`, ret.status)
+    if(ret.status === 200) {
+        res
+            .set({
+                'Content-Type': 'application/json'
+            })
+            .status(ret.status)
+            .send(ret.content)
+    } else {
+        res.status(ret.status).send('Could not load the specified rule set.')
+    }
+})
+
 app.get('/api/logout', (req,res) => {
     console.debug('Logging out')
     req.session.authd = false
@@ -175,10 +220,46 @@ app.post('/api/login', (req,res) => {
     }
 })
 
-app.post('/api/newgame', (req,res) => {
+app.post('/api/newgame', (req,res) => {   
     if(req.session.authd) {
-        const gi = Handlers.postNewgame()
+        console.log('POST newgame: ', req.body)
+        const ruleset = req.body.ruleset
+        if(_.isUndefined(ruleset)) {
+            console.error('Missing ruleset from body')
+            res.status(400).send(new ErrMsg('A new game request must include the ruleset.'))
+            return
+        }
+        const playerName = req.body.playerName
+        if(playerName === '') {
+            const errRet = new ErrMsg('You must submit a valid player name.')
+            res.status(400).send(errRet)
+            return
+        }
+        const rsFile = ruleset + '.json'
+        const rsPath = path.join(__dirname, 'src/rulesets', rsFile)
+        const rsJson = getJSONRuleSet(rsPath)
+        if(rsJson.status !== 200) {
+            const errRet = new ErrMsg('Unable to lookup the rule set.')
+            res.status(400).send(errRet)
+            return
+        }
+
+        const gi = Handlers.postNewgame(JSON.parse(rsJson.content))
         console.debug('Creating a new game: ', gi)
+
+        if(playerName) {
+            const _gid = gi.gameIdentifier
+            Handlers.postJoingame(gi.instance.gs, _gid, playerName)
+            const playerSecret = uuid()
+
+            req.session.gameId = _gid
+            req.session.playerName = playerName
+            req.session.playerSecret = playerSecret
+            console.debug(`Joining ${_gid} as ${playerName}\n`)
+            res.send({ gameId: _gid, playerName: playerName, playerSecret: playerSecret })
+            return
+        }
+
         const ret = {
             gameId: gi.gameIdentifier
         }
@@ -218,6 +299,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
     req.session.playerName = playerName
     req.session.playerSecret = playerSecret
     console.debug(`Joining ${_gid} as ${playerName}\n`)
+    WSServer.updateClients(_gid, gi)
     res.send({ gameId: _gid, playerName: playerName, playerSecret: playerSecret })
 })
 
@@ -256,5 +338,4 @@ app.post('/api/playeraction/:action', (req,res) => {
     res.send(ret)
 })
 
-// app.listen(port, () => console.log('Example app listening at http://localhost:', port))
 server.listen(process.env.PORT || port, () => console.log('Example app listening at http://localhost:', port))

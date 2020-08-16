@@ -1,36 +1,36 @@
 <template>
-  <div id="gameRoom">
-  <div class="pure-g">
-    <div class="pure-u-1 pure-u-lg-1">
-      <h1>Game Joined!</h1>
-      <p>{{ whoami.playerName }}: {{ whoami.gid }}</p>
+  <div id="gameRoom" class="pure-g">
+    <div class="pure-u-1 pure-u-md-1-3">
+      <div>
+        <h1>Game Joined!</h1>
+        <p>{{ whoami.playerName }}: {{ whoami.gid }}</p>
+      </div>
     </div>
-  </div>
 
-  <div class="pure-g">
-    <div class="pure-u-1 pure-u-lg-1">
-      <ul>
-        <li v-for="(gVar, idx) in this.getPlayerVars" :key="idx">{{ idx + ': ' + gVar }}</li>
-      </ul>
-      <GameState v-if="bGameLoaded" :state="this.currentGame"/>
+    <div class="pure-u-1 pure-u-md-1-3">
+      <div>
+        <ul>
+          <li v-for="(gVar, idx) in this.getPlayerVars" :key="idx">{{ idx + ': ' + gVar }}</li>
+        </ul>
+        <GameState v-if="bGameLoaded" :state="this.currentGame"/>
+      </div>
     </div>
-  </div>
 
-  <div class="pure-g">
-    <div class="pure-u-1 pure-u-lg-1">
-      <ul v-if="bGameLoaded">
-        <Player
-            :player="player"
-            :otherplayers="otherPlayers"
-            :playerselections="playerSelections"
-            :gamerules="gameRules"
-            :currentphase="currentphase"
-            :currentplayer="isCurrentPlayer(player.playerName)"
-            :globalvars="globalVarsForPlayer"
-            v-on="setupListeners" />
-      </ul>
+    <div class="pure-u-1 pure-u-md-1-3">
+      <div>
+        <ul v-if="bGameLoaded">
+          <Player
+              :player="player"
+              :otherplayers="otherPlayers"
+              :playerselections="playerSelections"
+              :gamerules="gameRules"
+              :currentphase="currentphase"
+              :currentplayer="isCurrentPlayer(player.playerName)"
+              :globalvars="globalVarsForPlayer"
+              v-on="setupListeners" />
+        </ul>
+      </div>
     </div>
-  </div>
 
   </div>
 </template>
@@ -155,8 +155,10 @@ export default {
   },
   methods: {
     setGameState: function(newState) {
-      this.instance = newState
-      this.currentGame = _.assign(new State.GameState(), newState.instance.gs)
+      if(newState.instance && newState.instance.gs) {
+        this.instance = newState
+        this.currentGame = _.assign(new State.GameState(), newState.instance.gs)
+      }
     },
     reloadGameState: function() {
       this.ws = _.assign(new WebSocket(WS_CONNECTION_STRING),
@@ -220,8 +222,8 @@ export default {
 </script>
 <style>
 
-div {
-  padding: 2px;
+.pure-u-1 > div {
+  padding: 5px;
 }
 
 button {

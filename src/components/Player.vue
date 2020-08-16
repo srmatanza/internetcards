@@ -68,13 +68,17 @@ export default {
           $player: this.player,
           $isYourTurn: this.currentplayer
         }
+        const globalVarsForPlayer = {
+          $possiblePlayers: this.gamerules.possiblePlayers
+        }
         playerVars.$selectedCards = this.playerSelection.selectedCards
         const sp = this.otherplayers.filter(p => p.playerName === this.playerSelection.selectedPlayer)[0]
         playerVars.$selectedPlayer = sp || {}
 
         _.assign(playerVars, this.player.playerVariables)
+        _.assign(globalVarsForPlayer, this.globalvars)
 
-        const glomVars = _.assign({}, this.gamerules.gameVariables, this.globalvars, phaseVars, playerVars)
+        const glomVars = _.assign({}, this.gamerules.gameVariables, globalVarsForPlayer, phaseVars, playerVars)
 
         const bSat = Logic.isSatisfied(given, glomVars)
         // console.log('isSatisfied: ', given, bSat, glomVars)

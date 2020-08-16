@@ -91,6 +91,7 @@ function GameState() {
     }
     const globalVarsForPlayer = {
       $playerCount: this.getPlayerCount(),
+      $possiblePlayers: this.currentRuleSet.possiblePlayers,
       $otherPlayers: this.players
     }
 

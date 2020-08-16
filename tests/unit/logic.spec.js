@@ -3,7 +3,8 @@ import Logic from '@/logic.js'
 import Actions from '@/actions.js'
 import * as State from '@/state.js'
 import * as CC from '@/cards.js'
-import Hearts from '@/rulesets/hearts.js'
+// Get this from hearts.json instead
+// import Hearts from '@/rulesets/hearts.js'
 
 describe('Five player Action tests', () => {
     let gs = {}

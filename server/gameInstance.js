@@ -1,7 +1,6 @@
 import _ from 'lodash'
 
 import Instance from '../src/instance.js'
-import Hearts from '../src/rulesets/hearts.js'
 
 function genGameId() {
   const _az = 'abcdefghijklmnopqrstuvwxyz'.split('')

@@ -12,8 +12,8 @@ export default {
     }
     return undefined
   },
-  postNewgame: function () {
-    const newGame = new GameInstance()
+  postNewgame: function (ruleset) {
+    const newGame = new GameInstance(ruleset)
     GameCache[newGame.gameIdentifier] = newGame
     return newGame
   },

@@ -13,7 +13,7 @@
     </div>
 
     <GameState v-if="!bGameSetup" :state="currentGame"/>
-    <RuleSet :rules="currentGame.currentRuleSet" :currentphase="currentphase" @update-currentphase="this.changePhase"/>
+    <RuleSet v-if="bRuleSetLoaded" :rules="currentGame.currentRuleSet" :currentphase="currentphase" @update-currentphase="this.changePhase"/>
 
     <div id="divPlayers" class="statebox player" v-if="numPlayers">
       <h3>Players</h3>
@@ -43,11 +43,9 @@ import Player from '@/components/Player.vue'
 import Actions from '@/actions.js'
 import Effects from '@/effects.js'
 
-import Hearts from '@/rulesets/hearts.js'
-
 import * as CC from '@/cards.js'
-// import * as State from '@/state.js'
 import Instance from '@/instance.js'
+import axios from 'axios'
 
 export default {
   name: 'gameInstance',
@@ -66,7 +64,13 @@ export default {
     Player
   },
   created: function() {
-    this.setupGameState(Hearts)
+    axios
+      .get('/api/rulesets/hearts')
+      .then(res => {
+        if(!_.isUndefined(res.data)) {
+          this.setupGameState(res.data)
+        }
+      })
   },
   methods: {
     addPlayer: function(playerName) {
@@ -148,6 +152,9 @@ export default {
       set: function(newGS) {
         this.instance.setGameState(newGS)
       }
+    },
+    bRuleSetLoaded: function() {
+      return this.currentGame.currentRuleSet !== undefined
     },
     bGameSetup: function() {
       return _.isEqual({}, this.currentGame)

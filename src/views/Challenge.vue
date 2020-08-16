@@ -42,3 +42,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+div {
+  padding: 5px;
+}
+</style>

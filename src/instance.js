@@ -72,12 +72,16 @@ export default function() {
         return (e, p, ps) => {
           console.debug(name + ' event handler: ', mm, e, p, ps)
           _.assign(p, ps)
-          mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
-          p.selectedCards = ps.selectedCards
-          p.selectedPlayer = ps.selectedPlayer
-          handleEffects.call(mm, e.effect, p)
-          if(typeof callbackFn === 'function') {
-            callbackFn()
+          try {
+            mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
+            p.selectedCards = ps.selectedCards
+            p.selectedPlayer = ps.selectedPlayer
+            handleEffects.call(mm, e.effect, p)
+            if(typeof callbackFn === 'function') {
+              callbackFn()
+            }
+          } catch(ex) {
+            console.error('Error running the ruleset: ', ex)
           }
         }
       }
@@ -99,16 +103,6 @@ export default function() {
         }
       }
       return undefined
-    },
-    runAction: function(actionName, action, player, ps) {
-      const fn = this.paListeners()['__'+actionName]
-      if(typeof fn === 'function') {
-        fn(action, player, ps)
-        return this
-      } else {
-        console.error(`${actionName} is not a function`)
-        return undefined
-      }
     }
   }
 }
