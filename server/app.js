@@ -10,6 +10,7 @@ import WebSocket from 'ws'
 import express from 'express'
 import session from 'express-session'
 import cors from 'cors'
+import history from 'connect-history-api-fallback'
 
 import Handlers from './handlers.js'
 import WSServer from './wsserver.js'
@@ -27,6 +28,7 @@ const app = express()
 const port = 3001
 
 app.use(cors())
+app.use(history())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(session({
@@ -40,6 +42,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }))
+app.use(express.static('dist'))
 
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server: server, path: '/wsgame' })
