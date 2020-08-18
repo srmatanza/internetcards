@@ -24,10 +24,14 @@ function ErrMsg(strMsg) {
     return this
 }
 
+const bEnableLogging = false
+
 function LogMsg(strMsg) {
     const em = new ErrMsg(strMsg)
     const logmsg = (new Date).toGMTString() + ': ' + em.toString() + '\n'
-    fs.appendFile('log.txt', logmsg, function() {})
+    if(bEnableLogging) {
+        fs.appendFile('log.txt', logmsg, function() {})
+    }
     return em
 }
 
