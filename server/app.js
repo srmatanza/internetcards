@@ -28,7 +28,14 @@ const app = express()
 const port = 3001
 
 app.use(cors())
-app.use(history())
+app.use(history({
+    rewrites: [{
+        from: /\/api/,
+        to: function(context) {
+            return context.parsedUrl.pathname
+        }
+    }]
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(session({
