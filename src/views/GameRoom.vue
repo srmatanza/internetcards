@@ -43,8 +43,6 @@ import axios from 'axios'
 import * as State from '@/state.js'
 import WSClient from '@/wsclient.js'
 
-const WS_CONNECTION_STRING = 'ws://192.168.1.2/wsgame'
-
 export default {
   name: 'gameRoom',
   components: {
@@ -52,11 +50,16 @@ export default {
     GameState
   },
   data() {
+    let wsprotocol = 'wss://'
+    if(location.protocol.startsWith('http:')) {
+      wsprotocol = 'ws://'
+    }
     return {
       whoami: {},
       instance: {},
       playerSelections: {},
       reconnectionLimit: 15,
+      WS_CONNECTION_STRING: wsprotocol + location.host + '/wsgame',
       ws: {}
     }
   },
@@ -161,7 +164,7 @@ export default {
       }
     },
     reloadGameState: function() {
-      this.ws = _.assign(new WebSocket(WS_CONNECTION_STRING),
+      this.ws = _.assign(new WebSocket(this.WS_CONNECTION_STRING),
         new WSClient(res => {
           if(res.gameIdentifier === this.whoami.gid) {
             this.setGameState(res)
