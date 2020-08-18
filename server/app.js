@@ -24,6 +24,13 @@ function ErrMsg(strMsg) {
     return this
 }
 
+function LogMsg(strMsg) {
+    const em = new ErrMsg(strMsg)
+    const logmsg = (new Date).toGMTString() + ': ' + em.toString() + '\n'
+    fs.appendFile('log.txt', logmsg, function() {})
+    return em
+}
+
 const app = express()
 const port = 3001
 
@@ -56,18 +63,25 @@ const wss = new WebSocket.Server({ server: server, path: '/wsgame' })
 
 wss.on('connection', (ws) => {
     ws.on('message', function(message) {
-        const jmsg = JSON.parse(message)
+        let jmsg = {}
+        try {
+            jmsg = JSON.parse(message)
+        } catch(ex) {
+            console.error('Invalid connection message')
+            ws.send(JSON.stringify(new LogMsg(`Invalid connection message: ${message}`)))
+            return
+        }
         console.log('Received a message: ', jmsg)
         switch(jmsg.do) {
             case 'connect': {
                 if(_.isUndefined(jmsg.gameId) ||
                    _.isUndefined(jmsg.playerSecret)) {
-                    ws.send(JSON.stringify(new ErrMsg("Invalid connection message")))
+                    ws.send(JSON.stringify(new LogMsg(`Invalid connection message: ${message}`)))
                     return
                 }
                 const gi = Handlers.getGamestate(jmsg.gameId)
                 if(!gi) {
-                    ws.send(JSON.stringify(new ErrMsg("This connection is not associated with any game state.")))
+                    ws.send(JSON.stringify(new LogMsg("This connection is not associated with any game state.")))
                     return
                 }
                 WSServer.connectPlayer(jmsg.gameId, jmsg.playerSecret, ws)
@@ -83,18 +97,18 @@ wss.on('connection', (ws) => {
            _.isUndefined(jmsg.playerSecret) ||
            _.isUndefined(jmsg.playerName) ||
            _.isUndefined(jmsg.action)) {
-            ws.send(JSON.stringify(new ErrMsg("Empty message")))
+            ws.send(JSON.stringify(new LogMsg("Empty message")))
             return
         }
 
         const gi = Handlers.getGamestate(jmsg.gameId)
         if(!gi) {
-            ws.send(JSON.stringify(new ErrMsg("This connection is not associated with any game state.")))
+            ws.send(JSON.stringify(new LogMsg("This connection is not associated with any game state.")))
             return
         }
         const player = gi.instance.gs.getPlayer(jmsg.playerName)
         if(_.isUndefined(player) || typeof player !== 'object') {
-            ws.send(JSON.stringify(new ErrMsg('Unable to find your player.')))
+            ws.send(JSON.stringify(new LogMsg('Unable to find your player.')))
             return
         }
         
@@ -105,13 +119,13 @@ wss.on('connection', (ws) => {
 
         const ret = Handlers.postPlayeraction(jmsg.gameId, jmsg.action, player, playerSelections)
         if(_.isUndefined(ret)) {
-            ws.send(JSON.stringify(new ErrMsg('Unable to post player action')))
+            ws.send(JSON.stringify(new LogMsg('Unable to post player action')))
         }
 
         WSServer.updateClients(jmsg.gameId, gi)
     })
 
-    ws.send(JSON.stringify({ Msg: 'Hi there, I am a WebSocket server' }))
+    ws.send(JSON.stringify(new LogMsg('Hi there, I am a WebSocket server')))
 })
 
 app.get('/api', (req,res) => {
