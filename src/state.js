@@ -100,7 +100,7 @@ function GameState() {
 
   this.currentPlayerIdx = 0
   this.players = []
-  this.deck = new Cards.Deck()
+  this.deck = Cards.shuffleDeck(new Cards.Deck())
 
   this.currentPhase = ''
   this.currentRuleSet = new RuleSet()

@@ -1,4 +1,6 @@
 <template>
+<div>
+  <TopHeader :links="links" />
   <div class="pure-g">
     <div class="pure-u-1 pure-u-md-1-3">
       &nbsp;
@@ -44,13 +46,18 @@
       &nbsp;
     </div>
   </div>
+</div>
 </template>
 <script>
 import _ from 'lodash'
 import axios from 'axios'
+import TopHeader from '@/components/TopHeader.vue'
 
 export default {
   name: 'dashboard',
+  components: {
+    TopHeader
+  },
   data: function() {
     return {
       currentGames: [],
@@ -58,7 +65,8 @@ export default {
       selectedGame: '',
       toggleJoin: false,
       playerName: '',
-      bSubmitted: false
+      bSubmitted: false,
+      whoami: {}
     }
   },
   created: function() {
@@ -76,6 +84,7 @@ export default {
           console.debug('You don\'t appear to be logged in.')
           this.$router.push('/login')
         }
+        this.whoami = res.data
       })
       .catch(err => {
         console.debug('Catch: ', err.response)
@@ -83,6 +92,19 @@ export default {
       })
   },
   computed: {
+    links: function() {
+      const ret = [{
+        name: 'Home',
+        href: '/'
+      }]
+      if(this.whoami.gid) {
+        ret.push({
+          name: 'Rejoin Game',
+          href: '/game'
+        })
+      }
+      return ret
+    },
     bCantSubmit: function() {
       if(this.toggleJoin) {
         return (this.selectedGame === '' || !this.bPlayerNameValid || this.bSubmitted)
@@ -123,7 +145,7 @@ export default {
 }
 </script>
 <style scoped>
-div {
+.pure-g div {
   padding: 5px;
 }
 </style>
