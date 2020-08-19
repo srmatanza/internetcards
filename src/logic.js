@@ -32,11 +32,21 @@ function handContainsCard(card, hand) {
 
 function handContainsSuit(suit, hand) {
   // console.debug('handContainsSuit: ', suit, hand)
-  const suitIndex = typeof suit === 'number' ? suit : _.indexOf('_SHDC', suit)
-  for(let i = 0; i < hand.length; i++) {
-    const card = hand[i]
-    if(card.suit === suitIndex) {
-      return true
+  // iterate over all of the suits specified in suit
+  const needles = []
+  if(typeof suit === 'number') {
+    needles.push(suit)
+  } else if(typeof suit === 'string') {
+    for(const hs of suit.split('')) {
+      needles.push(_.indexOf('_SHDC', hs))
+    }
+  }
+  for(const suitIndex of needles) {
+    for(let i = 0; i < hand.length; i++) {
+      const card = hand[i]
+      if(card.suit === suitIndex) {
+        return true
+      }
     }
   }
   return false

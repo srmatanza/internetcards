@@ -443,6 +443,18 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "!": [
+                    {
+                      "handContainsSuit": [
+                        "SDC",
+                        {
+                          "var": "$player.hand"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
