@@ -25,6 +25,14 @@ function ErrMsg(strMsg) {
 }
 
 const bEnableLogging = false
+let __d = 'make'
+fs.readFile(__dirname + '/asdf.txt', (err, data) => {
+    if(err) {
+        console.debug('Unable to load __d')
+        return
+    }
+    __d = data.toString().trim()
+})
 
 function LogMsg(strMsg) {
     const em = new ErrMsg(strMsg)
@@ -141,6 +149,7 @@ app.get('/api', (req,res) => {
 app.get('/api/whoami', (req,res) => {
     const ret = {
         gid: req.session.gameId,
+        playing: req.session.playing,
         playerName: req.session.playerName,
         playerSecret: req.session.playerSecret,
         authd: req.session.authd
@@ -225,7 +234,8 @@ app.get('/api/rulesets/:ruleset', async function(req, res) {
 app.get('/api/logout', (req,res) => {
     console.debug('Logging out')
     req.session.authd = false
-    req.session.gid = undefined
+    req.session.playing = false
+    req.session.gameId = undefined
     req.session.playerName = undefined
 
     const ret = {
@@ -238,8 +248,7 @@ app.get('/api/logout', (req,res) => {
 })
 
 app.post('/api/login', (req,res) => {
-    console.log(req.body)
-    if(req.body.password === 'make') {
+    if(req.body.password === __d) {
         req.session.authd = true
         res.send('Sure, here\'s a session.')
     } else {
@@ -281,6 +290,7 @@ app.post('/api/newgame', (req,res) => {
             const playerSecret = uuid()
 
             req.session.gameId = _gid
+            req.session.playing = true
             req.session.playerName = playerName
             req.session.playerSecret = playerSecret
             console.debug(`Joining ${_gid} as ${playerName}\n`)
@@ -319,6 +329,15 @@ app.post('/api/joingame/:gameId', (req,res) => {
         console.log(errRet)
         res.status(400).send(errRet)
         return
+    }
+    if(_.isArray(gs.currentRuleSet.possiblePlayers)) {
+        const maxPlayers = gs.currentRuleSet.possiblePlayers.reduce( (a,n) => Math.max(a,n))
+        if(gs.getPlayerCount() >= maxPlayers) {
+            const errRet = new ErrMsg('The maximum number of players have already joined this game.')
+            console.error(errRet)
+            res.status(400).send(errRet)
+            return
+        }
     }
     const player = Handlers.postJoingame(gs, _gid, playerName)
     const playerSecret = uuid()

@@ -27,7 +27,6 @@ export default {
   },
   methods: {
     checkForm: function() {
-      console.log('submitting ', this.challengePass)
       const comp = this
       axios
         .post('/api/login', { username: this.challengeUser, password: this.challengePass })
