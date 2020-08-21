@@ -8,7 +8,7 @@ function RuleSet() {
   this.initialPhase = ''
   this.gameplay = [{
     name: '',
-    playerActions: {}
+    playerActions: []
   }]
 
   return this

@@ -96,10 +96,15 @@ export default function() {
       }
     },
     getActionForCurrentPhase: function(actionName) {
-      const phases = this.gs.currentRuleSet.gameplay
-      for(const idx in phases) {
-        if(phases[idx].name === this.gs.currentPhase) {
-          return phases[idx].playerActions[actionName]
+      console.log('looking up action: ', actionName)
+      const phases = this.instance.gs.currentRuleSet.gameplay
+      for(const phase of phases) {
+        if(phase.name === this.instance.gs.currentPhase) {
+          for(const action of phase.playerActions) {
+            if(action.name === actionName) {
+              return action
+            }
+          }
         }
       }
       return undefined

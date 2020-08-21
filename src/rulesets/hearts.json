@@ -33,8 +33,9 @@
   "gameplay": [
     {
       "name": "lobby",
-      "playerActions": {
-        "custom_action": {
+      "playerActions": [
+        {
+          "action": "custom_action",
           "name": "Start Game",
           "effect": {
             "change_phase": "setup"
@@ -48,12 +49,13 @@
             }
           ]
         }
-      }
+      ]
     },
     {
       "name": "setup",
-      "playerActions": {
-        "deal": {
+      "playerActions": [
+        {
+          "action": "deal",
           "name": "Deal",
           "cards": 52,
           "given": [
@@ -69,7 +71,8 @@
             }
           }
         },
-        "custom_action": {
+        {
+          "action": "custom_action",
           "name": "Pass Cards",
           "effect": [
             {
@@ -134,7 +137,8 @@
             }
           ]
         },
-        "lead": {
+        {
+          "action": "lead",
           "name": "Lead",
           "message": "Lead with the 2C",
           "tooltip": "You may only lead the first trick if your hand contains the Two of Clubs",
@@ -188,12 +192,13 @@
             }
           ]
         }
-      }
+      ]
     },
     {
       "name": "trick_taking",
-      "playerActions": {
-        "play_card": {
+      "playerActions": [
+        {
+          "action": "play_card",
           "name": "Play Card",
           "effect": [
             {
@@ -315,12 +320,13 @@
             }
           ]
         }
-      }
+      ]
     },
     {
       "name": "trick_scoring",
-      "playerActions": {
-        "take_trick": {
+      "playerActions": [
+        {
+          "action": "take_trick",
           "name": "Take the Trick",
           "message": "You won the trick!",
           "effect": [
@@ -363,7 +369,8 @@
             }
           ]
         },
-        "lead": {
+        {
+          "action": "lead",
           "name": "Lead",
           "message": "Lead a new trick!",
           "effect": [
@@ -460,12 +467,13 @@
             }
           ]
         }
-      }
+      ]
     },
     {
       "name": "scoring",
-      "playerActions": {
-        "custom_action": {
+      "playerActions": [
+        {
+          "action": "custom_action",
           "name": "Score Round",
           "effect": {
             "set_var": {
@@ -527,7 +535,8 @@
             }
           ]
         },
-        "new_round": {
+        {
+          "action": "new_round",
           "name": "New Round",
           "effect": {
             "set_var": {
@@ -557,7 +566,7 @@
             }
           ]
         }
-      }
+      ]
     }
   ]
 }

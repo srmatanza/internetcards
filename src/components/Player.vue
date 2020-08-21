@@ -18,7 +18,10 @@
   </ul>
   <br/>
   <button v-if="bDebug" click="$emit('draw-card', player.playerName)">Draw</button>
-  <button :disabled="!isSatisfied(obj.given)" @click="$emit('__'+name, obj, player, playerSelection)" v-for="(obj, name) in this.playerActions" :key="name">{{ obj.name ? obj.name : name }}</button>
+  <button :disabled="!isSatisfied(obj.given)"
+          @click="$emit('__'+obj.action, obj, player, playerSelection)"
+          v-for="obj in this.playerActions"
+          :key="obj.name">{{ obj.name ? obj.name : name }}</button>
   </li>
 </div>
 </template>

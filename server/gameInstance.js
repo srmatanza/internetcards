@@ -20,11 +20,16 @@ export default function (ruleset) {
 
   this.getActionForCurrentPhase = function(actionName) {
     const phases = this.instance.gs.currentRuleSet.gameplay
-    for(const idx in phases) {
-      if(phases[idx].name === this.instance.gs.currentPhase) {
-        return phases[idx].playerActions[actionName]
+    for(const phase of phases) {
+      if(phase.name === this.instance.gs.currentPhase) {
+        for(const action of phase.playerActions) {
+          if(action.action === actionName) {
+            return action
+          }
+        }
       }
     }
+    console.log('unable to find action: ', actionName, phases)
     return undefined
   }
 
