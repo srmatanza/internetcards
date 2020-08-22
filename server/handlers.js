@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import GameInstance from '../server/gameInstance.js'
+import CardHistory from '../server/history.js'
 
 const GameCache = {} // This is our database for now... It's fine
 
@@ -12,12 +13,15 @@ export default {
     }
     return undefined
   },
-  postNewgame: function (ruleset) {
+  postNewgame: function (ruleset, saveHistory) {
     const newGame = new GameInstance(ruleset)
     GameCache[newGame.gameIdentifier] = newGame
+    if(saveHistory) {
+      CardHistory.initState(newGame.gameIdentifier, newGame)
+    }
     return newGame
   },
-  postJoingame: function (gs, gameId, playerName) {
+  postJoingame: function (gs, playerName) {
     return gs.addPlayer(playerName)
   },
   postPlayeraction: function (gameId, actionName, player, playerSelections) {
@@ -35,7 +39,11 @@ export default {
       }
       // const p = gs.getPlayer(player.playerName)
 
-      return gi.runAction(actionName, action, player, playerSelections)
+      const result = gi.runAction(actionName, action, player, playerSelections)
+      if(!_.isUndefined(result)) {
+        CardHistory.addAction(gameId, action.id, player.playerName, playerSelections)
+      }
+      return result
     }
     console.debug(`Unknown game ${gameId}`)
     return undefined

@@ -36,6 +36,7 @@
       "playerActions": [
         {
           "action": "custom_action",
+          "id": "start_game",
           "name": "Start Game",
           "effect": {
             "change_phase": "setup"
@@ -56,6 +57,7 @@
       "playerActions": [
         {
           "action": "deal",
+          "id": "deal",
           "name": "Deal",
           "cards": 52,
           "given": [
@@ -73,6 +75,7 @@
         },
         {
           "action": "custom_action",
+          "id": "pass_cards",
           "name": "Pass Cards",
           "effect": [
             {
@@ -139,6 +142,7 @@
         },
         {
           "action": "lead",
+          "id": "lead_round",
           "name": "Lead",
           "message": "Lead with the 2C",
           "tooltip": "You may only lead the first trick if your hand contains the Two of Clubs",
@@ -199,6 +203,7 @@
       "playerActions": [
         {
           "action": "play_card",
+          "id": "play_card",
           "name": "Play Card",
           "effect": [
             {
@@ -327,6 +332,7 @@
       "playerActions": [
         {
           "action": "take_trick",
+          "id": "take_trick",
           "name": "Take the Trick",
           "message": "You won the trick!",
           "effect": [
@@ -371,6 +377,7 @@
         },
         {
           "action": "lead",
+          "id": "lead_trick",
           "name": "Lead",
           "message": "Lead a new trick!",
           "effect": [
@@ -474,6 +481,7 @@
       "playerActions": [
         {
           "action": "custom_action",
+          "id": "score_round",
           "name": "Score Round",
           "effect": {
             "set_var": {
@@ -537,6 +545,7 @@
         },
         {
           "action": "new_round",
+          "id": "new_round",
           "name": "New Round",
           "effect": {
             "set_var": {

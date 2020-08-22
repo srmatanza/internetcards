@@ -18,6 +18,10 @@
           </div>
 
           <div class="pure-control-group">
+            <label for="savehistory" class="pure-checkbox">
+            <input type="checkbox" id="savehistory" v-model="toggleHistory">
+            Save history for this game.
+            </label>
             <label for="checkjoin" class="pure-checkbox">
             <input type="checkbox" id="checkjoin" v-model="toggleJoin">
             Join game immediately
@@ -64,6 +68,7 @@ export default {
       ruleSets: [],
       selectedGame: '',
       toggleJoin: false,
+      toggleHistory: false,
       playerName: '',
       bSubmitted: false,
       whoami: {}
@@ -120,7 +125,8 @@ export default {
     createGame: function() {
       this.bSubmitted = true
       const postData = {
-        ruleset: this.selectedGame
+        ruleset: this.selectedGame,
+        saveHistory: this.toggleHistory
       }
       if(this.toggleJoin) {
         postData.playerName = this.playerName.trim()

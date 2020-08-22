@@ -13,6 +13,7 @@ import cors from 'cors'
 import history from 'connect-history-api-fallback'
 
 import Handlers from './handlers.js'
+import CardHistory from './history.js'
 import WSServer from './wsserver.js'
 
 function ErrMsg(strMsg) {
@@ -141,9 +142,7 @@ wss.on('connection', (ws) => {
 })
 
 app.get('/api', (req,res) => {
-    const views = (req.session.views || 0) + 1
-    req.session.views = views
-    res.send(`Here we go! ${views}\n`)
+    res.send('Let\'s call this a healthcheck...\n')
 })
 
 app.get('/api/whoami', (req,res) => {
@@ -156,6 +155,30 @@ app.get('/api/whoami', (req,res) => {
     }
 
     res.send(ret)
+})
+
+app.get('/api/history', (req, res) => {
+    const _gid = req.session.gameId
+    if(_.isUndefined(_gid)) {
+        res.status(400).send(new ErrMsg('You are not attached to a currently running game.'))
+        return
+    }
+    let h = CardHistory.getHistory(_gid)
+    if(_.isUndefined(h)) {
+        h = []     
+    }
+
+    res.send(h)
+})
+
+app.get('/api/history/:gameId', (req, res) => {
+    const _gid = req.params.gameId
+    let h = CardHistory.getHistory(_gid)
+    if(_.isUndefined(_gid)) {
+        h = []
+    }
+
+    res.send(h)
 })
 
 app.get('/api/gamestate', (req,res) => {
@@ -266,12 +289,14 @@ app.post('/api/newgame', (req,res) => {
             res.status(400).send(new ErrMsg('A new game request must include the ruleset.'))
             return
         }
-        const playerName = req.body.playerName
+        const playerName = req.body.playerName || ''
         if(playerName === '') {
             const errRet = new ErrMsg('You must submit a valid player name.')
             res.status(400).send(errRet)
             return
         }
+        const saveHistory = req.body.saveHistory || false
+
         const rsFile = ruleset + '.json'
         const rsPath = path.join(__dirname, 'src/rulesets', rsFile)
         const rsJson = getJSONRuleSet(rsPath)
@@ -281,12 +306,12 @@ app.post('/api/newgame', (req,res) => {
             return
         }
 
-        const gi = Handlers.postNewgame(JSON.parse(rsJson.content))
+        const gi = Handlers.postNewgame(JSON.parse(rsJson.content), saveHistory)
         console.debug('Creating a new game: ', gi)
 
         if(playerName) {
             const _gid = gi.gameIdentifier
-            Handlers.postJoingame(gi.instance.gs, _gid, playerName)
+            Handlers.postJoingame(gi.instance.gs, playerName)
             const playerSecret = uuid()
 
             req.session.gameId = _gid
@@ -339,7 +364,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
             return
         }
     }
-    const player = Handlers.postJoingame(gs, _gid, playerName)
+    const player = Handlers.postJoingame(gs, playerName)
     const playerSecret = uuid()
 
     req.session.gameId = _gid
