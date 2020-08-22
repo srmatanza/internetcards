@@ -371,7 +371,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
     req.session.playerName = playerName
     req.session.playerSecret = playerSecret
     console.debug(`Joining ${_gid} as ${playerName}\n`)
-    WSServer.updateClients(_gid, gi)
+    WSServer.updateClients(_gid, { gameInstance: gi })
     res.send({ gameId: _gid, playerName: playerName, playerSecret: playerSecret })
 })
 

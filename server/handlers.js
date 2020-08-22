@@ -44,9 +44,14 @@ export default {
       const result = {}
       result.gameInstance = gi.runAction(actionName, action, player, playerSelections)
       if(!_.isUndefined(result)) {
-        result.loggedAction = CardHistory.addAction(gameId, action.id, player.playerName, playerSelections)
+        const la = CardHistory.addAction(gameId, action.id, player.playerName, playerSelections)
         // Hide selectedCards for all actions
-        result.loggedAction.selectedCards = []
+        result.loggedAction = {
+          action: action.id,
+          playerName: player.playerName,
+          selectedCards: [],
+          selectedPlayer: ''
+        }
       }
       return result
     }
