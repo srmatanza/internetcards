@@ -19,7 +19,9 @@ export default {
     if(saveHistory) {
       CardHistory.initState(newGame.gameIdentifier, newGame)
     }
-    return newGame
+    return {
+      gameInstance: newGame
+    }
   },
   postJoingame: function (gs, playerName) {
     return gs.addPlayer(playerName)
@@ -39,9 +41,12 @@ export default {
       }
       // const p = gs.getPlayer(player.playerName)
 
-      const result = gi.runAction(actionName, action, player, playerSelections)
+      const result = {}
+      result.gameInstance = gi.runAction(actionName, action, player, playerSelections)
       if(!_.isUndefined(result)) {
-        CardHistory.addAction(gameId, action.id, player.playerName, playerSelections)
+        result.loggedAction = CardHistory.addAction(gameId, action.id, player.playerName, playerSelections)
+        // Hide selectedCards for all actions
+        result.loggedAction.selectedCards = []
       }
       return result
     }

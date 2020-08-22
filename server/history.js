@@ -20,8 +20,9 @@ export default {
     addAction: function(gameId, actionName, playerName, playerSelections) {
         const newEntry = {
             action: actionName,
-            player: playerName,
-            playerSelections: playerSelections
+            playerName: playerName,
+            selectedCards: playerSelections.selectedCards,
+            selectedPlayer: playerSelections.selectedPlayer
         }
 
         if(HistoryCache.hasOwnProperty(gameId)) {

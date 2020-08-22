@@ -8,12 +8,11 @@
         <br/>
         <button :disabled="newPlayerName === ''" @click="addPlayer(newPlayerName)">Add Player</button>
       </div>
-      <br/>
-      <button v-if="!bGameSetup" @click="shuffleDeck()">Shuffle Deck</button>
     </div>
 
     <GameState v-if="!bGameSetup" :state="currentGame"/>
     <RuleSet v-if="bRuleSetLoaded" :rules="currentGame.currentRuleSet" :currentphase="currentphase" @update-currentphase="this.changePhase"/>
+    <GameHistory :history="actionLog" />
 
     <div id="divPlayers" class="statebox player" v-if="numPlayers">
       <h3>Players</h3>
@@ -39,6 +38,7 @@ import _ from 'lodash'
 import GameState from '@/components/GameState.vue'
 import RuleSet from '@/components/RuleSet.vue'
 import Player from '@/components/Player.vue'
+import GameHistory from '@/components/GameHistory.vue'
 
 import Actions from '@/actions.js'
 import Effects from '@/effects.js'
@@ -55,13 +55,15 @@ export default {
       playerSelections: {},
       phaseorder: 0,
       newPlayerName: '',
+      actionLog: [],
       Cards: CC
     }
   },
   components: {
     GameState,
     RuleSet,
-    Player
+    Player,
+    GameHistory
   },
   created: function() {
     axios
@@ -184,7 +186,13 @@ export default {
       }
     },
     setupListeners: function() {
-      const ret = this.instance.paListeners(() => {
+      const ret = this.instance.paListeners((event, player) => {
+        this.actionLog.push({
+          action: event.id,
+          playerName: player.playerName,
+          selectedCards: player.selectedCards || [],
+          selectedPlayer: player.selectedPlayer || ''
+        })
         this.playerSelections = {}
       })
       const giHandlers = {
@@ -217,7 +225,7 @@ button {
   padding: 6px 8px;
 }
 
-.statebox {
+.statebox, .historyBox {
   /*
     border: 1px solid black;
     margin: 10px;

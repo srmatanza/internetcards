@@ -34,12 +34,18 @@
       </div>
     </div>
   </div>
+  <div class="pure-g">
+    <div class="pure-u-1">
+      <GameHistory :history="actionLog" />
+    </div>
+  </div>
 </div>
 </template>
 <script>
 import GameState from '@/components/GameState.vue'
 import Player from '@/components/Player.vue'
 import TopHeader from '@/components/TopHeader.vue'
+import GameHistory from '@/components/GameHistory.vue'
 import _ from 'lodash'
 import axios from 'axios'
 
@@ -51,7 +57,8 @@ export default {
   components: {
     Player,
     TopHeader,
-    GameState
+    GameState,
+    GameHistory
   },
   data() {
     let wsprotocol = 'wss://'
@@ -62,6 +69,7 @@ export default {
       whoami: {},
       instance: {},
       playerSelections: {},
+      actionLog: [],
       reconnectionLimit: 15,
       WS_CONNECTION_STRING: wsprotocol + location.host + '/wsgame',
       ws: {}
@@ -178,8 +186,11 @@ export default {
     reloadGameState: function() {
       this.ws = _.assign(new WebSocket(this.WS_CONNECTION_STRING),
         new WSClient(res => {
-          if(res.gameIdentifier === this.whoami.gid) {
-            this.setGameState(res)
+          if(res.gameInstance && res.gameInstance.gameIdentifier === this.whoami.gid) {
+            this.setGameState(res.gameInstance)
+            if(res.loggedAction) {
+              this.actionLog.push(res.loggedAction)
+            }
           } else if(res.type === 'connection') {
             console.log('Received a connection response')
           } else {

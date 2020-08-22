@@ -78,7 +78,7 @@ export default function() {
             p.selectedPlayer = ps.selectedPlayer
             handleEffects.call(mm, e.effect, p)
             if(typeof callbackFn === 'function') {
-              callbackFn()
+              callbackFn(e, p)
             }
           } catch(ex) {
             console.error('Error running the ruleset: ', ex)

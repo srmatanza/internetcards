@@ -98,7 +98,7 @@ wss.on('connection', (ws) => {
                     return
                 }
                 WSServer.connectPlayer(jmsg.gameId, jmsg.playerSecret, ws)
-                ws.send(JSON.stringify(gi))
+                ws.send(JSON.stringify({ gameInstance: gi }))
                 return
             }
             case 'playerAction':
@@ -135,7 +135,7 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify(new LogMsg('Unable to post player action')))
         }
 
-        WSServer.updateClients(jmsg.gameId, gi)
+        WSServer.updateClients(jmsg.gameId, ret)
     })
 
     ws.send(JSON.stringify(new LogMsg('Hi there, I am a WebSocket server')))
@@ -306,7 +306,7 @@ app.post('/api/newgame', (req,res) => {
             return
         }
 
-        const gi = Handlers.postNewgame(JSON.parse(rsJson.content), saveHistory)
+        const gi = Handlers.postNewgame(JSON.parse(rsJson.content), saveHistory).gameInstance
         console.debug('Creating a new game: ', gi)
 
         if(playerName) {
