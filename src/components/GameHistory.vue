@@ -37,6 +37,9 @@ export default {
 }
 </script>
 <style scoped>
+.historyBox {
+  padding: 4px;
+}
 .histHeading {
   background-color: lightgray;
 }

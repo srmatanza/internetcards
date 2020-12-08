@@ -1,6 +1,6 @@
 <template>
 <div>
-  <li :class="{ currentPlayer: currentplayer }">
+  <div :class="{ currentPlayer: currentplayer }">
   {{ this.player.playerName }}
   <br/>
   <span v-if="!bEmptyHand" class="playerHand">
@@ -22,7 +22,7 @@
           @click="$emit('__'+obj.action, obj, player, playerSelection)"
           v-for="obj in this.playerActions"
           :key="obj.name">{{ obj.name ? obj.name : name }}</button>
-  </li>
+  </div>
 </div>
 </template>
 
@@ -118,7 +118,7 @@ export default {
   font-size: 1.25em;
 }
 
-li.currentPlayer {
+div.currentPlayer {
   border: 2px solid forestgreen;
 }
 

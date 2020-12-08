@@ -1,17 +1,19 @@
 <template>
-  <div>
-    <form id="appLogin"
-          @submit.prevent="checkForm">
-      <p>
-        <input name="username" v-show="false" v-model="challengeUser" placeholder="Username" autocomplete="username" />
-      </p>
-      <p>
-        <input name="password" type="password" v-model="challengePass" placeholder="Password" autocomplete="current-password">
-      </p>
-      <p>
-        <input type="submit" value="submit" />
-      </p>
-    </form>
+  <div class="parent">
+    <div class="dForm">
+      <form id="appLogin"
+            @submit.prevent="checkForm">
+        <p>
+          <input name="username" v-show="false" v-model="challengeUser" placeholder="Username" autocomplete="username" />
+        </p>
+        <p>
+          <input name="password" type="password" v-model="challengePass" placeholder="Password" autocomplete="current-password">
+        </p>
+        <p>
+          <input type="submit" value="submit" />
+        </p>
+      </form>
+    </div>
   </div>
 </template>
 <script>
@@ -42,7 +44,16 @@ export default {
 }
 </script>
 <style scoped>
-div {
+.parent {
   padding: 5px;
+  display: flex;
+}
+
+.dForm {
+  margin: auto;
+}
+
+form {
+  height: 5em;
 }
 </style>

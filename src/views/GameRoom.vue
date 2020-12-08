@@ -2,6 +2,7 @@
 <div>
   <TopHeader :links="links"/>
   <div id="gameRoom" class="pure-g">
+
     <div class="pure-u-1 pure-u-md-1-3">
       <div>
         <h1>Game Joined!</h1>
@@ -10,29 +11,42 @@
     </div>
 
     <div class="pure-u-1 pure-u-md-1-3">
-      <div>
-        <ul>
-          <li v-for="(gVar, idx) in this.getPlayerVars" :key="idx">{{ idx + ': ' + gVar }}</li>
-        </ul>
-        <GameState v-if="bGameLoaded" :state="this.currentGame"/>
+      <h2>Scoreboard</h2>
+      <div id="scoreboard">
+        <div v-for="player in otherPlayers" :key="player.playerName"><p>{{ player.playerName }}</p><p>{{ player.playerVariables.pPoints }}</p></div>
       </div>
     </div>
-
+  </div>
+  <div class="pure-g">
+    <!-- Player's hand and actions -->
     <div class="pure-u-1 pure-u-md-1-3">
-      <div>
-        <ul v-if="bGameLoaded">
-          <Player
-              :player="player"
-              :otherplayers="otherPlayers"
-              :playerselections="playerSelections"
-              :gamerules="gameRules"
-              :currentphase="currentphase"
-              :currentplayer="isCurrentPlayer(player.playerName)"
-              :globalvars="globalVarsForPlayer"
-              v-on="setupListeners" />
-        </ul>
+      <div v-if="bGameLoaded" class="mainPlayer">
+        <Player
+            :player="player"
+            :otherplayers="otherPlayers"
+            :playerselections="playerSelections"
+            :gamerules="gameRules"
+            :currentphase="currentphase"
+            :currentplayer="isCurrentPlayer(player.playerName)"
+            :globalvars="globalVarsForPlayer"
+            v-on="setupListeners" />
       </div>
     </div>
+    <!-- Half of the other players -->
+    <div class="pure-u-1 playerbox">
+      <SeatedPlayer v-for="sp in otherPlayers"
+                    :key="sp.playerName"
+                    :playerName="sp.playerName"
+                    :isCurrentPlayer="isCurrentPlayer(sp.playerName)"
+                    :numPlayers="otherPlayers.length"
+                    :hands="getHandsForPlayer(sp.playerName)" />
+      <div class="gameTable">
+        Deck, discard, etc.
+      </div>
+    </div>
+    <!-- Table view -->
+    <!-- Other half of the other players -->
+    <!-- Scoreboard -->
   </div>
   <div class="pure-g">
     <div class="pure-u-1">
@@ -42,10 +56,11 @@
 </div>
 </template>
 <script>
-import GameState from '@/components/GameState.vue'
 import Player from '@/components/Player.vue'
 import TopHeader from '@/components/TopHeader.vue'
 import GameHistory from '@/components/GameHistory.vue'
+import SeatedPlayer from '@/components/SeatedPlayer.vue'
+
 import _ from 'lodash'
 import axios from 'axios'
 
@@ -57,8 +72,8 @@ export default {
   components: {
     Player,
     TopHeader,
-    GameState,
-    GameHistory
+    GameHistory,
+    SeatedPlayer
   },
   data() {
     let wsprotocol = 'wss://'
@@ -219,6 +234,9 @@ export default {
     isCurrentPlayer: function(pn) {
       return this.currentGame.isCurrentPlayer(pn)
     },
+    getHandsForPlayer: function(pn) {
+      return []
+    },
     paSelectCard: function(card, thisPlayer) {
       const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
       let sc
@@ -247,8 +265,7 @@ export default {
 }
 </script>
 <style>
-
-.pure-u-1 > div {
+#gameRoom > div {
   padding: 5px;
 }
 
@@ -256,15 +273,45 @@ button {
   margin: 2px;
 }
 
-.player ul {
-  list-style-type: none;
-  padding: 2px;
+.playerBox {
+  border: 1px solid chartreuse;
 }
 
-.player li {
-  border: 1px solid chartreuse;
+.mainPlayer {
   margin: 4px;
   padding: 6px 8px;
 }
 
+.playerbox {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.seatedPlayerBox {
+  padding: 0px;
+  margin: 0px;
+}
+
+.seatedPlayerBox > div {
+  background-color: lightskyblue;
+  border: 2px solid lightskyblue;
+}
+
+div.curplayer {
+  border: 2px solid darkgreen;
+}
+
+.gameTable {
+  background-color: green;
+  width: 100%;
+  height: 4em;
+}
+
+#scoreboard {
+  display: flex;
+}
+
+#scoreboard > div {
+  margin: 5px;
+}
 </style>
