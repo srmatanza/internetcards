@@ -23,7 +23,7 @@ const routes = [
   {
     path: '/editor',
     name: 'Game Editor',
-    component: () => import('../components/GameInstance.vue'),
+    component: () => import('../views/GameEditor.vue'),
     props: {
       type: 'hearts'
     }

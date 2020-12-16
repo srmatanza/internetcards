@@ -22,3 +22,12 @@ yarn-error.log*
 
 # secrets
 asdf.txt
+
+# sharp parser artifacts
+src/sharp/.antlr/Sharp.interp
+src/sharp/.antlr/SharpLexer.interp
+src/sharp/SharpListener.js
+src/sharp/SharpParser.js
+src/sharp/SharpLexer.js
+src/sharp/SharpLexer.tokens
+src/sharp/Sharp.tokens
