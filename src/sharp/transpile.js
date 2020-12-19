@@ -4,19 +4,11 @@ const SharpLexer = require('./SharpLexer.js').SharpLexer
 const SharpParser = require('./SharpParser.js').SharpParser
 const SharpListener = require('./SharpListener.js').SharpListener
 
-const fs = require('fs')
-const process = require('process')
-
-function listFuncs(obj) {
-  for(f in obj) {
-    if(typeof(obj[f]) === 'function') {
-      console.log('obj.' + f)
-    }
-  }
-}
+// const fs = require('fs')
+// const process = require('process')
 
 function GameListener() {
-	antlr4.tree.ParseTreeListener.call(this)
+  antlr4.tree.ParseTreeListener.call(this)
   this.gameObj = {
     gameVariables: {},
     playerVariables: {},
@@ -24,7 +16,7 @@ function GameListener() {
   }
   this.exprStack = []
   this.actionStack = []
-	return this
+  return this
 }
 
 GameListener.prototype = Object.create(SharpListener.prototype)
@@ -34,25 +26,16 @@ GameListener.prototype.enterGame = function(ctx) {
   this.currentPropTarget = this.gameObj
 }
 GameListener.prototype.exitGame = function(ctx) {
-  console.log("Game Object")
+  console.log('Game Object')
   console.log(JSON.stringify(this.gameObj, null, 2))
-
-  const gameOutput = JSON.stringify(this.gameObj)
-  const fileName = process.argv[2].replace(/\.sharp$/, ".json")
-  console.log('writing file to ', fileName)
-  fs.writeFile(fileName, gameOutput, (err) => {
-      if (err) throw err;
-      console.log('The file has been saved!');
-  });
 }
 
 GameListener.prototype.enterProp = function(ctx) {
   let val = ''
-  let key = ctx.ID().getText()
+  const key = ctx.ID().getText()
   if(ctx.STRING()) {
-    val = ctx.STRING().getText().slice(1,-1)
-  }
-  else {
+    val = ctx.STRING().getText().slice(1, -1)
+  } else {
     val = ctx.NUM().getText()
   }
   this.currentPropTarget[key] = val
@@ -62,6 +45,7 @@ GameListener.prototype.exitProp = function(ctx) {}
 GameListener.prototype.enterVar_decl = function(ctx) {
   let val = ''
   let varname = ''
+  let varType = ''
   if(ctx.GVAR()) {
     varType = 'gameVariables'
     // console.log('parsing globalvar')
@@ -82,8 +66,8 @@ GameListener.prototype.exitVar_decl = function(ctx) {}
 GameListener.prototype.enterPhase = function(ctx) {
   const actions = []
   const newPhase = {
-    "name": ctx.ID().getText(),
-    "playerActions": actions
+    name: ctx.ID().getText(),
+    playerActions: actions
   }
   this.gameObj.gameplay.push(newPhase)
   this.currentPhase = actions
@@ -96,10 +80,9 @@ GameListener.prototype.exitPhase = function(ctx) {
 GameListener.prototype.enterAction = function(ctx) {
   // console.log('action: ', ctx.ID().getText())
   const effects = []
-  const given = []
   const newAction = {
-    "id": ctx.ID().getText(),
-    "effect": effects
+    id: ctx.ID().getText(),
+    effect: effects
   }
   this.currentPhase.push(newAction)
   this.currentAction = newAction
@@ -111,7 +94,7 @@ GameListener.prototype.exitAction = function(ctx) {
 
 GameListener.prototype.enterGivenClause = function(ctx) {
   const given = []
-  this.currentAction["given"] = given
+  this.currentAction.given = given
   this.currentExpr = given
 }
 GameListener.prototype.exitGivenClause = function(ctx) {}
@@ -124,16 +107,15 @@ GameListener.prototype.exitAssignment = function(ctx) {
   const rvalue = this.currentExpr[0]
   const varName = ctx.ID().getText()
 
-  let set_var = this.currentAction["effect"].find(o => o.hasOwnProperty("set_var"))
-  if(set_var) {
-    set_var["set_var"][varName] = rvalue
-  }
-  else {
-    set_var = {
-      "set_var": {}
+  let setVar = this.currentAction.effect.find(o => Object.prototype.hasOwnProperty.call(o, 'set_var'))
+  if(setVar) {
+    setVar.set_var[varName] = rvalue
+  } else {
+    setVar = {
+      set_var: {}
     }
-    set_var["set_var"][varName] = rvalue
-    this.currentAction["effect"].push(set_var)
+    setVar.set_var[varName] = rvalue
+    this.currentAction.effect.push(setVar)
   }
 
   this.popExpr()
@@ -147,17 +129,17 @@ GameListener.prototype.enterFnStat = function(ctx) {
 }
 GameListener.prototype.exitFnStat = function(ctx) {
   const fnArgs = this.currentFnCall
-  this.currentAction["effect"].push(fnArgs)
+  this.currentAction.effect.push(fnArgs)
 }
 
 GameListener.prototype.enterPredicate = function(ctx) {
   const given = []
   const newEffect = {
-    "effect": [],
-    "given": given
+    effect: [],
+    given: given
   }
   this.actionStack.push(this.currentAction)
-  this.currentAction["effect"].push(newEffect)
+  this.currentAction.effect.push(newEffect)
 
   this.currentAction = newEffect
   this.currentExpr = given
@@ -189,7 +171,7 @@ GameListener.prototype.popExpr = function() {
 }
 
 GameListener.prototype.enterFnExpr = function(ctx) {
-  let id = ctx.ID().getText()
+  const id = ctx.ID().getText()
   this.pushExpr(id)
 }
 GameListener.prototype.exitFnExpr = function(ctx) {
@@ -199,14 +181,16 @@ GameListener.prototype.exitFnExpr = function(ctx) {
 GameListener.prototype.enterVarExpr = function(ctx) {
   const varStr = ctx.getText()
   const rStripBrackets = /\[(.+)\]/g
-  const newVarStr = varStr.replace(rStripBrackets, ".$1")
-  this.currentExpr.push({"var": newVarStr})
+  const newVarStr = varStr.replace(rStripBrackets, '.$1')
+  this.currentExpr.push({
+    var: newVarStr
+  })
 }
 GameListener.prototype.exitVarExpr = function(ctx) {
 }
 
 GameListener.prototype.enterIfthen = function(ctx) {
-  let id = "if"
+  const id = 'if'
   this.pushExpr(id)
 }
 GameListener.prototype.exitIfthen = function(ctx) {
@@ -251,7 +235,7 @@ GameListener.prototype.enterPrimitive = function(ctx) {
     this.currentExpr.push(parseFloat(ctx.getText()))
   } else if(ctx.STRING()) {
     // console.log('String primitive: ', ctx.getText())
-    this.currentExpr.push(ctx.getText().slice(1,-1))
+    this.currentExpr.push(ctx.getText().slice(1, -1))
   } else {
     // console.log('Bool primitive: ', ctx.getText())
     this.currentExpr.push(ctx.getText() === 'true')
@@ -260,7 +244,7 @@ GameListener.prototype.enterPrimitive = function(ctx) {
 GameListener.prototype.exitPrimitive = function(ctx) {
 }
 
-function sharp2json(sharpFile) {
+export default function sharp2json(sharpFile) {
   const input = sharpFile
   const chars = new antlr4.InputStream(input)
   const lexer = new SharpLexer(chars)
@@ -272,17 +256,26 @@ function sharp2json(sharpFile) {
 
   const printer = new GameListener()
   antlr4.tree.ParseTreeWalker.DEFAULT.walk(printer, tree)
+
+  return printer.gameObj
 }
 
+/*
 if(process.argv.length > 2) {
   fs.readFile(process.argv[2], 'utf8', (err, data) => {
     console.log('Trying to open ' + process.argv[2])
     try {
-      sharp2json(data)
+      const gameOutput = JSON.stringify(sharp2json(data))
+      const fileName = process.argv[2].replace(/\.sharp$/, '.json')
+      console.log('writing file to ', fileName)
+      fs.writeFile(fileName, gameOutput, (err) => {
+          if (err) throw err;
+          console.log('The file has been saved!');
+      });
     }
     catch(ex) {
       console.log('Caught an exception trying to parse.', ex)
     }
   })
 }
-
+*/
