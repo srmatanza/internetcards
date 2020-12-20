@@ -9,7 +9,7 @@ grammar Sharp;
 game : (prop | var_decl)* phase+ ;
 
 // props are single line JSON property declarations.
-prop : '; ' ID (STRING | NUM) ;
+prop : ID ':' (STRING | NUM) ;
 
 // var_decl is either a pvar or a gvar followed by an assignment.
 var_decl : (GVAR | PVAR) ID ASS decl ;
