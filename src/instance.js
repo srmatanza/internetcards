@@ -52,62 +52,68 @@ function handleEffects(effects, player) {
   }
 }
 
-export default function() {
-  return {
-    gs: {},
-    setGameState: function(newGS) {
-      this.gs = newGS
-    },
-    getGameState: function() {
-      return this.gs
-    },
-    setupGameState: function(ruleSet) {
-      this.gs = new State.GameState()
-      this.gs.currentRuleSet = ruleSet
-      this.gs.currentPhase = ruleSet.initialPhase
-    },
-    paListeners: function(callbackFn) {
-      const mm = this
-      function wrapListener(fn, name) {
-        return (e, p, ps) => {
-          console.debug(name + ' event handler: ', mm, e, p, ps)
-          _.assign(p, ps)
-          try {
-            mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
-            p.selectedCards = ps.selectedCards
-            p.selectedPlayer = ps.selectedPlayer
-            handleEffects.call(mm, e.effect, p)
-            if(typeof callbackFn === 'function') {
-              callbackFn(e, p)
-            }
-          } catch(ex) {
-            console.error('Error running the ruleset: ', ex)
-          }
+export default function Instance() {
+  this.gs = {}
+  return this
+}
+
+Instance.prototype.constructor = Instance
+
+Instance.prototype.setGameState = function(newGS) {
+  this.gs = newGS
+}
+
+Instance.prototype.getGameState = function() {
+  return this.gs
+}
+
+Instance.prototype.setupGameState = function(ruleSet) {
+  this.gs = new State.GameState()
+  this.gs.currentRuleSet = ruleSet
+  this.gs.currentPhase = ruleSet.initialPhase
+}
+
+Instance.prototype.paListeners = function(callbackFn) {
+  const mm = this
+  function wrapListener(fn, name) {
+    return (e, p, ps) => {
+      console.debug(name + ' event handler: ', mm, e, p, ps)
+      _.assign(p, ps)
+      try {
+        mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
+        p.selectedCards = ps.selectedCards
+        p.selectedPlayer = ps.selectedPlayer
+        handleEffects.call(mm, e.effect, p)
+        if(typeof callbackFn === 'function') {
+          callbackFn(e, p)
         }
+      } catch(ex) {
+        console.error('Error running the ruleset: ', ex)
       }
-      return {
-        __deal: wrapListener(Actions.deal, '__deal'),
-        __pass: wrapListener(Actions.pass, '__pass'),
-        __lead: wrapListener(Actions.playCard, '__lead'),
-        __play_card: wrapListener(Actions.playCard, '__play_card'),
-        __take_trick: wrapListener(Actions.takeTrick, '__take_trick'),
-        __new_round: wrapListener(Actions.newRound, '__new_round'),
-        __custom_action: wrapListener(Actions.customAction, '__custom_action')
-      }
-    },
-    getActionForCurrentPhase: function(actionName) {
-      console.log('looking up action: ', actionName)
-      const phases = this.instance.gs.currentRuleSet.gameplay
-      for(const phase of phases) {
-        if(phase.name === this.instance.gs.currentPhase) {
-          for(const action of phase.playerActions) {
-            if(action.name === actionName) {
-              return action
-            }
-          }
-        }
-      }
-      return undefined
     }
   }
+  return {
+    __deal: wrapListener(Actions.deal, '__deal'),
+    __pass: wrapListener(Actions.pass, '__pass'),
+    __lead: wrapListener(Actions.playCard, '__lead'),
+    __play_card: wrapListener(Actions.playCard, '__play_card'),
+    __take_trick: wrapListener(Actions.takeTrick, '__take_trick'),
+    __new_round: wrapListener(Actions.newRound, '__new_round'),
+    __custom_action: wrapListener(Actions.customAction, '__custom_action')
+  }
+}
+
+Instance.prototype.getActionForCurrentPhase = function(actionName) {
+  console.log('looking up action: ', actionName)
+  const phases = this.instance.gs.currentRuleSet.gameplay
+  for(const phase of phases) {
+    if(phase.name === this.instance.gs.currentPhase) {
+      for(const action of phase.playerActions) {
+        if(action.name === actionName) {
+          return action
+        }
+      }
+    }
+  }
+  return undefined
 }
