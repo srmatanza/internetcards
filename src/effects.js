@@ -35,9 +35,9 @@ function _includesCards(hand, cards) {
 }
 
 export default {
-  changePhase: function(gameState, newPhase, player) {
+  changePhase: function(gameState, args, player) {
     const gs = _.cloneDeep(gameState)
-    gs.currentPhase = newPhase
+    gs.currentPhase = args[0]
     return gs
   },
   incrementVar: function(gameState, incrVars, player) {

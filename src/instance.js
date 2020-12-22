@@ -70,7 +70,11 @@ Instance.prototype.getGameState = function() {
 Instance.prototype.setupGameState = function(ruleSet) {
   this.gs = new State.GameState()
   this.gs.currentRuleSet = ruleSet
-  this.gs.currentPhase = ruleSet.initialPhase
+  if(ruleSet.initialPhase) {
+    this.gs.currentPhase = ruleSet.initialPhase
+  } else {
+    this.gs.currentPhase = ruleSet.gameplay[0].name
+  }
 }
 
 Instance.prototype.paListeners = function(callbackFn) {

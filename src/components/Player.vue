@@ -19,7 +19,7 @@
   <br/>
   <button v-if="bDebug" click="$emit('draw-card', player.playerName)">Draw</button>
   <button :disabled="!isSatisfied(obj.given)"
-          @click="$emit('__'+obj.action, obj, player, playerSelection)"
+          @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
           v-for="obj in this.playerActions"
           :key="obj.name">{{ obj.name ? obj.name : name }}</button>
   </div>
@@ -63,6 +63,12 @@ export default {
       }
       return false
     },
+    getAction: function(obj) {
+      if(obj.action) {
+        return obj.action
+      }
+      return 'custom_action'
+    },
     isSatisfied: function(given) {
       // console.log('isSatisfied: ', given)
       if(!_.isUndefined(given)) {
@@ -101,9 +107,9 @@ export default {
       return (this.player.hand.length === 0)
     },
     playerActions: function() {
-      for(const phase in this.gamerules.gameplay) {
-        if(this.gamerules.gameplay[phase].name === this.currentphase) {
-          return this.gamerules.gameplay[phase].playerActions
+      for(const phase of this.gamerules.gameplay) {
+        if (phase.name === this.currentphase) {
+          return phase.playerActions
         }
       }
       return []
