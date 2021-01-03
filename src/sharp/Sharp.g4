@@ -6,13 +6,13 @@ grammar Sharp;
 // and at least one phase
 //  phases contains at least one action
 //   actions contain any number of statements, expressions, or property declarations
-game : (prop | var_decl)* phase+ ;
+game : (prop | var_decl)* phase* ;
 
 // props are single line JSON property declarations.
 prop : ID ':' (STRING | NUM) ;
 
 // var_decl is either a pvar or a gvar followed by an assignment.
-var_decl : (GVAR | PVAR) ID ASS decl ;
+var_decl : (GVAR | PVAR) ID (ASS decl)? ;
 
 // phase declares a block that contains one or more actions.
 phase : 'phase' ID action* 'endphase' ;
@@ -26,18 +26,18 @@ givenClause : 'given' expr+ ;
 // Statements can be assignments, built-in functions, or if clauses.
 // Statements cannot be general expressions like in some other languages
 // This means there are two types of 'if' clauses--for statements and expressions
-stat : ID ASS expr                    # assignment
+stat : ID (ASS | PLAYERASS) expr      # assignment
      | ID '(' exprList? ')'           # fnStat
-     | predicate stat+ 'endif'         # ifStat
+     | predicate elseblock? 'endif'   # ifStat
      ;
-predicate : 'if' expr 'then' ;
+predicate : 'if' expr 'then' stat+ ;
+elseblock : 'else' stat+ ;
 
 // Expressions return a value.
 // If statements used as an expression will always return a value
 expr : ID '(' exprList? ')'            # fnExpr
-     | (ID IDX?) ('.' ID IDX?)*        # varExpr
+     | ID idx*                         # varExpr
      | 'if' expr 'then' expr ('elif' expr 'then' expr)* ('else' expr)? # ifthen
-     | expr '.' expr                   # dotop
      | expr MULDIV expr                # muldiv
      | expr ADDSUB expr                # addsub
      | expr BINOP expr                 # binop
@@ -46,6 +46,7 @@ expr : ID '(' exprList? ')'            # fnExpr
      | '(' expr ')'                    # paren
      ;
 exprList : expr (',' expr)* ;
+idx: '.' ID | '[' expr ']' | IDX ;
 
 decl : STRING
      | NUM
@@ -79,7 +80,7 @@ SL_COMMENT : WS* '#' .*? '\n' -> skip ;
 /* NEWLINE : '\r'? '\n' ;
  */
 
-IDX : '[' ([0-9]+ | ID) ']' ;
+IDX : '[' ([0-9]+ | ID) ']';
 UNOP : SUB | NOT ;
 MULDIV : MUL | DIV | MOD ;
 ADDSUB : ADD | SUB ;
@@ -88,8 +89,10 @@ BINOP : EQ | LT | GT | LTE | GTE | NEQ | AND | OR ;
 MOD : '%' ;
 MUL : '*' ;
 DIV : '/' ;
+
 ADD : '+' ;
 SUB : '-' ;
+
 AND : '&&' ;
 OR : '||' ;
 EQ : '==' ;
@@ -98,6 +101,8 @@ GT : '>' ;
 LTE : '<=' ;
 GTE : '>=' ;
 NEQ : '!=' ;
+
 NOT : '!' ;
 
 ASS : '=' ;
+PLAYERASS : '@=' ;

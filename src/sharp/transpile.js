@@ -16,6 +16,8 @@ function GameListener() {
   }
   this.exprStack = []
   this.actionStack = []
+  this.cstStack = []
+  this.getAtStack = []
   return this
 }
 
@@ -43,7 +45,7 @@ GameListener.prototype.enterProp = function(ctx) {
 GameListener.prototype.exitProp = function(ctx) {}
 
 GameListener.prototype.enterVar_decl = function(ctx) {
-  let val = ''
+  let val = '""'
   let varname = ''
   let varType = ''
   if(ctx.GVAR()) {
@@ -86,6 +88,7 @@ GameListener.prototype.enterAction = function(ctx) {
   }
   this.currentPhase.push(newAction)
   this.currentAction = newAction
+  this.currentStatementTarget = effects
   this.currentPropTarget = newAction
 }
 GameListener.prototype.exitAction = function(ctx) {
@@ -107,15 +110,19 @@ GameListener.prototype.exitAssignment = function(ctx) {
   const rvalue = this.currentExpr[0]
   const varName = ctx.ID().getText()
 
-  let setVar = this.currentAction.effect.find(o => Object.prototype.hasOwnProperty.call(o, 'set_var'))
+  let varAss = 'set_var'
+  if(ctx.PLAYERASS()) {
+    varAss = 'set_var_each_player'
+  }
+
+  let setVar = this.currentStatementTarget.find(o => Object.prototype.hasOwnProperty.call(o, varAss))
   if(setVar) {
-    setVar.set_var[varName] = rvalue
+    setVar[varAss][varName] = rvalue
   } else {
-    setVar = {
-      set_var: {}
-    }
-    setVar.set_var[varName] = rvalue
-    this.currentAction.effect.push(setVar)
+    setVar = {}
+    setVar[varAss] = {}
+    setVar[varAss][varName] = rvalue
+    this.currentStatementTarget.push(setVar)
   }
 
   this.popExpr()
@@ -129,29 +136,44 @@ GameListener.prototype.enterFnStat = function(ctx) {
 }
 GameListener.prototype.exitFnStat = function(ctx) {
   const fnArgs = this.currentFnCall
-  this.currentAction.effect.push(fnArgs)
-}
-
-GameListener.prototype.enterPredicate = function(ctx) {
-  const given = []
-  const newEffect = {
-    effect: [],
-    given: given
-  }
-  this.actionStack.push(this.currentAction)
-  this.currentAction.effect.push(newEffect)
-
-  this.currentAction = newEffect
-  this.currentExpr = given
-}
-GameListener.prototype.exitPredicate = function(ctx) {
+  this.currentStatementTarget.push(fnArgs)
 }
 
 GameListener.prototype.enterIfStat = function(ctx) {
 }
+
+GameListener.prototype.enterPredicate = function(ctx) {
+  const given = []
+  const effect = []
+  const newEffect = {
+    effect: effect,
+    else: [],
+    given: given
+  }
+  this.actionStack.push(this.currentAction)
+  this.currentStatementTarget.push(newEffect)
+
+  this.currentAction = newEffect
+  this.cstStack.push(this.currentStatementTarget)
+  this.currentStatementTarget = effect
+  this.currentExpr = given
+}
+GameListener.prototype.exitPredicate = function(ctx) {
+  this.currentStatementTarget = this.cstStack.pop()
+}
+
+GameListener.prototype.enterElseblock = function(ctx) {
+  const elseBlock = []
+  this.currentAction.else = elseBlock
+  this.cstStack.push(this.currentStatementTarget)
+  this.currentStatementTarget = elseBlock
+}
+GameListener.prototype.exitElseblock = function(ctx) {
+  this.currentStatementTarget = this.cstStack.pop()
+}
+
 GameListener.prototype.exitIfStat = function(ctx) {
-  const parentAction = this.actionStack.pop()
-  this.currentAction = parentAction
+  this.currentAction = this.actionStack.pop()
 }
 
 // Handle Expressions and the alternatives
@@ -179,15 +201,79 @@ GameListener.prototype.exitFnExpr = function(ctx) {
 }
 
 GameListener.prototype.enterVarExpr = function(ctx) {
-  const varStr = ctx.getText()
-  const rStripBrackets = /\[(.+)\]/g
-  const newVarStr = varStr.replace(rStripBrackets, '.$1')
-  this.currentExpr.push({
-    var: newVarStr
-  })
+  const varStr = ctx.ID().getText()
+  // console.log('enterVarExpr: ', varStr)
+  this.currentVarExpr = [varStr]
+  this.getAtStack.push(this.currentGAStack)
+  this.currentGAStack = undefined
 }
+GameListener.prototype.enterIdx = function(ctx) {
+  if(ctx.ID()) {
+    // concatenate this id to the var name
+    const id = ctx.ID().getText()
+    // console.log('ID: ', id)
+    this.currentVarExpr.push(id)
+  } else if(ctx.IDX()) {
+    // concatenate this id also
+    const idx = ctx.IDX().getText().slice(1, -1)
+    // console.log('IDX: ', idx)
+    this.currentVarExpr.push(idx)
+  } else {
+    // console.log('expr: ', ctx.getText())
+    let targetExpr = []
+    if(this.currentGAStack && this.currentVarExpr.length) {
+      const oldGet = this.currentGAStack
+      targetExpr.push({
+        getAt: [
+          oldGet,
+          this.currentVarExpr.join('.')
+        ]
+      })
+    } else if(this.currentGAStack) {
+      const oldGet = this.currentGAStack
+      targetExpr.push(oldGet)
+    } else {
+      targetExpr.push({ var: this.currentVarExpr.join('.') })
+    }
+    this.currentGAStack = {
+      getAt: targetExpr
+    }
+    this.exprStack.push(this.currentExpr)
+    this.currentExpr = targetExpr
+  }
+}
+GameListener.prototype.exitIdx = function(ctx) {
+  if(ctx.expr()) {
+    this.currentExpr = this.exprStack.pop()
+    this.currentVarExpr = []
+    // console.log('exitIdx.expr: ', this.currentGAStack)
+  }
+}
+
 GameListener.prototype.exitVarExpr = function(ctx) {
+  if(this.currentVarExpr.length && this.currentGAStack) {
+    const oldGet = this.currentGAStack
+    this.currentGAStack = {
+      getAt: [
+        oldGet,
+        this.currentVarExpr.join('.')
+      ]
+    }
+  }
+  const newExpr = []
+  if(this.currentGAStack) {
+    newExpr.push(this.currentGAStack)
+  } else {
+    newExpr.push({
+      var: this.currentVarExpr.join('.')
+    })
+  }
+  // console.log('newExpr: ', newExpr[0])
+  this.currentExpr.push(newExpr[0])
+
+  this.currentGAStack = this.getAtStack.pop()
 }
+
 
 GameListener.prototype.enterIfthen = function(ctx) {
   const id = 'if'
@@ -215,7 +301,13 @@ GameListener.prototype.exitAddsub = function(ctx) {
 
 GameListener.prototype.enterBinop = function(ctx) {
   const id = ctx.BINOP().getText()
-  this.pushExpr(id)
+  let opName = id
+  if(id === '&&') {
+    opName = 'and'
+  } else if(id === '||') {
+    opName = 'or'
+  }
+  this.pushExpr(opName)
 }
 GameListener.prototype.exitBinop = function(ctx) {
   this.popExpr()

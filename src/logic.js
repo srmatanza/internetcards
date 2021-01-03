@@ -125,8 +125,8 @@ function playerVar(varName) {
   return this.$playerVars[varName]
 }
 
-function getAt(idx, arr) {
-  return arr[idx]
+function getAt(obj, idx) {
+  return obj[idx]
 }
 
 jsonLogic.add_operation('handContainsCard', handContainsCard)
