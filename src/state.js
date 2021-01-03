@@ -2,6 +2,20 @@ import _ from 'lodash'
 import * as Cards from '../src/cards.js'
 import * as State from '../src/state.js'
 
+function Rif() {
+  this._cards = []
+  this.hand = []
+  return this
+}
+
+Rif.prototype.push = function(card) {
+  this._cards.push(card)
+}
+
+Rif.prototype.pop = function() {
+  return this._cards.pop()
+}
+
 function RuleSet() {
   this.gameVariables = {}
   this.possiblePlayers = []
@@ -18,7 +32,8 @@ function PlayerState(playerName) {
   this.playerName = playerName||''
   this.idx = 0
 
-  this.hand = []
+  this.cards = new Rif()
+  this.cards.hand = []
   this.playerVariables = {}
   this.tricks = []
 
@@ -27,8 +42,9 @@ function PlayerState(playerName) {
   }
 
   this.resetPlayer = function() {
-    this.hand = []
     this.tricks = []
+    this.cards = new Rif()
+    this.cards.hand = []
   }
 
   return this
@@ -72,6 +88,7 @@ function GameState() {
     this.deck = new Cards.Deck()
     this.trick = []
     this.discard = []
+    this.cards = new Rif()
     for(const i in this.players) {
       this.players[i].resetPlayer()
     }
@@ -79,23 +96,25 @@ function GameState() {
   this.isCurrentPlayer = function(playerName) {
     return this.currentPlayerIdx === this.getPlayer(playerName).idx
   }
+
   this.glomVars = function(player) {
     const phaseVars = {}
-    const playerVars = _.clone(this.currentRuleSet.playerVars)
+    const playerVars = _.assign(_.clone(this.currentRuleSet.playerVariables), player.playerVariables)
     const pv = {
       $player: player,
-      $playerVars: _.assign(playerVars, player.playerVariables),
       $isYourTurn: this.isCurrentPlayer(player.playerName),
       $selectedCards: player.selectedCards,
-      $selectedPlayer: this.getPlayer(player.selectedPlayer)
+      $selectedPlayer: this.getPlayer(player.selectedPlayer),
+      $selectedHand: []
     }
     const globalVarsForPlayer = {
       $playerCount: this.getPlayerCount(),
       $possiblePlayers: this.currentRuleSet.possiblePlayers,
-      $otherPlayers: this.players
+      $otherPlayers: this.players,
+      $table: this.cards
     }
 
-    return _.assign({}, this.currentRuleSet.gameVariables, globalVarsForPlayer, phaseVars, pv)
+    return _.assign({}, this.currentRuleSet.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv)
   }
 
   this.currentPlayerIdx = 0
@@ -106,6 +125,7 @@ function GameState() {
   this.currentRuleSet = new RuleSet()
 
   // These should be game specific global hands
+  this.cards = []
   this.trick = []
   this.discard = []
 

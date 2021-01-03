@@ -45,9 +45,6 @@ import _ from 'lodash'
 
 import Player from '@/components/Player.vue'
 
-import Actions from '@/actions.js'
-import Effects from '@/effects.js'
-
 import * as CC from '@/cards.js'
 import Instance from '@/instance.js'
 import sharp2json from '@/sharp/transpile.js'
@@ -122,16 +119,6 @@ export default {
     isCurrentPlayer: function(pn) {
       return this.currentGame.isCurrentPlayer(pn)
     },
-    changePhase: function(newPhase) {
-      this.currentGame = Effects.changePhase(this.currentGame, newPhase)
-    },
-    drawCard: function(playerName) {
-      const pIdx = this.getIdxForPlayerName(playerName)
-      const numCards = 1
-      console.log('drawing card for ', playerName, pIdx)
-      const _n = numCards || 1
-      Actions.draw(this.currentGame, pIdx, _n)
-    },
     paSelectCard: function(card, thisPlayer) {
       const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
       let sc
@@ -143,7 +130,7 @@ export default {
       player.selectedCards = sc
       this.playerSelections[thisPlayer.playerName] = player
       this.playerSelections = _.assign({}, this.playerSelections)
-      console.log('paSelectCard event handler', card, sc, this.playerSelections)
+      console.log('paSelectCard event handler', card.toString(), sc, this.playerSelections)
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
       const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }

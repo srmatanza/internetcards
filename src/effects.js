@@ -1,3 +1,4 @@
+/* eslint-disable valid-typeof */
 import _ from 'lodash'
 import Logic from '../src/logic.js'
 
@@ -8,6 +9,15 @@ function _computeArg(gs, arg, player) {
   return arg
 }
 
+function _drawCardFromDeckToHand(deck, hand) {
+  if (deck.length === 0) {
+    console.error('Empty deck...')
+    return
+  }
+
+  hand.push(deck.cards.pop())
+}
+
 function _computeVarsForPlayer(gs, vars, player) {
   const newVars = {}
   for(const vn in vars) {
@@ -16,6 +26,8 @@ function _computeVarsForPlayer(gs, vars, player) {
   return newVars
 }
 
+// It's probably really bad to have functions called, "_includesCards" and "_cardIncludes"
+// that do different things...
 function _includesCards(hand, cards) {
   for(const c in cards) {
     let bb = true
@@ -34,108 +46,167 @@ function _includesCards(hand, cards) {
   return true
 }
 
-export default {
-  changePhase: function(gameState, args, player) {
-    const gs = _.cloneDeep(gameState)
-    gs.currentPhase = args[0]
-    return gs
-  },
-  incrementVar: function(gameState, incrVars, player) {
-    const gs = _.cloneDeep(gameState)
-    const gameVars = _computeVarsForPlayer(gs, _.cloneDeep(incrVars), player)
-    for (const varName in gameVars) {
-      const newVal = parseFloat(gs.currentRuleSet.gameVariables[varName]) + parseFloat(gameVars[varName])
-      gs.currentRuleSet.gameVariables[varName] = newVal
+function _cardIncludes(sc, card) {
+  for(const i in sc) {
+    if(sc[i].suit === card.suit && sc[i].val === card.val) {
+      return true
     }
+  }
 
-    return gs
-  },
-  moveCards: function(gameState, args, player) {
-    const gs = _.cloneDeep(gameState)
+  return false
+}
 
-    const fromPlayer = _computeArg(gs, args.fromPlayerIdx, player)
-    const fromHand = args.fromHand // Uncomputed varname
-    const toPlayer = _computeArg(gs, args.toPlayerIdx, player)
-    const toHand = args.toHand // Uncomputed varname
-    const selectedCards = _computeArg(gs, args.cards, player)
-    // console.log('moveCards: ', args, player, fromPlayer, fromHand, toPlayer, toHand, selectedCards)
+function _filterOutCardsFromHand(selectedCards, hand) {
+  // remove the selected cards from the player's hand
+  return _.filter(hand, card => !_cardIncludes(selectedCards, card))
+}
 
-    // if fromPlayer is undefined, set/get fromHand from the gameVariables
-    // if toPlayer is undefined, set toHand from the gameVariables
-    const fromSrc = _.isUndefined(fromPlayer) ? gs.gameVariables : gs.getPlayer(fromPlayer)
-    const toSrc = _.isUndefined(toPlayer) ? gs.gameVariables : gs.getPlayer(toPlayer)
-
-    // Validate that the selected cards are in fromHand
-    if(selectedCards && selectedCards.length > 0 && !_includesCards(fromSrc[fromHand], selectedCards)) {
-      console.error('Error in move_cards; attempting to move cards that don\'t exist in the hand.')
-      return gs
+function _isGameVar(gs, variable) {
+  for(const gv in gs.currentRuleSet.gameVariables) {
+    if(gv === variable) {
+      return true
     }
+  }
+  return false
+}
 
-    // If 'cards' is undefined
-    // then assign all the cards in fromHand -> toHand and empty fromHand
-    // else assign all the cards in selectedCards to toHand removing selectedCards fromHand
-    const sc = selectedCards || fromSrc[fromHand]
-
-    const newFH = fromSrc[fromHand].filter(c => !_includesCards(sc, [c]))
-    const newTH = _.concat(toSrc[toHand], sc)
-
-    if(_.isUndefined(fromPlayer)) {
-      gs.gameVariables[fromHand] = newFH
-    } else {
-      gs.players[fromPlayer][fromHand] = newFH
+function _isPlayerVar(gs, variable) {
+  for(const pv in gs.currentRuleSet.playerVariables) {
+    if(pv === variable) {
+      return true
     }
+  }
+  return false
+}
 
-    if(_.isUndefined(toPlayer)) {
-      gs.gameVariables[toHand] = newTH
-    } else {
-      gs.players[toPlayer][toHand] = newTH
-    }
+function changePhase(gs, args) {
+  gs.currentPhase = args[0]
+}
 
-    // console.log('move cards: ', gs)
-    return gs
-  },
-  setVar: function(gameState, gameVars, player) {
-    const gs = _.cloneDeep(gameState)
-    const vars = _.cloneDeep(gameVars)
-    // console.log('setVar: ', gameState, gameVars, player)
-    for(const vn in vars) {
-      if(typeof vars[vn] === 'object') {
-        vars[vn] = Logic.computeRule(vars[vn], gs.glomVars(player))
-      }
-    }
-    _.assign(gs.currentRuleSet.gameVariables, vars)
-
-    return gs
-  },
-  setVarEachPlayer: function(gameState, playerVars, player) {
-    const gs = _.cloneDeep(gameState)
-    for(const p of gs.players) {
-      const newVars = _computeVarsForPlayer(gs, _.cloneDeep(playerVars), p)
-      _.assign(gs.players[p.idx].playerVariables, newVars)
-    }
-
-    return gs
-  },
-  setVarPlayer: function(gameState, playerVars, player) {
-    const gs = _.cloneDeep(gameState)
-    const newVars = _computeVarsForPlayer(gs, _.cloneDeep(playerVars), player)
-    _.assign(gs.players[player.idx].playerVariables, newVars)
-
-    return gs
-  },
-  advancePlayer: function(gameState, incr, player) {
-    const gs = _.cloneDeep(gameState)
-    const newIncr = _computeArg(gs, incr, player)
-    gs.currentPlayerIdx = (gs.currentPlayerIdx + parseInt(newIncr)) % gs.getPlayerCount()
-
-    return gs
-  },
-  setPlayer: function(gameState, idx, player) {
-    const gs = _.cloneDeep(gameState)
-
-    const newIdx = _computeArg(gs, idx, player)
-    gs.currentPlayerIdx = parseInt(newIdx) % gs.getPlayerCount()
-
+function moveCards(gs, args, player) {
+  const fromHand = _computeArg(gs, args[0], player) // Uncomputed varname
+  const toHand = _computeArg(gs, args[1], player) // Uncomputed varname
+  let selectedCards
+  if(args[2] !== undefined) {
+    selectedCards = _computeArg(gs, args[2], player)
+  }
+  console.log('moveCards: ', fromHand, toHand, selectedCards)
+  _filterOutCardsFromHand()
+  // Validate that the selected cards are in fromHand
+  if(selectedCards && selectedCards.length > 0 && !_includesCards(fromHand, selectedCards)) {
+    console.error('Error in move_cards; attempting to move cards that don\'t exist in the hand.')
     return gs
   }
+
+  // but really, if selectedCards isn't defined, just transfer all the cards
+}
+
+function setVar(gs, gameVars, player) {
+  const vars = _.cloneDeep(gameVars)
+  // figure out if vars is a global or player variable
+  const pvars = {}
+  const gvars = {}
+  for(const vidx in vars) {
+    let vn = vars[vidx]
+    if(typeof vn === 'object') {
+      vn = Logic.computeRule(vn, gs.glomVars(player))
+    }
+    if(_isGameVar(gs, vidx)) {
+      gvars[vidx] = vn
+    } else if(_isPlayerVar(gs, vidx)) {
+      pvars[vidx] = vn
+    } else {
+      console.error('Undefined variable: ', vidx)
+    }
+  }
+  _.assign(gs.currentRuleSet.gameVariables, gvars)
+  _.assign(gs.players[player.idx].playerVariables, pvars)
+}
+
+function setVarEachPlayer(gs, playerVars, player) {
+  for(const p of gs.players) {
+    const newVars = _computeVarsForPlayer(gs, _.cloneDeep(playerVars), p)
+    _.assign(gs.players[p.idx].playerVariables, newVars)
+  }
+}
+
+function setPlayer(gs, idx, player) {
+  const newIdx = _computeArg(gs, idx, player)
+  gs.currentPlayerIdx = parseInt(newIdx) % gs.getPlayerCount()
+}
+
+function advancePlayer(gs, incr, player) {
+  const newIncr = _computeArg(gs, incr, player)
+  gs.currentPlayerIdx = (gs.currentPlayerIdx + parseInt(newIncr)) % gs.getPlayerCount()
+}
+
+function newRound(gs) {
+  gs.resetRound()
+}
+
+function draw(gs, args, player) {
+  const numCards = args[0]
+  for(let i = 0; i < numCards; i++) {
+    _drawCardFromDeckToHand(gs.deck, player.cards.hand)
+  }
+}
+
+function deal(gs, args) {
+  const numPlayers = gs.getPlayerCount()
+  const numCards = args[0]
+
+  for(let i = 0; i < numCards; i++) {
+    const curPlayer = gs.players[i%numPlayers]
+    _drawCardFromDeckToHand(gs.deck, curPlayer.cards.hand)
+  }
+}
+
+function checkArgs(args, argTypes) {
+  if(argTypes === undefined) {
+    return
+  }
+  if(args.length !== argTypes.length) {
+    throw Error('Incorrect number of arguments')
+  }
+
+  for(let i = 0; i<args.length; i++) {
+    const a = args[i]
+    const type = argTypes[i]
+    if(typeof a !== type) {
+      throw Error(`Argument ${i+1} has incorrect type`)
+    }
+  }
+}
+
+function wrapEffect(fnCallback, gs, args, p, argTypes) {
+  try {
+    checkArgs(args, argTypes)
+  } catch(ex) {
+    console.error(`${fnCallback.name} function invocation error: `, ex.message)
+    return gs
+  }
+  const _gs = _.cloneDeep(gs)
+  fnCallback.call({}, _gs, args, p)
+  return _gs
+}
+
+function callHandler(fnCallback, argTypes) {
+  return function(gs, args, p) {
+    return wrapEffect(fnCallback, gs, args, p, argTypes)
+  }
+}
+
+export default {
+  set_var: callHandler(setVar),
+  set_var_each_player: callHandler(setVarEachPlayer),
+  change_phase: callHandler(changePhase, ['string']),
+  advance_player: callHandler(advancePlayer, ['number']),
+  move_cards: callHandler(moveCards),
+  set_player: callHandler(setPlayer, ['string']),
+  new_round: callHandler(newRound),
+  deal: callHandler(deal, ['number']),
+  draw: callHandler(draw, ['number']),
+  effect: Symbol('effect'),
+  given: Symbol('given'),
+  else: Symbol('else')
 }

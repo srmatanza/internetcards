@@ -30,6 +30,6 @@ describe('Five player Action tests', () => {
         expect(gs.players.length).toBe(5)
         let curPlayer = gs.getCurrentPlayer()
         console.log(curPlayer.playerName)
-        console.log(curPlayer.hand.length)
+        console.log(curPlayer.cards.hand.length)
     })
 })

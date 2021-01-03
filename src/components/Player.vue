@@ -4,7 +4,7 @@
   {{ this.player.playerName }}
   <br/>
   <span v-if="!bEmptyHand" class="playerHand">
-    <span v-for="card in this.player.hand"
+    <span v-for="card in this.player.cards.hand"
           :key="printCard(card)"
           :class="{ selected: isSelected(card) }"
           @click="$emit('__' + 'select-card', card, player)"> [{{ printCard(card) }}] </span>
@@ -104,7 +104,7 @@ export default {
       return this.playerselections[this.player.playerName] || { selectedCards: [], selectedPlayer: '' }
     },
     bEmptyHand: function() {
-      return (this.player.hand.length === 0)
+      return (this.player.cards.hand.length === 0)
     },
     playerActions: function() {
       for(const phase of this.gamerules.gameplay) {

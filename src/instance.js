@@ -15,30 +15,21 @@ function isSatisfied(given, player) {
   return true
 }
 
-function efHandlers() {
-  return {
-    set_var: Effects.setVar,
-    set_var_player: Effects.setVarPlayer,
-    set_var_each_player: Effects.setVarEachPlayer,
-    change_phase: Effects.changePhase,
-    increment_var: Effects.incrementVar,
-    advance_player: Effects.advancePlayer,
-    move_cards: Effects.moveCards,
-    set_player: Effects.setPlayer,
-    given: Symbol('given')
-  }
-}
-
 function handleEffect(effect, player) {
+  console.debug('handleEffect: ', this.gs, effect, player)
   if (isSatisfied.call(this, effect.given, player)) {
     for (const ef in effect) {
-      const fn = efHandlers()[ef]
+      const fn = Effects[ef]
       if (typeof fn === 'function') {
         this.gs = fn.call({}, this.gs, effect[ef], player)
+      } else if (typeof fn === 'symbol' && ef === 'effect') {
+        handleEffects.call(this, effect.effect, player)
       } else if (_.isUndefined(fn)) {
         console.error('Undefined function for effect: ', ef)
       }
     }
+  } else {
+    handleEffects.call(this, effect.else, player)
   }
 }
 
@@ -47,8 +38,6 @@ function handleEffects(effects, player) {
     for (const ef in effects) {
       handleEffect.call(this, effects[ef], player)
     }
-  } else {
-    handleEffect.call(this, effects, player)
   }
 }
 
@@ -97,12 +86,6 @@ Instance.prototype.paListeners = function(callbackFn) {
     }
   }
   return {
-    __deal: wrapListener(Actions.deal, '__deal'),
-    __pass: wrapListener(Actions.pass, '__pass'),
-    __lead: wrapListener(Actions.playCard, '__lead'),
-    __play_card: wrapListener(Actions.playCard, '__play_card'),
-    __take_trick: wrapListener(Actions.takeTrick, '__take_trick'),
-    __new_round: wrapListener(Actions.newRound, '__new_round'),
     __custom_action: wrapListener(Actions.customAction, '__custom_action')
   }
 }
