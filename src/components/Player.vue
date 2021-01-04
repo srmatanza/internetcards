@@ -17,7 +17,6 @@
         @click="$emit('__' + 'select-player', op.playerName, player)">{{ op.playerName }}</li>
   </ul>
   <br/>
-  <button v-if="bDebug" click="$emit('draw-card', player.playerName)">Draw</button>
   <button :disabled="!isSatisfied(obj.given)"
           @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
           v-for="obj in this.playerActions"

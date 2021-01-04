@@ -75,7 +75,6 @@ function GameState() {
   }
   this.resetRound = function() {
     this.deck = new Cards.Deck()
-    this.trick = []
     this.discard = []
     this.cards = new Rif()
     for(const i in this.players) {
@@ -115,7 +114,6 @@ function GameState() {
 
   // These should be game specific global hands
   this.cards = new Rif()
-  this.trick = []
   this.discard = []
 
   return this
