@@ -24,10 +24,13 @@
             v-on="setupListeners" />
         </ul>
       </div>
-
-      <div>Game State</div>
-      <div>Available Actions</div>
-
+      <div>
+        <h3>Table</h3>
+        <div :key="rif" v-for="rif in visibleTableRifs">
+          {{ rif }}
+          <span v-for="card in currentGame.cards[rif]" :key="printCard(card)">[{{ printCard(card) }}]</span>
+        </div>
+      </div>
     </div>
 
     <div id="editorGrid" class="codeEditor">
@@ -90,6 +93,9 @@ export default {
     },
     setupGameState: function(ruleset) {
       this.instance.setupGameState(ruleset)
+    },
+    printCard: function(card) {
+      return CC.printCard(card)
     },
     addPlayer: function(playerName) {
       console.log('method: addPlayer', playerName)
@@ -156,6 +162,15 @@ export default {
       set: function(newGS) {
         this.instance.setGameState(newGS)
       }
+    },
+    visibleTableRifs: function() {
+      const rifs = []
+      for(const rif in this.currentGame.cards) {
+        if(Array.isArray(this.currentGame.cards[rif]) && !rif.startsWith('_')) {
+          rifs.push(rif)
+        }
+      }
+      return rifs
     },
     bRuleSetLoaded: function() {
       return this.currentGame.currentRuleSet !== undefined
