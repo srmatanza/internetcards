@@ -1,6 +1,7 @@
 /* eslint-disable valid-typeof */
 import _ from 'lodash'
 import Logic from '../src/logic.js'
+import { Rif } from '../src/state.js'
 
 function _computeArg(gs, arg, player) {
   if(typeof arg === 'object') {
@@ -83,22 +84,44 @@ function changePhase(gs, args) {
   gs.currentPhase = args[0]
 }
 
+function newRif(gs, args, player) {
+  // ensure that the first arg is an instanceof Player.Rif
+  const toHand = _computeArg(gs, args[0], player)
+  const rifName = args[1]
+
+  if(!(toHand instanceof Rif)) {
+    console.error('The first argument must be a Rif')
+    return
+  }
+
+  toHand[rifName] = []
+}
+
 function moveCards(gs, args, player) {
   const fromHand = _computeArg(gs, args[0], player) // Uncomputed varname
   const toHand = _computeArg(gs, args[1], player) // Uncomputed varname
   let selectedCards
   if(args[2] !== undefined) {
     selectedCards = _computeArg(gs, args[2], player)
+  } else {
+    selectedCards = fromHand
   }
-  console.log('moveCards: ', fromHand, toHand, selectedCards)
-  _filterOutCardsFromHand()
+  // console.log('moveCards: ', fromHand, toHand, selectedCards)
+
+  for(const card of selectedCards) {
+    toHand.push(card)
+  }
   // Validate that the selected cards are in fromHand
   if(selectedCards && selectedCards.length > 0 && !_includesCards(fromHand, selectedCards)) {
     console.error('Error in move_cards; attempting to move cards that don\'t exist in the hand.')
-    return gs
+    return
   }
 
-  // but really, if selectedCards isn't defined, just transfer all the cards
+  const newHand = _filterOutCardsFromHand(selectedCards, fromHand)
+  fromHand.length = 0
+  for(const card of newHand) {
+    fromHand.push(card)
+  }
 }
 
 function setVar(gs, gameVars, player) {
@@ -151,9 +174,10 @@ function draw(gs, args, player) {
   }
 }
 
-function deal(gs, args) {
+function deal(gs, args, player) {
   const numPlayers = gs.getPlayerCount()
-  const numCards = args[0]
+  const numCards = _computeArg(gs, args[0], player)
+  console.log(`dealing ${numCards} cards to ${numPlayers} players`)
 
   for(let i = 0; i < numCards; i++) {
     const curPlayer = gs.players[i%numPlayers]
@@ -204,7 +228,8 @@ export default {
   move_cards: callHandler(moveCards),
   set_player: callHandler(setPlayer, ['string']),
   new_round: callHandler(newRound),
-  deal: callHandler(deal, ['number']),
+  new_rif: callHandler(newRif),
+  deal: callHandler(deal),
   draw: callHandler(draw, ['number']),
   effect: Symbol('effect'),
   given: Symbol('given'),

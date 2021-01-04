@@ -4,16 +4,7 @@ import * as State from '../src/state.js'
 
 function Rif() {
   this._cards = []
-  this.hand = []
   return this
-}
-
-Rif.prototype.push = function(card) {
-  this._cards.push(card)
-}
-
-Rif.prototype.pop = function() {
-  return this._cards.pop()
 }
 
 function RuleSet() {
@@ -35,19 +26,17 @@ function PlayerState(playerName) {
   this.cards = new Rif()
   this.cards.hand = []
   this.playerVariables = {}
-  this.tricks = []
-
-  this.toString = function() {
-    return this.playerName
-  }
-
-  this.resetPlayer = function() {
-    this.tricks = []
-    this.cards = new Rif()
-    this.cards.hand = []
-  }
 
   return this
+}
+
+PlayerState.prototype.toString = function() {
+  return this.playerName
+}
+
+PlayerState.prototype.resetPlayer = function() {
+  this.cards = new Rif()
+  this.cards.hand = []
 }
 
 function GameState() {
@@ -101,7 +90,7 @@ function GameState() {
     const phaseVars = {}
     const playerVars = _.assign(_.clone(this.currentRuleSet.playerVariables), player.playerVariables)
     const pv = {
-      $player: player,
+      $player: this.players[player.idx],
       $isYourTurn: this.isCurrentPlayer(player.playerName),
       $selectedCards: player.selectedCards,
       $selectedPlayer: this.getPlayer(player.selectedPlayer),
@@ -125,11 +114,11 @@ function GameState() {
   this.currentRuleSet = new RuleSet()
 
   // These should be game specific global hands
-  this.cards = []
+  this.cards = new Rif()
   this.trick = []
   this.discard = []
 
   return this
 }
 
-export { RuleSet, PlayerState, GameState }
+export { Rif, RuleSet, PlayerState, GameState }
