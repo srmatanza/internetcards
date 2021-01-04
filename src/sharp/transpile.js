@@ -220,7 +220,7 @@ GameListener.prototype.enterIdx = function(ctx) {
     this.currentVarExpr.push(idx)
   } else {
     // console.log('expr: ', ctx.getText())
-    let targetExpr = []
+    const targetExpr = []
     if(this.currentGAStack && this.currentVarExpr.length) {
       const oldGet = this.currentGAStack
       targetExpr.push({
@@ -273,7 +273,6 @@ GameListener.prototype.exitVarExpr = function(ctx) {
 
   this.currentGAStack = this.getAtStack.pop()
 }
-
 
 GameListener.prototype.enterIfthen = function(ctx) {
   const id = 'if'
