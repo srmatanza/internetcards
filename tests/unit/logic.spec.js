@@ -6,7 +6,7 @@ import * as CC from '@/cards.js'
 // Get this from hearts.json instead
 // import Hearts from '@/rulesets/hearts.js'
 
-describe('Five player Action tests', () => {
+describe('Logic tests for actions and effects', () => {
     let gs = {}
     let givenHandContainsCard = {'handContainsCard': ['2C', {"var": "currentPlayer.cards.hand" }]}
     let givenHandContainsSuit = {'handContainsSuit': ['H', {"var": "currentPlayer.cards.hand"}]}
