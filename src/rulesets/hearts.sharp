@@ -138,8 +138,8 @@ phase trick_scoring
     (gHeartsBroken ||
      !handContainsSuit("H", $selectedCards) ||
      (!handContainsSuit("S", $player.cards["hand"]) &&
-     !handContainsSuit("D", $player.cards["hand"]) &&
-     !handContainsSuit("C", $player.cards["hand"])
+      !handContainsSuit("D", $player.cards["hand"]) &&
+      !handContainsSuit("C", $player.cards["hand"])
      )
     )
   endaction
@@ -169,6 +169,7 @@ phase scoring
     gDoneScoring = false
     gRoundIdx = (gRoundIdx + 1) % 4
     pPassCards @= true
+    pScoreHandCreated @= false
   given
     gDoneScoring
   endaction

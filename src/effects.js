@@ -164,7 +164,7 @@ function advancePlayer(gs, incr, player) {
 }
 
 function newRound(gs) {
-  gs.resetRound()
+  gs.resetRound(true)
 }
 
 function draw(gs, args, player) {
@@ -226,7 +226,7 @@ export default {
   change_phase: callHandler(changePhase, ['string']),
   advance_player: callHandler(advancePlayer, ['number']),
   move_cards: callHandler(moveCards),
-  set_player: callHandler(setPlayer, ['string']),
+  set_player: callHandler(setPlayer),
   new_round: callHandler(newRound),
   new_rif: callHandler(newRif),
   deal: callHandler(deal),

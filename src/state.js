@@ -73,8 +73,13 @@ function GameState() {
     this.players.push(p)
     return p
   }
-  this.resetRound = function() {
-    this.deck = new Cards.Deck()
+  this.resetRound = function(bShuffle) {
+    const newDeck = new Cards.Deck()
+    if(bShuffle) {
+      this.deck = Cards.shuffleDeck(newDeck)
+    } else {
+      this.deck = newDeck
+    }
     this.discard = []
     this.cards = new Rif()
     for(const i in this.players) {
@@ -97,11 +102,13 @@ function GameState() {
     }
     const globalVarsForPlayer = {
       $playerCount: this.getPlayerCount(),
+      $currentPlayer: player.idx,
       $possiblePlayers: this.currentRuleSet.possiblePlayers,
       $otherPlayers: this.players,
       $table: this.cards
     }
 
+    // console.log('glomming: ', pv)
     return _.assign({}, this.currentRuleSet.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv)
   }
 

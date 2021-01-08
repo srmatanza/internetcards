@@ -72,23 +72,23 @@ export default {
       // console.log('isSatisfied: ', given)
       if(!_.isUndefined(given)) {
         const phaseVars = {}
+        const sp = this.otherplayers.filter(p => p.playerName === this.playerSelection.selectedPlayer)[0]
         const playerVars = {
           $player: this.player,
-          $isYourTurn: this.currentplayer
+          $isYourTurn: this.currentplayer,
+          $selectedCards: this.playerSelection.selectedCards,
+          $selectedPlayer: sp || {}
         }
         const globalVarsForPlayer = {
           $possiblePlayers: this.gamerules.possiblePlayers
         }
-        playerVars.$selectedCards = this.playerSelection.selectedCards
-        const sp = this.otherplayers.filter(p => p.playerName === this.playerSelection.selectedPlayer)[0]
-        playerVars.$selectedPlayer = sp || {}
 
         _.assign(playerVars, this.player.playerVariables)
         _.assign(globalVarsForPlayer, this.globalvars)
 
         const glomVars = _.assign({}, this.gamerules.gameVariables, globalVarsForPlayer, phaseVars, playerVars)
 
-        const bSat = Logic.isSatisfied(given, glomVars)
+        const bSat = [Logic.isSatisfied(given, glomVars)]
         // console.log('isSatisfied: ', given, bSat, glomVars)
         return !_.includes(bSat, false)
       }

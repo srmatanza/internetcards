@@ -17,7 +17,6 @@ function _valSuit(card) {
 }
 
 function handContainsCard(card, hand) {
-  // console.debug('handContainsCard: ', card, hand)
   const val = parseInt(card[0])
   const suit = _.indexOf('_SHDC', card[1])
   const c = new CC.Card(suit, val)
@@ -114,6 +113,7 @@ function isHighCard(cA, cB) {
 }
 
 function cardEq(cA, cB) {
+  // console.log('cardEq: ', _valSuit(cA), _valSuit(cB))
   return _.isEqual(_valSuit(cA), _valSuit(cB))
 }
 
@@ -126,6 +126,9 @@ function playerVar(varName) {
 }
 
 function getAt(obj, idx) {
+  if(obj[idx] === undefined) {
+    throw Error('getAt returned an undefined object')
+  }
   return obj[idx]
 }
 
@@ -144,13 +147,27 @@ jsonLogic.add_operation('getAt', getAt)
 
 export default {
   isSatisfied: function(given, gameVariables) {
-    const ret = jsonLogic.apply(given, gameVariables)
-    // console.log('Logic.isSatisfied: ', given, gameVariables, ret)
-    return ret
+    for(const g of given) {
+      try {
+        const ret = jsonLogic.apply(g, gameVariables)
+        // console.log('isSatisfied: ', g, gameVariables, ret)
+        if(ret === false) {
+          return false
+        }
+      } catch(ex) {
+        console.error('Error processing isSatisfied: ', ex)
+      }
+    }
+    return true
   },
   computeRule: function(rule, gameVariables) {
-    const ret = jsonLogic.apply(rule, gameVariables)
-    // console.log('Logic.computeRule: ', rule, gameVariables, ret)
-    return ret
+    try {
+      const ret = jsonLogic.apply(rule, gameVariables)
+      // console.log('Logic.computeRule: ', rule, gameVariables, ret)
+      return ret
+    } catch(ex) {
+      console.error('Error processing rule.', ex)
+      return {}
+    }
   }
 }

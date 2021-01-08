@@ -9,7 +9,7 @@ import * as State from '../src/state.js'
 function isSatisfied(given, player) {
   // console.log('isSatisfied: ', given)
   if(!_.isUndefined(given)) {
-    const bSat = Logic.isSatisfied(given, this.gs.glomVars(player))
+    const bSat = [Logic.isSatisfied(given, this.gs.glomVars(player))]
     return !_.includes(bSat, false)
   }
   return true
