@@ -101,6 +101,20 @@ describe('Transpiler tests', () => {
     })
   })
 
+  test('unary expressions work with precedence', () => {
+    const sharp = 'phase a action a given !a || b endaction endphase'
+    const obj = sharp2json(sharp)
+
+    expect(obj.gameplay[0].playerActions[0].given[0]).toStrictEqual({
+      "or": [
+        { "!": [
+          { "var": "a" }
+        ]},
+        { "var": "b" }
+      ]
+    })
+  })
+
   test('binary expressions work with precedence', () => {
     const sharp = 'phase a action a given (1 + 2 * 3) (1 + 2) * 3 endaction endphase'
     const obj = sharp2json(sharp)
@@ -121,7 +135,8 @@ describe('Transpiler tests', () => {
     const sharp = 'phase a action a fn($a.$b[1+2][$d.$e]) endaction endphase'
     const sharp2 = 'phase a action a fn($a.$b[1+2].$c) endaction endphase'
     const sharp3 = 'phase a action a fn($a.$b[1+2].$c["hand"]) endaction endphase'
-    // const sharp = 'phase a action a fn($a) endaction endphase'
+    const sharp4 = 'phase a action a fn($a[$b]) endaction endphase'
+    const sharp5 = 'phase a action a fn($a[0]) endaction endphase'
 
     let obj = sharp2json(sharp)
     expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
@@ -174,6 +189,30 @@ describe('Transpiler tests', () => {
               ]
             },
             "hand"
+          ]
+        }
+      ]
+    })
+
+    obj = sharp2json(sharp4)
+    expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
+      fn: [
+        {
+          getAt: [
+            { var: "$a" },
+            { var: "$b" }
+          ]
+        }
+      ]
+    })
+
+    obj = sharp2json(sharp5)
+    expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
+      fn: [
+        {
+          getAt: [
+            { var: "$a" },
+            0
           ]
         }
       ]

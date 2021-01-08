@@ -1,0 +1,175 @@
+name: "Hearts"
+author: "Mike McEuen"
+contact: "srmatanza@gmail.com"
+possiblePlayers: 4
+initialPhase: "lobby"
+
+gvar gPlayerPassed = 0
+gvar gPlayedTrick = 0
+gvar gTrickWinner = ""
+gvar gLedCard = ""
+gvar gPassRecipient = [1, 3, 2, 0]
+gvar gRoundIdx = 0
+gvar gMaxPoints = 100
+gvar gHeartsBroken = false
+gvar gTrickTaken = false
+gvar gCardsDealt = false
+gvar gDoneScoring = false
+gvar gTrick = []
+
+pvar pPoints = 0
+pvar pPassCards = true
+pvar pScoreHandCreated = false
+pvar pTricksTaken = []
+
+phase lobby
+  action start_game
+    name: "Start Game"
+    change_phase("setup")
+  given
+    #in($playerCount, $possiblePlayers)
+    $playerCount == $possiblePlayers
+  endaction
+endphase
+
+phase setup
+  action deal
+    name: "Deal"
+    deal(52)
+    gCardsDealt = true
+    new_rif($table, "currentTrick")
+  given
+    !gCardsDealt
+  endaction
+
+  action pass_cards
+    name: "Pass Cards"
+    gPlayerPassed = gPlayerPassed + 1
+    pPassCards = false
+    # do this here because it guarantees every player will do it
+    if !pScoreHandCreated then
+      new_rif($player.cards, "_score")
+      pScoreHandCreated = true
+    endif
+    if handContainsCard("2C", $player.cards["hand"]) then
+      set_player($currentPlayer)
+    endif
+    move_cards($player.cards["hand"],
+               $otherPlayers[($player.idx+gPassRecipient[gRoundIdx]) % $playerCount].cards["hand"],
+               $selectedCards)
+  given
+    gCardsDealt
+    $selectedCards.length == 3
+    pPassCards
+  endaction
+
+  action lead_round
+    name: "Lead Round"
+    change_phase("trick_taking")
+    gPlayerPassed = 0
+    gPlayedTrick = 1
+    gTrickWinner = $player
+    gLedCard = $selectedCards[0]
+    move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
+    set_player($player.idx + 1)
+  given
+    $selectedCards.length == 1
+    handContainsCard("2C", $selectedCards)
+    gPlayerPassed == $playerCount
+  endaction
+endphase
+
+phase trick_taking
+  action play_card
+    name: "Play Card"
+    advance_player(1)
+    gPlayedTrick = gPlayedTrick + 1
+    if handContainsSuit("H", $selectedCards) then
+      gHeartsBroken = true
+    endif
+    if $selectedCards[0].suit == gLedCard.suit && isHighCard($selectedCards[0], gLedCard) then
+      gTrickWinner = $player
+      gLedCard = $selectedCards[0]
+    endif
+    if gPlayedTrick == $playerCount then
+      change_phase("trick_scoring")
+      gPlayedTrick = 0
+      set_player(gTrickWinner.idx)
+    endif
+    move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
+  given
+    $isYourTurn
+    $selectedCards.length == 1
+    (gLedCard.suit == $selectedCards[0].suit ||
+     !handContainsSuit(gLedCard.suit, $player.cards["hand"]))
+  endaction
+endphase
+
+phase trick_scoring
+  action take_trick
+    name: "Take the Trick"
+    gTrickTaken = true
+    if $player.cards["hand"].length == 0 then
+      change_phase("scoring")
+    endif
+    move_cards($table["currentTrick"], $player.cards["_score"])
+  given
+    !gTrickTaken
+    gTrickWinner.playerName == $player.playerName
+  endaction
+
+  action lead_trick
+    name: "Lead a new Trick"
+    change_phase("trick_taking")
+    gPlayerPassed = 0
+    gPlayedTrick = 1
+    gTrickTaken = false
+    gTrickWinner = $player
+    gLedCard = $selectedCards[0]
+    advance_player(1)
+    if handContainsSuit("H", $selectedCards) then
+      gHeartsBroken = true
+    endif
+    move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
+  given
+    gTrickTaken
+    $selectedCards.length == 1
+    gTrickWinner.playerName == $player.playerName
+    (gHeartsBroken ||
+     !handContainsSuit("H", $selectedCards) ||
+     (!handContainsSuit("S", $player.cards["hand"]) &&
+     !handContainsSuit("D", $player.cards["hand"]) &&
+     !handContainsSuit("C", $player.cards["hand"])
+     )
+    )
+  endaction
+endphase
+
+phase scoring
+  action score_round
+    name: "Score Round"
+    gDoneScoring = true
+    pPoints @= reduce($player.cards["_score"],
+        accumulator + (
+          if current.suit == 2 then 1
+          elif cardEq("QS", current) then 13
+          else 0
+          ), 0)
+  given
+    !gDoneScoring
+  endaction
+
+  action new_round
+    name: "New Round"
+    change_phase("setup")
+    new_round()
+    gHeartsBroken = false
+    gCardsDealt = false
+    gTrickTaken = false
+    gDoneScoring = false
+    gRoundIdx = (gRoundIdx + 1) % 4
+    pPassCards @= true
+  given
+    gDoneScoring
+  endaction
+endphase

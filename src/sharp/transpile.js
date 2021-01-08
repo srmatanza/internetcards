@@ -200,6 +200,14 @@ GameListener.prototype.exitFnExpr = function(ctx) {
   this.popExpr()
 }
 
+GameListener.prototype.enterOneVarExpr = function(ctx) {
+  const varStr = ctx.ID().getText()
+  this.currentExpr.push({
+    var: varStr
+  })
+}
+GameListener.prototype.exitOneVarExpr = function(ctx) {}
+
 GameListener.prototype.enterVarExpr = function(ctx) {
   const varStr = ctx.ID().getText()
   // console.log('enterVarExpr: ', varStr)
@@ -213,11 +221,6 @@ GameListener.prototype.enterIdx = function(ctx) {
     const id = ctx.ID().getText()
     // console.log('ID: ', id)
     this.currentVarExpr.push(id)
-  } else if(ctx.IDX()) {
-    // concatenate this id also
-    const idx = ctx.IDX().getText().slice(1, -1)
-    // console.log('IDX: ', idx)
-    this.currentVarExpr.push(idx)
   } else {
     // console.log('expr: ', ctx.getText())
     const targetExpr = []
