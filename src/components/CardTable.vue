@@ -65,9 +65,9 @@ export default {
 </script>
 <style>
 .cardTable {
-  border-color: #476714;
+  border: 5px solid #76ab21;
   background-color: #8ac926;
-  width: 545px;
+  width: 535px;
   border-radius: 5px;
   padding: 0px 15px 15px;
   margin: 0px 8px 8px;
