@@ -12,6 +12,12 @@
   color: #2c3e50;
 }
 
+#app > div {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-template-columns: 1fr;
+}
+
 #nav {
   padding: 30px;
 }
