@@ -5,22 +5,20 @@ possiblePlayers: 4
 initialPhase: "lobby"
 
 gvar gPlayerPassed = 0
-gvar gPlayedTrick = 0
+gvar _gPlayedTrick = 0
 gvar gTrickWinner = ""
 gvar gLedCard = ""
-gvar gPassRecipient = [1, 3, 2, 0]
+gvar _gPassRecipient = [1, 3, 2, 0]
 gvar gRoundIdx = 0
 gvar gMaxPoints = 100
 gvar gHeartsBroken = false
-gvar gTrickTaken = false
-gvar gCardsDealt = false
-gvar gDoneScoring = false
-gvar gTrick = []
+gvar _gTrickTaken = false
+gvar _gCardsDealt = false
+gvar _gDoneScoring = false
 
 pvar pPoints = 0
-pvar pPassCards = true
-pvar pScoreHandCreated = false
-pvar pTricksTaken = []
+pvar _pPassCards = true
+pvar _pScoreHandCreated = false
 
 phase lobby
   action start_game
@@ -36,38 +34,38 @@ phase setup
   action deal
     name: "Deal"
     deal(52)
-    gCardsDealt = true
+    _gCardsDealt = true
     new_rif($table, "currentTrick")
   given
-    !gCardsDealt
+    !_gCardsDealt
   endaction
 
   action pass_cards
     name: "Pass Cards"
     gPlayerPassed = gPlayerPassed + 1
-    pPassCards = false
+    _pPassCards = false
     # do this here because it guarantees every player will do it
-    if !pScoreHandCreated then
+    if !_pScoreHandCreated then
       new_rif($player.cards, "_score")
-      pScoreHandCreated = true
+      _pScoreHandCreated = true
     endif
     if handContainsCard("2C", $player.cards["hand"]) then
       set_player($currentPlayer)
     endif
     move_cards($player.cards["hand"],
-               $otherPlayers[($player.idx+gPassRecipient[gRoundIdx]) % $playerCount].cards["hand"],
+               $otherPlayers[($player.idx+_gPassRecipient[gRoundIdx]) % $playerCount].cards["hand"],
                $selectedCards)
   given
-    gCardsDealt
+    _gCardsDealt
     $selectedCards.length == 3
-    pPassCards
+    _pPassCards
   endaction
 
   action lead_round
     name: "Lead Round"
     change_phase("trick_taking")
     gPlayerPassed = 0
-    gPlayedTrick = 1
+    _gPlayedTrick = 1
     gTrickWinner = $player
     gLedCard = $selectedCards[0]
     move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
@@ -83,7 +81,7 @@ phase trick_taking
   action play_card
     name: "Play Card"
     advance_player(1)
-    gPlayedTrick = gPlayedTrick + 1
+    _gPlayedTrick = _gPlayedTrick + 1
     if handContainsSuit("H", $selectedCards) then
       gHeartsBroken = true
     endif
@@ -91,9 +89,9 @@ phase trick_taking
       gTrickWinner = $player
       gLedCard = $selectedCards[0]
     endif
-    if gPlayedTrick == $playerCount then
+    if _gPlayedTrick == $playerCount then
       change_phase("trick_scoring")
-      gPlayedTrick = 0
+      _gPlayedTrick = 0
       set_player(gTrickWinner.idx)
     endif
     move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
@@ -108,13 +106,13 @@ endphase
 phase trick_scoring
   action take_trick
     name: "Take the Trick"
-    gTrickTaken = true
+    _gTrickTaken = true
     if $player.cards["hand"].length == 0 then
       change_phase("scoring")
     endif
     move_cards($table["currentTrick"], $player.cards["_score"])
   given
-    !gTrickTaken
+    !_gTrickTaken
     gTrickWinner.playerName == $player.playerName
   endaction
 
@@ -122,8 +120,8 @@ phase trick_scoring
     name: "Lead a new Trick"
     change_phase("trick_taking")
     gPlayerPassed = 0
-    gPlayedTrick = 1
-    gTrickTaken = false
+    _gPlayedTrick = 1
+    _gTrickTaken = false
     gTrickWinner = $player
     gLedCard = $selectedCards[0]
     advance_player(1)
@@ -132,7 +130,7 @@ phase trick_scoring
     endif
     move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
   given
-    gTrickTaken
+    _gTrickTaken
     $selectedCards.length == 1
     gTrickWinner.playerName == $player.playerName
     (gHeartsBroken ||
@@ -148,7 +146,7 @@ endphase
 phase scoring
   action score_round
     name: "Score Round"
-    gDoneScoring = true
+    _gDoneScoring = true
     pPoints @= reduce($player.cards["_score"],
         accumulator + (
           if current.suit == 2 then 1
@@ -156,7 +154,7 @@ phase scoring
           else 0
           ), 0)
   given
-    !gDoneScoring
+    !_gDoneScoring
   endaction
 
   action new_round
@@ -164,13 +162,13 @@ phase scoring
     change_phase("setup")
     new_round()
     gHeartsBroken = false
-    gCardsDealt = false
-    gTrickTaken = false
-    gDoneScoring = false
+    _gCardsDealt = false
+    _gTrickTaken = false
+    _gDoneScoring = false
     gRoundIdx = (gRoundIdx + 1) % 4
-    pPassCards @= true
-    pScoreHandCreated @= false
+    _pPassCards @= true
+    _pScoreHandCreated @= false
   given
-    gDoneScoring
+    _gDoneScoring
   endaction
 endphase

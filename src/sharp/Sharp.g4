@@ -69,7 +69,7 @@ PVAR : 'pvar' ;
 GVAR : 'gvar' ;
 BOOL : 'true' | 'false' ;
 
-ID : [a-zA-Z]+ [a-zA-Z_0-9]* | '$' ID;
+ID : [a-zA-Z]+ [a-zA-Z_0-9]* | '$' ID | '_' ID ;
 NUM : '-'? [0-9]* '.'? [0-9]+ ;
 
 STRING : '"' (ESC|.)*? '"' ;
