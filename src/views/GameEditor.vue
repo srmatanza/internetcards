@@ -1,17 +1,30 @@
 <template>
-  <div class="gameEditor">
-    <div class="heading">
-      <h3>Game Editor</h3>
+  <div>
+    <TopHeader :links="links"/>
 
-      <div v-if="!bGameSetup">
-        <input v-model="newPlayerName" placeholder="Player Name" ref="playerNameInput"/>
-        <br/>
-        <button :disabled="newPlayerName === ''" @click="addPlayer(newPlayerName)">Add Player</button>
-      </div>
+    <div class="gameEditor">
+      <div class="heading">
+        <h3>Game Editor</h3>
 
-      <div id="divPlayers" class="statebox player" v-if="numPlayers">
+        <div v-if="!bGameSetup">
+          <form ref="fmAddPlayer" id="editorForm">
+            <span>
+              <input v-model.trim="newPlayerName" placeholder="Player Name" ref="playerNameInput"/>&nbsp;
+              <input type="submit" :disabled="newPlayerName === ''" @click="addPlayer(newPlayerName)" value="Add Player" />
+            </span>
+            <span>
+              <input type="checkbox" id="chkDebug" v-model="bDebugMode" />
+              <label>Debug Mode</label>
+            </span>
+            <span>
+              <input type="checkbox" id="chkShowCurrent" v-model="bOnlyShowCurrent" />
+              <label>Only show the current player</label>
+            </span>
+          </form>
+        </div>
+
         <h3>Players</h3>
-        <ul>
+        <div id="divPlayers" class="statebox player" v-if="numPlayers && !bOnlyShowCurrent">
           <Player v-for="player in currentGame.players"
             :key="player.playerName"
             :player="player"
@@ -21,24 +34,35 @@
             :currentphase="currentphase"
             :currentplayer="isCurrentPlayer(player.playerName)"
             :globalvars="globalVarsForPlayer"
+            :bDebugMode="bDebugMode"
             v-on="setupListeners" />
-        </ul>
-      </div>
-      <div>
-        <h3>Table</h3>
-        <div :key="rif" v-for="rif in visibleTableRifs">
-          {{ rif }}
-          <span v-for="card in currentGame.cards[rif]" :key="printCard(card)">[{{ printCard(card) }}]</span>
         </div>
+        <div id="currentPlayer" class="statebox player" v-if="bOnlyShowCurrent">
+          <Player
+            :key="currentPlayer.playerName"
+            :player="currentPlayer"
+            :otherplayers="otherPlayers"
+            :playerselections="playerSelections"
+            :gamerules="gameRules"
+            :currentphase="currentphase"
+            :currentplayer="true"
+            :globalvars="globalVarsForPlayer"
+            :bDebugMode="bDebugMode"
+            v-on="setupListeners" />
+        </div>
+        <CardTable :rifs="this.currentGame.cards"
+                   :otherplayers="otherPlayers"
+                   :bDebugMode="bDebugMode"
+                   :gameVars="gameVars" />
       </div>
-    </div>
 
-    <div id="editorGrid" class="codeEditor">
-      <div class="codeOptions">
-        <h3>Card Game Rules</h3>
-        <button @click="parseSharp()">Compile</button>
+      <div id="editorGrid" class="codeEditor">
+        <div class="codeOptions">
+          <h3>Card Game Rules</h3>
+          <button @click="parseSharp()">Compile</button>
+        </div>
+        <div id="sharpEditor"></div>
       </div>
-      <div id="sharpEditor"></div>
     </div>
   </div>
 </template>
@@ -47,6 +71,8 @@
 import _ from 'lodash'
 
 import Player from '@/components/Player.vue'
+import TopHeader from '@/components/TopHeader.vue'
+import CardTable from '@/components/CardTable.vue'
 
 import * as CC from '@/cards.js'
 import Instance from '@/instance.js'
@@ -60,13 +86,17 @@ export default {
       playerSelections: {},
       sharpContent: '',
       newPlayerName: '',
+      bDebugMode: false,
+      bOnlyShowCurrent: false,
       actionLog: [],
       Cards: CC,
       editor: {}
     }
   },
   components: {
-    Player
+    Player,
+    TopHeader,
+    CardTable
   },
   mounted: function() {
     console.log('Game Editor mounted...')
@@ -155,6 +185,14 @@ export default {
     }
   },
   computed: {
+    links: function() {
+      return [
+        {
+          name: 'Home',
+          href: '/'
+        }
+      ]
+    },
     currentGame: {
       get: function() {
         return this.instance.gs
@@ -163,14 +201,8 @@ export default {
         this.instance.setGameState(newGS)
       }
     },
-    visibleTableRifs: function() {
-      const rifs = []
-      for(const rif in this.currentGame.cards) {
-        if(Array.isArray(this.currentGame.cards[rif]) && !rif.startsWith('_')) {
-          rifs.push(rif)
-        }
-      }
-      return rifs
+    currentPlayer: function() {
+      return this.currentGame.getCurrentPlayer()
     },
     bRuleSetLoaded: function() {
       return this.currentGame.currentRuleSet !== undefined
@@ -189,6 +221,12 @@ export default {
     },
     currentphase: function() {
       return this.currentGame.currentPhase
+    },
+    gameVars: function() {
+      if(this.currentGame && this.currentGame.currentRuleSet) {
+        return this.currentGame.currentRuleSet.gameVariables
+      }
+      return {}
     },
     gameRules: function() {
       if(this.currentGame && this.currentGame.currentRuleSet) {
@@ -223,13 +261,21 @@ export default {
 </script>
 
 <style scoped>
-#editorGrid {
-  height: 500px;
+#editorForm {
+  display: flex;
+  flex-direction: column;
 }
+
+#editorGrid {
+  height: 650px;
+}
+
 #sharpEditor {
   width: 100%;
   height: 100%;
+  resize: vertical;
 }
+
 .gameEditor {
   padding: 25px;
   display: grid;
@@ -251,15 +297,14 @@ export default {
   padding: 6px 8px;
 }
 
-.statebox, .historyBox {
-  /*
-    border: 1px solid black;
-    margin: 10px;
-    padding: 4px;
-  */
-  width: 22em;
-  text-align: start;
-  float: left;
+.heading {
+  display: flex;
+  flex-direction: column;
+}
+
+#divPlayers {
+  display: flex;
+  flex-flow: row wrap;
 }
 
 </style>

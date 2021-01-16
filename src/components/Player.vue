@@ -1,6 +1,5 @@
 <template>
-<div>
-  <div :class="{ currentPlayer: currentplayer }">
+<div class="playerCard" :class="{ currentPlayer: currentplayer }">
   {{ this.player.playerName }}
   <br/>
   <span v-if="!bEmptyHand" class="playerHand">
@@ -16,12 +15,16 @@
         :class="{ selected: isPlayerSelected(op.playerName) }"
         @click="$emit('__' + 'select-player', op.playerName, player)">{{ op.playerName }}</li>
   </ul>
+  <div>
+    <ul>
+      <li :key="varName.name" v-for="varName in playerVariables">{{ varName.name }}: {{ varName.value }}</li>
+    </ul>
+  </div>
   <br/>
   <button :disabled="!isSatisfied(obj.given)"
           @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
           v-for="obj in this.playerActions"
           :key="obj.name">{{ obj.name ? obj.name : name }}</button>
-  </div>
 </div>
 </template>
 
@@ -44,6 +47,7 @@ export default {
     'playerselections',
     'currentphase',
     'currentplayer',
+    'bDebugMode',
     'globalvars'
   ],
   methods: {
@@ -96,14 +100,24 @@ export default {
     }
   },
   computed: {
-    bDebug: function() {
-      return false
-    },
     playerSelection: function() {
       return this.playerselections[this.player.playerName] || { selectedCards: [], selectedPlayer: '' }
     },
     bEmptyHand: function() {
       return (this.player.cards.hand.length === 0)
+    },
+    playerVariables: function() {
+      const ret = []
+      for(const idx in this.player.playerVariables) {
+        const vv = {
+          name: idx,
+          value: this.player.playerVariables[idx]
+        }
+        if(this.bDebugMode || !vv.name.startsWith('_')) {
+          ret.push(vv)
+        }
+      }
+      return ret
     },
     playerActions: function() {
       for(const phase of this.gamerules.gameplay) {
@@ -118,17 +132,27 @@ export default {
 </script>
 
 <style scoped>
-
 .playerHand {
   font-size: 1.25em;
 }
 
-div.currentPlayer {
-  border: 2px solid forestgreen;
+.playerCard {
+  color: #edf7fd;
+  background-color: #1982C4;
+  width: 545px;
+  border-radius: 5px;
+  padding: 15px;
+  margin: 8px;
+}
+
+.currentPlayer {
+  border: 5px solid #FF595E;
+  padding: 10px;
 }
 
 .selected {
-  background-color: lightcoral;
+  color: #3d2d00;
+  background-color: #FFCA3A;
 }
 
 button {
