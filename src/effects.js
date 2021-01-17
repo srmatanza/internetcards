@@ -1,7 +1,8 @@
 /* eslint-disable valid-typeof */
+/* eslint-disable no-fallthrough */
 import _ from 'lodash'
 import Logic from '../src/logic.js'
-import { Rif } from '../src/state.js'
+import { Message, Rif } from '../src/state.js'
 
 function _computeArg(gs, arg, player) {
   if(typeof arg === 'object') {
@@ -185,6 +186,40 @@ function deal(gs, args, player) {
   }
 }
 
+function message(gs, args, player) {
+  let playerIdx = -1
+  let msgType = Message.prototype.INFO
+  let msgText = ''
+  let pMsg = null
+  switch(args.length) {
+    case 3:
+      playerIdx = _computeArg(gs, args[2], player)
+    case 2:
+      msgType = _computeArg(gs, args[1], player)
+    case 1:
+      msgText = _computeArg(gs, args[0], player)
+      // also, parse msgText as a template for var substitution
+      pMsg = new Message(msgText, msgType)
+      console.log('Setting message: ', pMsg)
+      if(playerIdx === -1) {
+        for(const pidx in gs.players) {
+          gs.players[pidx].currentMessage = pMsg
+        }
+      } else {
+        if(playerIdx < gs.players.length) {
+          gs.players[playerIdx].currentMessage = pMsg
+        } else {
+          console.error('Player index is out of bounds!')
+        }
+      }
+      break
+    default:
+      if(args.length === 0 || args.length > 3) {
+        console.error('Invalid number of args for message call')
+      }
+  }
+}
+
 function checkArgs(args, argTypes) {
   if(argTypes === undefined) {
     return
@@ -226,6 +261,7 @@ export default {
   change_phase: callHandler(changePhase, ['string']),
   advance_player: callHandler(advancePlayer, ['number']),
   move_cards: callHandler(moveCards),
+  message: callHandler(message),
   set_player: callHandler(setPlayer),
   new_round: callHandler(newRound),
   new_rif: callHandler(newRif),

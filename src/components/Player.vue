@@ -1,30 +1,36 @@
 <template>
 <div class="playerCard" :class="{ currentPlayer: currentplayer }">
+  <div>
   {{ this.player.playerName }}
-  <br/>
-  <span v-if="!bEmptyHand" class="playerHand">
+  </div>
+  <div v-if="!bEmptyHand" class="playerHand">
     <span v-for="card in this.player.cards.hand"
           :key="printCard(card)"
           :class="{ selected: isSelected(card) }"
           @click="$emit('__' + 'select-card', card, player)"> [{{ printCard(card) }}] </span>
-  </span>
-  <br/>
-  <ul v-if="bShowPlayers">
-    <li v-for="op in this.otherplayers"
-        :key="op.playerName"
-        :class="{ selected: isPlayerSelected(op.playerName) }"
-        @click="$emit('__' + 'select-player', op.playerName, player)">{{ op.playerName }}</li>
-  </ul>
+  </div>
+  <div>
+    <ul v-if="bShowPlayers">
+      <li v-for="op in this.otherplayers"
+          :key="op.playerName"
+          :class="{ selected: isPlayerSelected(op.playerName) }"
+          @click="$emit('__' + 'select-player', op.playerName, player)">{{ op.playerName }}</li>
+    </ul>
+  </div>
   <div>
     <ul>
       <li :key="varName.name" v-for="varName in playerVariables">{{ varName.name }}: {{ varName.value }}</li>
     </ul>
   </div>
-  <br/>
-  <button :disabled="!isSatisfied(obj.given)"
-          @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
-          v-for="obj in this.playerActions"
-          :key="obj.name">{{ obj.name ? obj.name : name }}</button>
+  <div>
+    <button :disabled="!isSatisfied(obj.given)"
+            @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
+            v-for="obj in this.playerActions"
+            :key="obj.name">{{ obj.name ? obj.name : name }}</button>
+  </div>
+  <div class="msgBubble" v-show="this.player.currentMessage.msgText !== ''">
+    <span>{{ this.player.currentMessage.msgText }}</span>
+  </div>
 </div>
 </template>
 
@@ -134,6 +140,13 @@ export default {
 <style scoped>
 .playerHand {
   font-size: 1.25em;
+}
+
+.msgBubble {
+  background-color: #ff595e;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 15px 5px 5px 5px;
 }
 
 .playerCard {
