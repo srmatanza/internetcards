@@ -21,6 +21,8 @@ function handleEffect(effect, player) {
     for (const ef in effect) {
       const fn = Effects[ef]
       if (typeof fn === 'function') {
+        // Update player variables between effect calls
+        _.assign(player, this.gs.players[player.idx])
         this.gs = fn.call({}, this.gs, effect[ef], player)
       } else if (typeof fn === 'symbol' && ef === 'effect') {
         handleEffects.call(this, effect.effect, player)
@@ -73,7 +75,7 @@ Instance.prototype.paListeners = function(callbackFn) {
       console.debug(name + ' event handler: ', mm, e, p, ps)
       _.assign(p, ps)
       try {
-        mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
+        // mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
         p.selectedCards = ps.selectedCards
         p.selectedPlayer = ps.selectedPlayer
         handleEffects.call(mm, e.effect, p)
