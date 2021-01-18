@@ -19,13 +19,13 @@ gvar _gDoneScoring = false
 pvar pPoints = 0
 pvar _pPassCards = true
 pvar _pScoreHandCreated = false
+pvar _pNextPlayer = 0
 
 phase lobby
   action start_game
     name: "Start Game"
     change_phase("setup")
   given
-    #in($playerCount, $possiblePlayers)
     $playerCount == $possiblePlayers
   endaction
 endphase
@@ -36,6 +36,7 @@ phase setup
     deal(52)
     _gCardsDealt = true
     new_rif($table, "currentTrick")
+    message("Begin the round by passing three cards to a neighbor!")
   given
     !_gCardsDealt
   endaction
@@ -44,16 +45,26 @@ phase setup
     name: "Pass Cards"
     gPlayerPassed = gPlayerPassed + 1
     _pPassCards = false
+    _pNextPlayer = ($player.idx+_gPassRecipient[gRoundIdx]) % $playerCount
     # do this here because it guarantees every player will do it
     if !_pScoreHandCreated then
       new_rif($player.cards, "_score")
       _pScoreHandCreated = true
     endif
     if handContainsCard("2C", $player.cards["hand"]) then
-      set_player($currentPlayer)
+      if handContainsCard("2C", $selectedCards) then
+        set_player(_pNextPlayer)
+        message("After everyone passes, you will lead the round with the 2C", 0, _pNextPlayer)
+        message("", 0, $currentPlayer)
+      else
+        set_player($currentPlayer)
+        message("After everyone passes, you will lead the round with the 2C", 0, $currentPlayer)
+      endif
+    else
+      message("", 0, $currentPlayer)
     endif
     move_cards($player.cards["hand"],
-               $otherPlayers[($player.idx+_gPassRecipient[gRoundIdx]) % $playerCount].cards["hand"],
+               $otherPlayers[_pNextPlayer].cards["hand"],
                $selectedCards)
   given
     _gCardsDealt
@@ -69,6 +80,8 @@ phase setup
     gTrickWinner = $player
     gLedCard = $selectedCards[0]
     move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
+    message("Now play a card that matches the suit of the card that led the trick.")
+    message("", 0, $currentPlayer)
     set_player($player.idx + 1)
   given
     $selectedCards.length == 1
@@ -93,6 +106,9 @@ phase trick_taking
       change_phase("trick_scoring")
       _gPlayedTrick = 0
       set_player(gTrickWinner.idx)
+      message("You won the trick! Now take it and lead the next hand!", 0, gTrickWinner.idx)
+    else
+      message("", 0, $currentPlayer)
     endif
     move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
   given
@@ -111,6 +127,7 @@ phase trick_scoring
       change_phase("scoring")
     endif
     move_cards($table["currentTrick"], $player.cards["_score"])
+    message("")
   given
     !_gTrickTaken
     gTrickWinner.playerName == $player.playerName
