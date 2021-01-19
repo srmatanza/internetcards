@@ -36,15 +36,15 @@ elseblock : 'else' stat+ ;
 // Expressions return a value.
 // If statements used as an expression will always return a value
 expr : ID '(' exprList? ')'            # fnExpr
-     | ID                              # oneVarExpr
-     | ID idx+                         # varExpr
      | 'if' expr 'then' expr ('elif' expr 'then' expr)* ('else' expr)? # ifthen
-     | UNOP expr                       # unop
+     | (SUB|NOT) expr                  # unop
      | expr MULDIV expr                # muldiv
-     | expr ADDSUB expr                # addsub
+     | expr (ADD|SUB) expr             # addsub
      | expr BINOP expr                 # binop
      | (NUM | STRING | BOOL)           # primitive
      | '(' expr ')'                    # paren
+     | ID idx+                         # varExpr
+     | ID                              # oneVarExpr
      ;
 exprList : expr (',' expr)* ;
 idx: '.' ID | '[' expr ']' ;
@@ -81,9 +81,7 @@ SL_COMMENT : WS* '#' .*? '\n' -> skip ;
 /* NEWLINE : '\r'? '\n' ;
  */
 
-UNOP : SUB | NOT ;
 MULDIV : MUL | DIV | MOD ;
-ADDSUB : ADD | SUB ;
 BINOP : EQ | LT | GT | LTE | GTE | NEQ | AND | OR ;
 
 MOD : '%' ;

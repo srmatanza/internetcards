@@ -218,4 +218,17 @@ describe('Transpiler tests', () => {
       ]
     })
   })
+
+  test('negation issues', () => {
+    const sharp = 'phase a action x a = a - b endaction endphase'
+    const obj = sharp2json(sharp)
+
+    expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
+      "set_var": {
+        "a": {
+          "-": [{ "var": "a" }, { "var": "b" }]
+        }
+      }
+    })
+  })
 })

@@ -294,7 +294,12 @@ GameListener.prototype.exitMuldiv = function(ctx) {
 }
 
 GameListener.prototype.enterAddsub = function(ctx) {
-  const id = ctx.ADDSUB().getText()
+  let id = ''
+  if(ctx.ADD()) {
+    id = ctx.ADD().getText()
+  } else if(ctx.SUB()) {
+    id = ctx.SUB().getText()
+  }
   this.pushExpr(id)
 }
 GameListener.prototype.exitAddsub = function(ctx) {
@@ -316,7 +321,12 @@ GameListener.prototype.exitBinop = function(ctx) {
 }
 
 GameListener.prototype.enterUnop = function(ctx) {
-  const id = ctx.UNOP().getText()
+  let id = ''
+  if(ctx.SUB()) {
+    id = ctx.SUB().getText()
+  } else if(ctx.NOT()) {
+    id = ctx.NOT().getText()
+  }
   this.pushExpr(id)
 }
 GameListener.prototype.exitUnop = function(ctx) {
