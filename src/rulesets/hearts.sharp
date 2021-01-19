@@ -17,6 +17,7 @@ gvar _gCardsDealt = false
 gvar _gDoneScoring = false
 
 pvar pPoints = 0
+pvar _pPointsThisRound = 0
 pvar _pPassCards = true
 pvar _pScoreHandCreated = false
 pvar _pNextPlayer = 0
@@ -164,12 +165,17 @@ phase scoring
   action score_round
     name: "Score Round"
     _gDoneScoring = true
-    pPoints @= reduce($player.cards["_score"],
+    _pPointsThisRound @= reduce($player.cards["_score"],
         accumulator + (
           if current.suit == 2 then 1
           elif cardEq("QS", current) then 13
           else 0
           ), 0)
+    # normally shooting the moon gives all other players 26pts
+    # but for simplicity, we'll just let it be worth -26pts to the current player
+    pPoints @= if _pPointsThisRound == 26 then (pPoints - 26)
+               else (pPoints + _pPointsThisRound)
+    _pPointsThisRound @= 0
   given
     !_gDoneScoring
   endaction
