@@ -286,7 +286,7 @@ GameListener.prototype.exitIfthen = function(ctx) {
 }
 
 GameListener.prototype.enterMuldiv = function(ctx) {
-  const id = ctx.MULDIV().getText()
+  const id = ctx.mulDiv().getText()
   this.pushExpr(id)
 }
 GameListener.prototype.exitMuldiv = function(ctx) {
@@ -294,12 +294,8 @@ GameListener.prototype.exitMuldiv = function(ctx) {
 }
 
 GameListener.prototype.enterAddsub = function(ctx) {
-  let id = ''
-  if(ctx.ADD()) {
-    id = ctx.ADD().getText()
-  } else if(ctx.SUB()) {
-    id = ctx.SUB().getText()
-  }
+  console.log('enterAddSub: ', ctx)
+  let id = ctx.addSub().getText()
   this.pushExpr(id)
 }
 GameListener.prototype.exitAddsub = function(ctx) {
@@ -307,7 +303,7 @@ GameListener.prototype.exitAddsub = function(ctx) {
 }
 
 GameListener.prototype.enterBinop = function(ctx) {
-  const id = ctx.BINOP().getText()
+  const id = ctx.binOp().getText()
   let opName = id
   if(id === '&&') {
     opName = 'and'
@@ -321,12 +317,7 @@ GameListener.prototype.exitBinop = function(ctx) {
 }
 
 GameListener.prototype.enterUnop = function(ctx) {
-  let id = ''
-  if(ctx.SUB()) {
-    id = ctx.SUB().getText()
-  } else if(ctx.NOT()) {
-    id = ctx.NOT().getText()
-  }
+  let id = ctx.unOp().getText()
   this.pushExpr(id)
 }
 GameListener.prototype.exitUnop = function(ctx) {

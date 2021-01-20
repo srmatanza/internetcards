@@ -37,10 +37,10 @@ elseblock : 'else' stat+ ;
 // If statements used as an expression will always return a value
 expr : ID '(' exprList? ')'            # fnExpr
      | 'if' expr 'then' expr ('elif' expr 'then' expr)* ('else' expr)? # ifthen
-     | (SUB|NOT) expr                  # unop
-     | expr MULDIV expr                # muldiv
-     | expr (ADD|SUB) expr             # addsub
-     | expr BINOP expr                 # binop
+     | unOp expr                       # unop
+     | expr mulDiv expr                # muldiv
+     | expr addSub expr                # addsub
+     | expr binOp expr                 # binop
      | (NUM | STRING | BOOL)           # primitive
      | '(' expr ')'                    # paren
      | ID idx+                         # varExpr
@@ -48,6 +48,11 @@ expr : ID '(' exprList? ')'            # fnExpr
      ;
 exprList : expr (',' expr)* ;
 idx: '.' ID | '[' expr ']' ;
+unOp: SUB | NOT ;
+addSub: SUB | ADD ;
+mulDiv: MUL | DIV | MOD ;
+binOp : EQ | LT | GT | LTE | GTE | NEQ | AND | OR ;
+
 
 decl : STRING
      | NUM
@@ -69,6 +74,7 @@ PVAR : 'pvar' ;
 GVAR : 'gvar' ;
 BOOL : 'true' | 'false' ;
 
+// ID can start with a $ or _ but not a number or upper case letter
 ID : [a-zA-Z]+ [a-zA-Z_0-9]* | '$' ID | '_' ID ;
 NUM : '-'? [0-9]* '.'? [0-9]+ ;
 
@@ -80,9 +86,6 @@ SL_COMMENT : WS* '#' .*? '\n' -> skip ;
 
 /* NEWLINE : '\r'? '\n' ;
  */
-
-MULDIV : MUL | DIV | MOD ;
-BINOP : EQ | LT | GT | LTE | GTE | NEQ | AND | OR ;
 
 MOD : '%' ;
 MUL : '*' ;
