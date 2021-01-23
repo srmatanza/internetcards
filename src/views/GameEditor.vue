@@ -59,7 +59,16 @@
       <div id="editorGrid" class="codeEditor">
         <div class="codeOptions">
           <h3>Card Game Rules</h3>
-          <button @click="parseSharp()">Compile</button>
+          <div>
+            <button @click="parseSharp()">Compile</button>
+          </div>
+          <div>
+            <input type="file" id="gameSrc" name="gameSrc" accept=".sharp" @change="uploadSharp" />
+            <label for="gameSrc">Upload Source</label>
+          </div>
+          <div>
+            <button @click="downloadSharp()" :disabled="!bCanDownload">Download Source</button>
+          </div>
         </div>
         <div id="sharpEditor"></div>
       </div>
@@ -77,6 +86,9 @@ import CardTable from '@/components/CardTable.vue'
 import * as CC from '@/cards.js'
 import Instance from '@/instance.js'
 import sharp2json from '@/sharp/transpile.js'
+
+// One hundred kilo-bytes ought to be enough for anyone
+const MAX_FILE_SIZE = 100 * 1024
 
 export default {
   name: 'gameEditor',
@@ -120,6 +132,38 @@ export default {
       } catch(ex) {
         console.log('uh oh: ', ex)
       }
+    },
+    uploadSharp: function(evt) {
+      const sharpFile = evt.target.files[0]
+      console.log('file: ', sharpFile)
+
+      if(sharpFile.length > MAX_FILE_SIZE) {
+        console.error('This file is way too big, try a smaller one')
+        return
+      }
+      sharpFile.text().then(text => {
+        this.editor.setValue(text)
+        this.parseSharp()
+      })
+    },
+    downloadSharp: function() {
+      const sharpFilename = 'download.sharp'
+      const sharpBlob = new Blob([this.editor.getValue()], { type: 'text/plain' })
+      const fObj = new File([sharpBlob], sharpFilename)
+      const urlObj = URL.createObjectURL(fObj)
+
+      // Create a download link for the file, immediately click it, then revoke the URL
+      const dl = document.createElement('a')
+      dl.href = urlObj
+      dl.download = sharpFilename
+      const clickHandler = () => {
+        setTimeout(() => {
+          URL.revokeObjectURL(urlObj)
+          dl.removeEventListener('click', clickHandler)
+        }, 150)
+      }
+      dl.addEventListener('click', clickHandler, false)
+      dl.click()
     },
     setupGameState: function(ruleset) {
       this.instance.setupGameState(ruleset)
@@ -204,6 +248,12 @@ export default {
     currentPlayer: function() {
       return this.currentGame.getCurrentPlayer()
     },
+    bCanDownload: function() {
+      if(this.editor.getValue) {
+        return this.editor.getValue().length>0
+      }
+      return false
+    },
     bRuleSetLoaded: function() {
       return this.currentGame.currentRuleSet !== undefined
     },
@@ -284,6 +334,12 @@ export default {
 
 .codeOptions {
   padding: 5px;
+  display: flex;
+  flex-flow: column wrap;
+}
+
+.codeOptions div {
+  margin: 4px 0px;
 }
 
 .player ul {
