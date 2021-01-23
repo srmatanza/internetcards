@@ -53,7 +53,6 @@ addSub: SUB | ADD ;
 mulDiv: MUL | DIV | MOD ;
 binOp : EQ | LT | GT | LTE | GTE | NEQ | AND | OR ;
 
-
 decl : STRING
      | NUM
      | array
