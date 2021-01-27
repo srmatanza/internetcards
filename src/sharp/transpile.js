@@ -295,7 +295,7 @@ GameListener.prototype.exitMuldiv = function(ctx) {
 
 GameListener.prototype.enterAddsub = function(ctx) {
   console.log('enterAddSub: ', ctx)
-  let id = ctx.addSub().getText()
+  const id = ctx.addSub().getText()
   this.pushExpr(id)
 }
 GameListener.prototype.exitAddsub = function(ctx) {
@@ -317,7 +317,7 @@ GameListener.prototype.exitBinop = function(ctx) {
 }
 
 GameListener.prototype.enterUnop = function(ctx) {
-  let id = ctx.unOp().getText()
+  const id = ctx.unOp().getText()
   this.pushExpr(id)
 }
 GameListener.prototype.exitUnop = function(ctx) {
