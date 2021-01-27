@@ -1,3 +1,11 @@
+import seedrandom from 'seedrandom'
+
+// const rng = seedrandom('hello.')
+
+function rng(seed) {
+  const csd = seed || 'weenus'
+  return seedrandom(csd)()
+}
 
 function Card(suit, val) {
   this.suit = suit || 1
@@ -44,7 +52,7 @@ function shuffleDeck(deck) {
   for(let i=0; i<len; i++) { cards[i] = toShuf[i] }
 
   for(let i=0; i<len; i++) {
-    const it = parseInt(i+Math.random()*(toShuf.length-i))
+    const it = parseInt(i+rng()*(toShuf.length-i))
     const c = cards[i]
     cards[i] = cards[it]
     cards[it] = c
