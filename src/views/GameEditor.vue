@@ -69,6 +69,13 @@
           <div>
             <button @click="downloadSharp()" :disabled="!bCanDownload">Download Source</button>
           </div>
+          <div id="stateWindow">
+            <span v-for="slot in stateStack" :key="slot.name">
+              <button v-show="!slot.lastUsed" :class="{ btnUsedState: !isSlotEmpty(slot) }" @click="selectSlot(slot, $event)">{{ getSlotText(slot) }} {{slot.name}}</button>
+              <button v-show="slot.lastUsed" :style="{ opacity: isSlotChanged(slot) ? '100%' : '25%' }" :disabled="!isSlotChanged(slot)" class="btnReloadState" @click="selectSlot(slot, $event)">Reload</button>
+              <button v-show="slot.lastUsed" :style="{ opacity: isSlotChanged(slot) ? '100%' : '25%' }" :disabled="!isSlotChanged(slot)" class="btnOverwriteState" @click="saveSlot(slot, $event)">Save</button>
+            </span>
+          </div>
         </div>
         <div id="sharpEditor"></div>
       </div>
@@ -90,6 +97,26 @@ import sharp2json from '@/sharp/transpile.js'
 // One hundred kilo-bytes ought to be enough for anyone
 const MAX_FILE_SIZE = 100 * 1024
 
+function createTextDownload(fileName, textFile) {
+  const sharpFilename = fileName
+  const sharpBlob = new Blob([textFile], { type: 'text/plain' })
+  const fObj = new File([sharpBlob], sharpFilename)
+  const urlObj = URL.createObjectURL(fObj)
+
+  // Create a download link for the file, immediately click it, then revoke the URL
+  const dl = document.createElement('a')
+  dl.href = urlObj
+  dl.download = sharpFilename
+  const clickHandler = () => {
+    setTimeout(() => {
+      URL.revokeObjectURL(urlObj)
+      dl.removeEventListener('click', clickHandler)
+    }, 150)
+  }
+  dl.addEventListener('click', clickHandler, false)
+  dl.click()
+}
+
 export default {
   name: 'gameEditor',
   data: function() {
@@ -101,6 +128,7 @@ export default {
       bDebugMode: false,
       bOnlyShowCurrent: false,
       actionLog: [],
+      stateStack: _.map(['A', 'B', 'C', 'D'], nm => ({ name: nm, gs: {} })),
       Cards: CC,
       editor: {}
     }
@@ -133,6 +161,36 @@ export default {
         console.log('uh oh: ', ex)
       }
     },
+    isSlotEmpty: function(slot) {
+      return _.isEqual(slot.gs, {})
+    },
+    isSlotChanged: function(slot) {
+      return !_.isEqual(slot.gs, this.currentGame)
+    },
+    getSlotText: function(slot) {
+      if(this.isSlotEmpty(slot)) {
+        return 'New'
+      }
+      return 'Load'
+    },
+    saveSlot: function(slot, evt) {
+      // only gets called if this slot is already current
+      slot.gs = _.cloneDeep(this.currentGame)
+    },
+    selectSlot: function(slot, evt) {
+      if(_.isEqual(this.currentGame, {})) {
+        return
+      }
+      if(_.isEqual(slot.gs, {})) {
+        slot.gs = _.cloneDeep(this.currentGame)
+      } else {
+        this.currentGame = _.cloneDeep(slot.gs)
+      }
+      for(const sl of this.stateStack) {
+        sl.lastUsed = false
+      }
+      slot.lastUsed = true
+    },
     uploadSharp: function(evt) {
       const sharpFile = evt.target.files[0]
       console.log('file: ', sharpFile)
@@ -147,23 +205,10 @@ export default {
       })
     },
     downloadSharp: function() {
-      const sharpFilename = 'download.sharp'
-      const sharpBlob = new Blob([this.editor.getValue()], { type: 'text/plain' })
-      const fObj = new File([sharpBlob], sharpFilename)
-      const urlObj = URL.createObjectURL(fObj)
-
-      // Create a download link for the file, immediately click it, then revoke the URL
-      const dl = document.createElement('a')
-      dl.href = urlObj
-      dl.download = sharpFilename
-      const clickHandler = () => {
-        setTimeout(() => {
-          URL.revokeObjectURL(urlObj)
-          dl.removeEventListener('click', clickHandler)
-        }, 150)
-      }
-      dl.addEventListener('click', clickHandler, false)
-      dl.click()
+      createTextDownload('download.sharp', this.editor.getValue())
+    },
+    downloadActionLog: function() {
+      createTextDownload('actions.log', JSON.stringify(this.actionLog, null, 2))
     },
     setupGameState: function(ruleset) {
       this.instance.setupGameState(ruleset)
@@ -342,17 +387,6 @@ export default {
   margin: 4px 0px;
 }
 
-.player ul {
-  list-style-type: none;
-  padding: 2px;
-}
-
-.player li {
-  border: 1px solid chartreuse;
-  margin: 4px;
-  padding: 6px 8px;
-}
-
 .heading {
   display: flex;
   flex-direction: column;
@@ -361,6 +395,54 @@ export default {
 #divPlayers {
   display: flex;
   flex-flow: row wrap;
+}
+
+#stateWindow {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+#stateWindow button {
+  width: 4em;
+  height: 4em;
+  border-radius: .5em;
+  margin: .2em .6em .2em 0em;
+  outline: none;
+
+  background-color: #ddf2ba;
+  border: .2em solid #cceb98;
+  color: #76ab21;
+}
+
+#stateWindow .btnUsedState {
+  background-color: #8ac926;
+  border-color: #76ab21;
+  color: #76ab21;
+}
+
+#stateWindow .btnLastSaved {
+  background-color: #ffd970;
+  border-color: #ffbe0a;
+  color: #a37800;
+}
+
+#stateWindow > span {
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+#stateWindow .btnOverwriteState {
+  background-color: #ff8589;
+  border-color: #ff474e;
+  color: #a30005;
+  height: 1.8em;
+}
+
+#stateWindow .btnReloadState {
+  background-color: #ffd970;
+  border-color: #ffbe0a;
+  color: #a37800;
+  height: 1.8em;
 }
 
 </style>

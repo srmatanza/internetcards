@@ -158,7 +158,7 @@ export default {
   margin: .2em .2em .2em -.6em;
   padding: .9em .2em;
   border-radius: 5px;
-  border: 1px solid darkblue;
+  border: 1px solid #093048;
 }
 
 .msgBubble {
