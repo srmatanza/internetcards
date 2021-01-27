@@ -6,8 +6,8 @@
   <div v-if="!bEmptyHand" class="playerHand">
     <span v-for="card in this.player.cards.hand"
           :key="printCard(card)"
-          :class="{ selected: isSelected(card) }"
-          @click="$emit('__' + 'select-card', card, player)"> [{{ printCard(card) }}] </span>
+          :class="{ selected: isSelected(card), redCard: isRedCard(card), blackCard: isBlackCard(card) }"
+          @click="$emit('__' + 'select-card', card, player)">{{ printCard(card) }}</span>
   </div>
   <div>
     <ul v-if="bShowPlayers">
@@ -63,6 +63,12 @@ export default {
     },
     isPlayerSelected: function(opName) {
       return _.isEqual(opName, this.playerSelection.selectedPlayer)
+    },
+    isRedCard: function(card) {
+      return card.suit === 2 || card.suit === 3
+    },
+    isBlackCard: function(card) {
+      return card.suit === 1 || card.suit === 4
     },
     isSelected: function(card) {
       for(const cc of this.playerSelection.selectedCards) {
@@ -140,6 +146,19 @@ export default {
 <style scoped>
 .playerHand {
   font-size: 1.25em;
+  display: flex;
+  flex-flow: row wrap;
+  margin-left: .8em;
+}
+
+.playerHand > span {
+  background-color: whitesmoke;
+  text-align: center;
+  width: 1.8em;
+  margin: .2em .2em .2em -.6em;
+  padding: .9em .2em;
+  border-radius: 5px;
+  border: 1px solid darkblue;
 }
 
 .msgBubble {
@@ -163,9 +182,17 @@ export default {
   padding: 10px;
 }
 
-.selected {
-  color: #3d2d00;
+span.selected {
+  /* color: #3d2d00; */
   background-color: #FFCA3A;
+}
+
+.blackCard {
+  color: darkslategray;
+}
+
+.redCard {
+  color: #ff595e;
 }
 
 button {
