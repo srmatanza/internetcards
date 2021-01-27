@@ -179,12 +179,6 @@ export default {
         }
       }
       return {
-        __deal: wrapListener('deal'),
-        __pass: wrapListener('pass'),
-        __lead: wrapListener('lead'),
-        __play_card: wrapListener('play_card'),
-        __take_trick: wrapListener('take_trick'),
-        __new_round: wrapListener('new_round'),
         __custom_action: wrapListener('custom_action'),
         '__select-card': this.paSelectCard,
         '__select-player': this.paSelectPlayer
@@ -198,38 +192,39 @@ export default {
         this.currentGame = _.assign(new State.GameState(), newState.instance.gs)
       }
     },
+    wsOnMessage: res => {
+      if(res.gameInstance && res.gameInstance.gameIdentifier === this.whoami.gid) {
+        this.setGameState(res.gameInstance)
+        if(res.loggedAction) {
+          this.actionLog.push(res.loggedAction)
+        }
+      } else if(res.type === 'connection') {
+        console.log('Received a connection response')
+      } else {
+        console.debug('Message does not contain game state.')
+      }
+    },
+    wsOnOpen: () => {
+      const openMsg = JSON.stringify({
+        do: 'connect',
+        gameId: this.whoami.gid,
+        playerSecret: this.whoami.playerSecret
+      })
+      console.log('Opening a connection: ', openMsg)
+      this.ws.send(openMsg)
+    },
+    wsOnClose: () => {
+      if(this.reconnectionLimit > 0) {
+        console.log('Attempting to reconect')
+        this.reconnectionLimit = this.reconnectionLimit - 1
+        this.reloadGameState()
+      } else {
+        console.log('No longer attempting to reconnect, please manually refresh the page')
+      }
+    },
     reloadGameState: function() {
       this.ws = _.assign(new WebSocket(this.WS_CONNECTION_STRING),
-        new WSClient(res => {
-          if(res.gameInstance && res.gameInstance.gameIdentifier === this.whoami.gid) {
-            this.setGameState(res.gameInstance)
-            if(res.loggedAction) {
-              this.actionLog.push(res.loggedAction)
-            }
-          } else if(res.type === 'connection') {
-            console.log('Received a connection response')
-          } else {
-            console.debug('Message does not contain game state.')
-          }
-        },
-        res => {
-          const openMsg = JSON.stringify({
-            do: 'connect',
-            gameId: this.whoami.gid,
-            playerSecret: this.whoami.playerSecret
-          })
-          console.log('Opening a connection: ', openMsg)
-          this.ws.send(openMsg)
-        },
-        res => {
-          if(this.reconnectionLimit > 0) {
-            console.log('Attempting to reconect')
-            this.reconnectionLimit = this.reconnectionLimit-1
-            this.reloadGameState()
-          } else {
-            console.log('No longer attempting to reconnect, please manually refresh the page')
-          }
-        }))
+        new WSClient(this.wsOnMessage, this.wsOnOpen, this.wsOnClose))
     },
     isCurrentPlayer: function(pn) {
       return this.currentGame.isCurrentPlayer(pn)

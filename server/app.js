@@ -280,7 +280,7 @@ app.post('/api/login', (req,res) => {
     }
 })
 
-app.post('/api/newgame', (req,res) => {   
+app.post('/api/newgame', (req,res) => {
     if(req.session.authd) {
         console.log('POST newgame: ', req.body)
         const ruleset = req.body.ruleset
@@ -297,6 +297,7 @@ app.post('/api/newgame', (req,res) => {
         }
         const saveHistory = req.body.saveHistory || false
 
+        // Get ruleset from disk
         const rsFile = ruleset + '.json'
         const rsPath = path.join(__dirname, 'src/rulesets', rsFile)
         const rsJson = getJSONRuleSet(rsPath)
@@ -309,24 +310,16 @@ app.post('/api/newgame', (req,res) => {
         const gi = Handlers.postNewgame(JSON.parse(rsJson.content), saveHistory).gameInstance
         console.debug('Creating a new game: ', gi)
 
-        if(playerName) {
-            const _gid = gi.gameIdentifier
-            Handlers.postJoingame(gi.instance.gs, playerName)
-            const playerSecret = uuid()
+        const _gid = gi.gameIdentifier
+        Handlers.postJoingame(gi.instance.gs, playerName)
+        const playerSecret = uuid()
 
-            req.session.gameId = _gid
-            req.session.playing = true
-            req.session.playerName = playerName
-            req.session.playerSecret = playerSecret
-            console.debug(`Joining ${_gid} as ${playerName}\n`)
-            res.send({ gameId: _gid, playerName: playerName, playerSecret: playerSecret })
-            return
-        }
-
-        const ret = {
-            gameId: gi.gameIdentifier
-        }
-        res.send(ret)
+        req.session.gameId = _gid
+        req.session.playing = true
+        req.session.playerName = playerName
+        req.session.playerSecret = playerSecret
+        console.debug(`Joining ${_gid} as ${playerName}\n`)
+        res.send({ gameId: _gid, playerName: playerName, playerSecret: playerSecret })
     } else {
         console.log('Unauthorized /newgame access')
         res.status(401).send('Must be logged in to perform this action.\n')
