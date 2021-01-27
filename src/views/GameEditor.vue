@@ -63,15 +63,18 @@
             <button @click="parseSharp()">Compile</button>
           </div>
           <div>
+            <label for="gameSrc">Upload Source </label>
             <input type="file" id="gameSrc" name="gameSrc" accept=".sharp" @change="uploadSharp" />
-            <label for="gameSrc">Upload Source</label>
           </div>
           <div>
             <button @click="downloadSharp()" :disabled="!bCanDownload">Download Source</button>
           </div>
           <div id="stateWindow">
+            <h3>Save Slots</h3>
             <span v-for="slot in stateStack" :key="slot.name">
-              <button v-show="!slot.lastUsed" :class="{ btnUsedState: !isSlotEmpty(slot) }" @click="selectSlot(slot, $event)">{{ getSlotText(slot) }} {{slot.name}}</button>
+              <label>Slot {{ slot.name }}</label>
+              <button v-show="!slot.lastUsed && !isSlotEmpty(slot)" class="btnOverwriteState" @click="eraseSlot(slot, $event)">Erase</button>
+              <button v-show="!slot.lastUsed" :class="{ btnUsedState: !isSlotEmpty(slot) }" :style="{ height: !isSlotEmpty(slot) ? '1.8em' : '4em' }" @click="selectSlot(slot, $event)">{{ getSlotText(slot) }}</button>
               <button v-show="slot.lastUsed" :style="{ opacity: isSlotChanged(slot) ? '100%' : '25%' }" :disabled="!isSlotChanged(slot)" class="btnReloadState" @click="selectSlot(slot, $event)">Reload</button>
               <button v-show="slot.lastUsed" :style="{ opacity: isSlotChanged(slot) ? '100%' : '25%' }" :disabled="!isSlotChanged(slot)" class="btnOverwriteState" @click="saveSlot(slot, $event)">Save</button>
             </span>
@@ -169,9 +172,12 @@ export default {
     },
     getSlotText: function(slot) {
       if(this.isSlotEmpty(slot)) {
-        return 'New'
+        return 'New ' + slot.name
       }
       return 'Load'
+    },
+    eraseSlot: function(slot, evt) {
+      slot.gs = {}
     },
     saveSlot: function(slot, evt) {
       // only gets called if this slot is already current
@@ -406,7 +412,7 @@ export default {
   width: 4em;
   height: 4em;
   border-radius: .5em;
-  margin: .2em .6em .2em 0em;
+  margin: .2em .2em .2em .4em;
   outline: none;
 
   background-color: #ddf2ba;
@@ -429,6 +435,10 @@ export default {
 #stateWindow > span {
   display: flex;
   flex-flow: column nowrap;
+}
+
+#stateWindow label {
+  text-align: center;
 }
 
 #stateWindow .btnOverwriteState {
