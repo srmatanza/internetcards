@@ -7,7 +7,6 @@
         <span v-for="player in state.players" :key="player.playerName">{{ player.playerName }}, </span>
       </div>
       <div><span>deck: </span><span>{{ this.state.deck.cards.length }}</span></div>
-      <div><span>discardPile: </span><span>{{ this.state.discard.length }}</span></div>
       <div><span v-for="card in this.state.trick" :key="printCard(card)">[{{ printCard(card) }}]</span></div>
     </div>
   </div>

@@ -115,15 +115,10 @@ GameListener.prototype.exitAssignment = function(ctx) {
     varAss = 'set_var_each_player'
   }
 
-  let setVar = this.currentStatementTarget.find(o => Object.prototype.hasOwnProperty.call(o, varAss))
-  if(setVar) {
-    setVar[varAss][varName] = rvalue
-  } else {
-    setVar = {}
-    setVar[varAss] = {}
-    setVar[varAss][varName] = rvalue
-    this.currentStatementTarget.push(setVar)
-  }
+  const setVar = {}
+  setVar[varAss] = {}
+  setVar[varAss][varName] = rvalue
+  this.currentStatementTarget.push(setVar)
 
   this.popExpr()
 }
@@ -294,7 +289,7 @@ GameListener.prototype.exitMuldiv = function(ctx) {
 }
 
 GameListener.prototype.enterAddsub = function(ctx) {
-  console.log('enterAddSub: ', ctx)
+  // console.log('enterAddSub: ', ctx)
   const id = ctx.addSub().getText()
   this.pushExpr(id)
 }
@@ -339,14 +334,19 @@ GameListener.prototype.enterPrimitive = function(ctx) {
 GameListener.prototype.exitPrimitive = function(ctx) {
 }
 
-export default function sharp2json(sharpFile) {
+export default function sharp2json(sharpFile, errorListener) {
   const input = sharpFile
   const chars = new antlr4.InputStream(input)
   const lexer = new SharpLexer(chars)
   const tokens = new antlr4.CommonTokenStream(lexer)
-  const parser = new SharpParser(tokens)
 
+  const parser = new SharpParser(tokens)
   parser.buildParseTrees = true
+  if(errorListener) {
+    parser.removeErrorListeners()
+    parser.addErrorListener(errorListener)
+  }
+
   const tree = parser.game()
 
   const printer = new GameListener()

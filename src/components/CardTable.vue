@@ -3,7 +3,7 @@
     <h3>Table</h3>
     <div>
       <h4>Rifs</h4>
-      <div :key="rif" v-for="rif in tableRifs">
+      <div :key="rif" v-for="rif in tableRifs()">
         {{ rif }}
         <span v-for="card in rifs[rif]" :key="printCard(card)">[{{ printCard(card) }}]</span>
       </div>
@@ -29,15 +29,13 @@ export default {
   props: [
     'rifs',
     'otherplayers',
-    'gameVars',
+    'gamevars',
     'bDebugMode'
   ],
   methods: {
     printCard: function(card) {
       return CC.printCard(card)
-    }
-  },
-  computed: {
+    },
     tableRifs: function() {
       const ret = []
       for(const rif in this.rifs) {
@@ -46,13 +44,15 @@ export default {
         }
       }
       return ret
-    },
+    }
+  },
+  computed: {
     gameVariables: function() {
       const ret = []
-      for(const idx in this.gameVars) {
+      for(const idx in this.gamevars) {
         const vv = {
           name: idx,
-          value: this.gameVars[idx]
+          value: this.gamevars[idx]
         }
         if(this.bDebugMode || !vv.name.startsWith('_')) {
           ret.push(vv)

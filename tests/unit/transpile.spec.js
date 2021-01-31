@@ -231,4 +231,21 @@ describe('Transpiler tests', () => {
       }
     })
   })
+
+  test('assignments are ordered correctly: ', () => {
+    const sharp = 'phase a action x a = 0 b = 1 c = 2 endaction endphase'
+    const obj = sharp2json(sharp)
+
+    expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
+      "set_var": {
+        "c": 2,
+      },
+      "set_var": {
+        "b": 1,
+      },
+      "set_var": {
+        "a": 0,
+      }
+    })
+  })
 })

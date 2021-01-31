@@ -19,7 +19,7 @@ export default function (ruleset) {
   this.gameIdentifier = genGameId()
 
   this.getActionForCurrentPhase = function(actionName) {
-    const phases = this.instance.gs.currentRuleSet.gameplay
+    const phases = this.instance.currentRuleSet.gameplay
     for(const phase of phases) {
       if(phase.name === this.instance.gs.currentPhase) {
         for(const action of phase.playerActions) {

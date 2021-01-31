@@ -4,9 +4,9 @@ import _ from 'lodash'
 import Logic from '../src/logic.js'
 import { Message, Rif } from '../src/state.js'
 
-function _computeArg(gs, arg, player) {
+function _computeArg(gi, arg, player) {
   if(typeof arg === 'object') {
-    return Logic.computeRule(arg, gs.glomVars(player))
+    return Logic.computeRule(arg, gi.glomVars(player))
   }
   return arg
 }
@@ -20,10 +20,10 @@ function _drawCardFromDeckToHand(deck, hand) {
   hand.push(deck.cards.pop())
 }
 
-function _computeVarsForPlayer(gs, vars, player) {
+function _computeVarsForPlayer(gi, vars, player) {
   const newVars = {}
   for(const vn in vars) {
-    newVars[vn] = _computeArg(gs, vars[vn], player)
+    newVars[vn] = _computeArg(gi, vars[vn], player)
   }
   return newVars
 }
@@ -63,8 +63,8 @@ function _filterOutCardsFromHand(selectedCards, hand) {
   return _.filter(hand, card => !_cardIncludes(selectedCards, card))
 }
 
-function _isGameVar(gs, variable) {
-  for(const gv in gs.currentRuleSet.gameVariables) {
+function _isGameVar(gi, variable) {
+  for(const gv in gi.gs.gameVariables) {
     if(gv === variable) {
       return true
     }
@@ -72,8 +72,8 @@ function _isGameVar(gs, variable) {
   return false
 }
 
-function _isPlayerVar(gs, variable) {
-  for(const pv in gs.currentRuleSet.playerVariables) {
+function _isPlayerVar(gi, variable) {
+  for(const pv in gi.currentRuleSet.playerVariables) {
     if(pv === variable) {
       return true
     }
@@ -81,13 +81,13 @@ function _isPlayerVar(gs, variable) {
   return false
 }
 
-function changePhase(gs, args) {
-  gs.currentPhase = args[0]
+function changePhase(gi, args) {
+  gi.gs.currentPhase = args[0]
 }
 
-function newRif(gs, args, player) {
+function newRif(gi, args, player) {
   // ensure that the first arg is an instanceof Player.Rif
-  const toHand = _computeArg(gs, args[0], player)
+  const toHand = _computeArg(gi, args[0], player)
   const rifName = args[1]
 
   if(!(toHand instanceof Rif)) {
@@ -98,12 +98,12 @@ function newRif(gs, args, player) {
   toHand[rifName] = []
 }
 
-function moveCards(gs, args, player) {
-  const fromHand = _computeArg(gs, args[0], player) // Uncomputed varname
-  const toHand = _computeArg(gs, args[1], player) // Uncomputed varname
+function moveCards(gi, args, player) {
+  const fromHand = _computeArg(gi, args[0], player) // Uncomputed varname
+  const toHand = _computeArg(gi, args[1], player) // Uncomputed varname
   let selectedCards
   if(args[2] !== undefined) {
-    selectedCards = _computeArg(gs, args[2], player)
+    selectedCards = _computeArg(gi, args[2], player)
   } else {
     selectedCards = fromHand
   }
@@ -125,7 +125,7 @@ function moveCards(gs, args, player) {
   }
 }
 
-function setVar(gs, gameVars, player) {
+function setVar(gi, gameVars, player) {
   const vars = _.cloneDeep(gameVars)
   // figure out if vars is a global or player variable
   const pvars = {}
@@ -133,81 +133,81 @@ function setVar(gs, gameVars, player) {
   for(const vidx in vars) {
     let vn = vars[vidx]
     if(typeof vn === 'object') {
-      vn = Logic.computeRule(vn, gs.glomVars(player))
+      vn = Logic.computeRule(vn, gi.glomVars(player))
     }
-    if(_isGameVar(gs, vidx)) {
+    if(_isGameVar(gi, vidx)) {
       gvars[vidx] = vn
-    } else if(_isPlayerVar(gs, vidx)) {
+    } else if(_isPlayerVar(gi, vidx)) {
       pvars[vidx] = vn
     } else {
       console.error('Undefined variable: ', vidx)
     }
   }
-  _.assign(gs.currentRuleSet.gameVariables, gvars)
-  _.assign(gs.players[player.idx].playerVariables, pvars)
+  _.assign(gi.gs.gameVariables, gvars)
+  _.assign(gi.gs.players[player.idx].playerVariables, pvars)
 }
 
-function setVarEachPlayer(gs, playerVars, player) {
-  for(const p of gs.players) {
-    const newVars = _computeVarsForPlayer(gs, _.cloneDeep(playerVars), p)
-    _.assign(gs.players[p.idx].playerVariables, newVars)
+function setVarEachPlayer(gi, playerVars, player) {
+  for(const p of gi.gs.players) {
+    const newVars = _computeVarsForPlayer(gi, _.cloneDeep(playerVars), p)
+    _.assign(gi.gs.players[p.idx].playerVariables, newVars)
   }
 }
 
-function setPlayer(gs, idx, player) {
-  const newIdx = _computeArg(gs, idx, player)
-  gs.currentPlayerIdx = parseInt(newIdx) % gs.getPlayerCount()
+function setPlayer(gi, idx, player) {
+  const newIdx = _computeArg(gi, idx, player)
+  gi.gs.currentPlayerIdx = parseInt(newIdx) % gi.getPlayerCount()
 }
 
-function advancePlayer(gs, incr, player) {
-  const newIncr = _computeArg(gs, incr, player)
-  gs.currentPlayerIdx = (gs.currentPlayerIdx + parseInt(newIncr)) % gs.getPlayerCount()
+function advancePlayer(gi, incr, player) {
+  const newIncr = _computeArg(gi, incr, player)
+  gi.gs.currentPlayerIdx = (gi.gs.currentPlayerIdx + parseInt(newIncr)) % gi.getPlayerCount()
 }
 
-function newRound(gs) {
-  gs.resetRound(true)
+function newRound(gi) {
+  gi.gs.resetRound(true)
 }
 
-function draw(gs, args, player) {
+function draw(gi, args, player) {
   const numCards = args[0]
   for(let i = 0; i < numCards; i++) {
-    _drawCardFromDeckToHand(gs.deck, player.cards.hand)
+    _drawCardFromDeckToHand(gi.gs.deck, player.cards.hand)
   }
 }
 
-function deal(gs, args, player) {
-  const numPlayers = gs.getPlayerCount()
-  const numCards = _computeArg(gs, args[0], player)
+function deal(gi, args, player) {
+  const numPlayers = gi.getPlayerCount()
+  const numCards = _computeArg(gi, args[0], player)
   console.log(`dealing ${numCards} cards to ${numPlayers} players`)
 
   for(let i = 0; i < numCards; i++) {
-    const curPlayer = gs.players[i%numPlayers]
-    _drawCardFromDeckToHand(gs.deck, curPlayer.cards.hand)
+    const curPlayer = gi.gs.players[i%numPlayers]
+    _drawCardFromDeckToHand(gi.gs.deck, curPlayer.cards.hand)
   }
 }
 
-function message(gs, args, player) {
+function message(gi, args, player) {
   let playerIdx = -1
   let msgType = Message.prototype.INFO
   let msgText = ''
   let pMsg = null
   switch(args.length) {
     case 3:
-      playerIdx = _computeArg(gs, args[2], player)
+      playerIdx = _computeArg(gi, args[2], player)
     case 2:
-      msgType = _computeArg(gs, args[1], player)
+      msgType = _computeArg(gi, args[1], player)
     case 1:
-      msgText = _computeArg(gs, args[0], player)
+      msgText = _computeArg(gi, args[0], player)
       // also, parse msgText as a template for var substitution
       pMsg = new Message(msgText, msgType)
       console.log('Setting message: ', pMsg)
       if(playerIdx === -1) {
-        for(const pidx in gs.players) {
-          gs.players[pidx].currentMessage = pMsg
+        for(const pidx in gi.gs.players) {
+          gi.gs.players[pidx].currentMessage = pMsg
         }
       } else {
-        if(playerIdx < gs.players.length) {
-          gs.players[playerIdx].currentMessage = pMsg
+        if(playerIdx < gi.gs.players.length) {
+          gi.gs.players[playerIdx].currentMessage = pMsg
         } else {
           console.error('Player index is out of bounds!')
         }
@@ -237,21 +237,21 @@ function checkArgs(args, argTypes) {
   }
 }
 
-function wrapEffect(fnCallback, gs, args, p, argTypes) {
+function wrapEffect(fnCallback, gi, args, p, argTypes) {
   try {
     checkArgs(args, argTypes)
   } catch(ex) {
     console.error(`${fnCallback.name} function invocation error: `, ex.message)
-    return gs
+    return gi.gs
   }
-  const _gs = _.cloneDeep(gs)
-  fnCallback.call({}, _gs, args, p)
-  return _gs
+  // const _gs = _.cloneDeep(gi.gs)
+  fnCallback.call({}, gi, args, p)
+  return gi.gs
 }
 
 function callHandler(fnCallback, argTypes) {
-  return function(gs, args, p) {
-    return wrapEffect(fnCallback, gs, args, p, argTypes)
+  return function(gi, args, p) {
+    return wrapEffect(fnCallback, gi, args, p, argTypes)
   }
 }
 

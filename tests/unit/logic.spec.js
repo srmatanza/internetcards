@@ -1,13 +1,14 @@
 import _ from 'lodash'
 import Logic from '@/logic.js'
 import Effects from '@/effects.js'
+import Instance from '@/instance.js'
 import * as State from '@/state.js'
 import * as CC from '@/cards.js'
 // Get this from hearts.json instead
 // import Hearts from '@/rulesets/hearts.js'
 
 describe('Logic tests for actions and effects', () => {
-    let gs = {}
+    let gi
     let givenHandContainsCard = {'handContainsCard': ['2C', {"var": "currentPlayer.cards.hand" }]}
     let givenHandContainsSuit = {'handContainsSuit': ['H', {"var": "currentPlayer.cards.hand"}]}
     let cardEqQS = { cardEq: ['QS', { var: 'card' }] }
@@ -15,36 +16,38 @@ describe('Logic tests for actions and effects', () => {
     beforeEach(() => {
         //console.log("Calling beforeEach")
         // Setup the game state for each test
-        gs = new State.GameState()
-        gs.resetRound()
-        gs.players.push(new State.PlayerState('Mike'))
-        gs.players.push(new State.PlayerState('Comfort'))
+        gi = new Instance()
+        gi.gs.resetRound()
+        // gs.players.push(new State.PlayerState('Mike'))
+        // gs.players.push(new State.PlayerState('Comfort'))
+        gi.addPlayer('Mike')
+        gi.addPlayer('Comfort')
         // gs = Actions.deal(gs, { cards: 52 })
-        gs = Effects.deal(gs, [52])
+        gi.gs = Effects.deal(gi, [52])
     })
 
     test('handContainsCard is satisfied', () => {
-        const playerOne = gs.players[0]
-        const playerTwo = gs.players[1]
+        const playerOne = gi.gs.players[0]
+        const playerTwo = gi.gs.players[1]
         let bSat = false
-        bSat = Logic.isSatisfied(givenHandContainsCard,
+        bSat = Logic.isSatisfied([givenHandContainsCard],
                         _.assign({}, {currentPlayer: playerOne}))
         expect(bSat).toBe(false)
-        bSat = Logic.isSatisfied(givenHandContainsCard,
+        bSat = Logic.isSatisfied([givenHandContainsCard],
                         _.assign({}, {currentPlayer: playerTwo}))
         expect(bSat).toBe(true)
     })
 
 
     test('handContainsSuit is satisfied', () => {
-        const playerOne = gs.players[0]
+        const playerOne = gi.gs.players[0]
         // const playerTwo = gs.players[1]
         let bSat = false
-        bSat = Logic.isSatisfied(givenHandContainsSuit,
+        bSat = Logic.isSatisfied([givenHandContainsSuit],
                         _.assign({}, {currentPlayer: playerOne}))
         expect(bSat).toBe(true)
 
-        bSat = Logic.isSatisfied({'!': [givenHandContainsSuit]},
+        bSat = Logic.isSatisfied([{'!': [givenHandContainsSuit]}],
                         _.assign({}, {currentPlayer: playerOne}))
 
         expect(bSat).toBe(false)
@@ -53,7 +56,7 @@ describe('Logic tests for actions and effects', () => {
     test('cardEq is satisfied', () => {
         const QS = new CC.Card(1, 12)
         
-        const bSat = Logic.isSatisfied(cardEqQS,
+        const bSat = Logic.isSatisfied([cardEqQS],
                         _.assign({}, { card: QS }))
 
         expect(bSat).toBe(true)

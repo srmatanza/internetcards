@@ -342,14 +342,15 @@ app.post('/api/joingame/:gameId', (req,res) => {
         return
     }
     const gs = gi.instance.gs
+    const ruleSet = gi.instance.currentRuleSet
     if(gs.getPlayer(playerName)) {
         const errRet = new ErrMsg(`A player named ${playerName} already joined this game.`)
         console.log(errRet)
         res.status(400).send(errRet)
         return
     }
-    if(_.isArray(gs.currentRuleSet.possiblePlayers)) {
-        const maxPlayers = gs.currentRuleSet.possiblePlayers.reduce( (a,n) => Math.max(a,n))
+    if(_.isArray(ruleSet.possiblePlayers)) {
+        const maxPlayers = ruleSet.possiblePlayers.reduce( (a,n) => Math.max(a,n))
         if(gs.getPlayerCount() >= maxPlayers) {
             const errRet = new ErrMsg('The maximum number of players have already joined this game.')
             console.error(errRet)

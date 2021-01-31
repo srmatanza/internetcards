@@ -6,11 +6,11 @@
       <div class="heading">
         <h3>Game Editor</h3>
 
-        <div v-if="!bGameSetup">
-          <form ref="fmAddPlayer" id="editorForm">
+        <div v-if="bGameSetup">
+          <form ref="fmAddPlayer" id="editorForm" @submit.prevent="addPlayer">
             <span>
               <input v-model.trim="newPlayerName" placeholder="Player Name" ref="playerNameInput"/>&nbsp;
-              <input type="submit" :disabled="newPlayerName === ''" @click="addPlayer(newPlayerName)" value="Add Player" />
+              <input type="submit" :disabled="newPlayerName === ''" value="Add Player" />
             </span>
             <span>
               <input type="checkbox" id="chkDebug" v-model="bDebugMode" />
@@ -24,16 +24,16 @@
         </div>
 
         <h3>Players</h3>
-        <div id="divPlayers" class="statebox player" v-if="numPlayers && !bOnlyShowCurrent">
+        <div id="divPlayers" class="statebox player" v-if="!bOnlyShowCurrent">
           <Player v-for="player in currentGame.players"
             :key="player.playerName"
             :player="player"
-            :otherplayers="otherPlayers"
+            :otherplayers="currentGame.players"
             :playerselections="playerSelections"
             :gamerules="gameRules"
-            :currentphase="currentphase"
+            :gamevars="gameVars"
+            :currentphase="currentGame.currentPhase"
             :currentplayer="isCurrentPlayer(player.playerName)"
-            :globalvars="globalVarsForPlayer"
             :bDebugMode="bDebugMode"
             v-on="setupListeners" />
         </div>
@@ -41,26 +41,26 @@
           <Player
             :key="currentPlayer.playerName"
             :player="currentPlayer"
-            :otherplayers="otherPlayers"
+            :otherplayers="currentGame.players"
             :playerselections="playerSelections"
             :gamerules="gameRules"
-            :currentphase="currentphase"
+            :gamevars="gameVars"
+            :currentphase="currentGame.currentPhase"
             :currentplayer="true"
-            :globalvars="globalVarsForPlayer"
             :bDebugMode="bDebugMode"
             v-on="setupListeners" />
         </div>
         <CardTable :rifs="this.currentGame.cards"
-                   :otherplayers="otherPlayers"
+                   :otherplayers="currentGame.players"
                    :bDebugMode="bDebugMode"
-                   :gameVars="gameVars" />
+                   :gamevars="gameVars" />
       </div>
 
       <div id="editorGrid" class="codeEditor">
         <div class="codeOptions">
           <h3>Card Game Rules</h3>
           <div>
-            <button @click="parseSharp()">Compile</button>
+            <button @click="resetState()">Reset</button>
           </div>
           <div>
             <label for="gameSrc">Upload Source </label>
@@ -99,6 +99,7 @@ import sharp2json from '@/sharp/transpile.js'
 
 // One hundred kilo-bytes ought to be enough for anyone
 const MAX_FILE_SIZE = 100 * 1024
+var editTimeoutId
 
 function createTextDownload(fileName, textFile) {
   const sharpFilename = fileName
@@ -128,6 +129,7 @@ export default {
       playerSelections: {},
       sharpContent: '',
       newPlayerName: '',
+      bGameSetup: false,
       bDebugMode: false,
       bOnlyShowCurrent: false,
       actionLog: [],
@@ -145,24 +147,41 @@ export default {
     console.log('Game Editor mounted...')
     this.editor = window.ace.edit('sharpEditor')
     this.editor.setValue(this.sharpContent)
-    // this.editor.on('change', this.getContent)
+    this.editor.on('change', this.contentChanged)
     // editor.setTheme('ace/theme/monokai')
     // editor.session.setMode('ace/mode/javascript')
   },
   methods: {
     parseSharp: function() {
       this.sharpContent = this.editor.getValue()
-      console.log('code: ', this.sharpContent)
+      // console.log('code: ', this.sharpContent)
+      let bErr = false
       try {
-        const gameObj = sharp2json(this.sharpContent)
-
-        console.log('Game Object')
-        console.log(gameObj)
-
-        this.setupGameState(gameObj)
+        const gameObj = sharp2json(this.sharpContent, {
+          syntaxError: (recognizer, offendingSymbol, line, col, msg, err) => {
+            console.error('syntaxError: ', offendingSymbol, line, col, msg, err)
+            this.editor.session.addGutterDecoration(line, 'lineError')
+            bErr = true
+          },
+          reportAttemptingFullContext: () => {},
+          reportContextSensitivity: () => {}
+        })
+        if(!bErr) {
+          console.log('Recompiled!')
+          this.setupGameState(gameObj)
+        }
       } catch(ex) {
-        console.log('uh oh: ', ex)
+        console.log('We caught an error: ', ex)
       }
+    },
+    resetState: function() {
+      this.bGameSetup = false
+      this.currentGame.players = []
+      this.parseSharp()
+    },
+    contentChanged: function() {
+      clearTimeout(editTimeoutId)
+      editTimeoutId = setTimeout(this.parseSharp, 500)
     },
     isSlotEmpty: function(slot) {
       return _.isEqual(slot.gs, {})
@@ -217,17 +236,23 @@ export default {
       createTextDownload('actions.log', JSON.stringify(this.actionLog, null, 2))
     },
     setupGameState: function(ruleset) {
-      this.instance.setupGameState(ruleset)
+      if(this.bGameSetup) {
+        this.instance.setRuleSet(ruleset)
+      } else {
+        this.bGameSetup = true
+        this.instance.setupGameState(ruleset)
+      }
     },
     printCard: function(card) {
       return CC.printCard(card)
     },
-    addPlayer: function(playerName) {
+    addPlayer: function() {
+      const playerName = this.newPlayerName
       console.log('method: addPlayer', playerName)
-      if(playerName !== '') {
+      if(this.playerName !== '') {
         this.$refs.playerNameInput.focus()
         this.newPlayerName = ''
-        this.currentGame.addPlayer(playerName)
+        this.instance.addPlayer(playerName)
       } else {
         console.error('Player name cannot be empty')
       }
@@ -248,7 +273,7 @@ export default {
       return ''
     },
     isCurrentPlayer: function(pn) {
-      return this.currentGame.isCurrentPlayer(pn)
+      return this.instance.isCurrentPlayer(pn)
     },
     paSelectCard: function(card, thisPlayer) {
       const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
@@ -297,7 +322,7 @@ export default {
       }
     },
     currentPlayer: function() {
-      return this.currentGame.getCurrentPlayer()
+      return this.instance.getCurrentPlayer()
     },
     bCanDownload: function() {
       if(this.editor.getValue) {
@@ -306,13 +331,10 @@ export default {
       return false
     },
     bRuleSetLoaded: function() {
-      return this.currentGame.currentRuleSet !== undefined
-    },
-    bGameSetup: function() {
-      return _.isEqual({}, this.currentGame)
+      return this.instance.currentRuleSet !== undefined
     },
     numPlayers: function() {
-      if(!this.bGameSetup) {
+      if(this.bGameSetup) {
         return this.currentGame.players.length
       }
       return -1
@@ -324,22 +346,16 @@ export default {
       return this.currentGame.currentPhase
     },
     gameVars: function() {
-      if(this.currentGame && this.currentGame.currentRuleSet) {
-        return this.currentGame.currentRuleSet.gameVariables
+      if(this.currentGame && this.instance.currentRuleSet) {
+        return this.currentGame.gameVariables
       }
       return {}
     },
     gameRules: function() {
-      if(this.currentGame && this.currentGame.currentRuleSet) {
-        return this.currentGame.currentRuleSet
+      if(this.instance && this.instance.currentRuleSet) {
+        return this.instance.currentRuleSet
       }
       return {}
-    },
-    globalVarsForPlayer: function() {
-      return {
-        $playerCount: this.currentGame.getPlayerCount(),
-        $otherPlayers: this.otherPlayers
-      }
     },
     setupListeners: function() {
       const ret = this.instance.paListeners((event, player) => {
@@ -396,6 +412,10 @@ export default {
 .heading {
   display: flex;
   flex-direction: column;
+}
+
+.lineError {
+  background-color: #ff8589;
 }
 
 #divPlayers {

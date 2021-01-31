@@ -57,20 +57,6 @@ export default {
 
     return gs
   },
-  discard: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
-    const player = gs.players[playerIdx]
-
-    // remove the selected cards from the player's hand
-    _filterOutCardsFromHand(ps.selectedCards, player.hand)
-
-    // Add the removed cards to the discard pile
-    for (let i = 0; i < ps.selectedCards.length; i++) {
-      gs.discard.push(ps.selectedCards[i])
-    }
-
-    return gs
-  },
   pass: function(gameState, event, playerIdx, ps) {
     const gs = _.cloneDeep(gameState)
     const player = gs.getPlayer(playerIdx)

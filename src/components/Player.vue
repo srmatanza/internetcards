@@ -3,11 +3,18 @@
   <div>
   {{ this.player.playerName }}
   </div>
-  <div v-if="!bEmptyHand" class="playerHand">
+  <div class="playerHand">
     <span v-for="card in this.player.cards.hand"
           :key="printCard(card)"
           :class="{ selected: isSelected(card), redCard: isRedCard(card), blackCard: isBlackCard(card) }"
           @click="$emit('__' + 'select-card', card, player)">{{ printCard(card) }}</span>
+  </div>
+  <div :key="rif" v-for="rif in playerRifs()">
+    <span>{{ rif }}</span>
+    <span v-for="card in player.cards[rif]"
+          :key="printCard(card)"
+          :class="{ selected: isSelected(card), redCard: isRedCard(card), blackCard: isBlackCard(card) }"
+          >{{ printCard(card) }}</span>
   </div>
   <div>
     <ul v-if="bShowPlayers">
@@ -50,16 +57,27 @@ export default {
     'bShowPlayers',
     'otherplayers',
     'gamerules',
+    'gamevars',
     'playerselections',
     'currentphase',
     'currentplayer',
-    'bDebugMode',
-    'globalvars'
+    'bDebugMode'
   ],
   methods: {
     printCard: function(card) {
       // console.log('Printing card')
       return CC.printCard(card)
+    },
+    playerRifs: function() {
+      const ret = []
+      for(const rif in this.player.cards) {
+        if(Array.isArray(this.player.cards[rif]) && rif !== '_cards' && rif !== 'hand') {
+          if(this.bDebugMode || !rif.startsWith('_')) {
+            ret.push(rif)
+          }
+        }
+      }
+      return ret
     },
     isPlayerSelected: function(opName) {
       return _.isEqual(opName, this.playerSelection.selectedPlayer)
@@ -96,13 +114,14 @@ export default {
           $selectedPlayer: sp || {}
         }
         const globalVarsForPlayer = {
+          $playerCount: this.otherplayers.length,
+          $otherPlayers: this.otherplayers,
           $possiblePlayers: this.gamerules.possiblePlayers
         }
 
         _.assign(playerVars, this.player.playerVariables)
-        _.assign(globalVarsForPlayer, this.globalvars)
 
-        const glomVars = _.assign({}, this.gamerules.gameVariables, globalVarsForPlayer, phaseVars, playerVars)
+        const glomVars = _.assign({}, this.gamevars, globalVarsForPlayer, phaseVars, playerVars)
 
         const bSat = [Logic.isSatisfied(given, glomVars)]
         // console.log('isSatisfied: ', given, bSat, glomVars)
