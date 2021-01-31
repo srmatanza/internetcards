@@ -1,9 +1,8 @@
-import Effects from '../src/effects.js'
-import Logic from '../src/logic.js'
-
 import _ from 'lodash'
 
-import * as State from '../src/state.js'
+import Effects from '../src/effects.js'
+import Logic from '../src/logic.js'
+import { GameState, PlayerState, RuleSet } from '../src/state.js'
 
 function isSatisfied(given, player) {
   // console.log('isSatisfied: ', given)
@@ -43,8 +42,8 @@ function handleEffects(effects, player) {
 }
 
 export default function Instance() {
-  this.gs = new State.GameState()
-  this.currentRuleSet = new State.RuleSet()
+  this.gs = new GameState()
+  this.currentRuleSet = new RuleSet()
   return this
 }
 
@@ -67,7 +66,7 @@ Instance.prototype.setRuleSet = function(ruleSet) {
 
 Instance.prototype.setupGameState = function(ruleSet) {
   this.currentRuleSet = ruleSet
-  this.setGameState(new State.GameState())
+  this.setGameState(new GameState())
   if(ruleSet.initialPhase) {
     this.gs.currentPhase = ruleSet.initialPhase
   } else {
@@ -79,17 +78,17 @@ Instance.prototype.getPlayer = function(pid) {
   if(typeof pid === 'string') {
     for(const player of this.gs.players) {
       if(pid === player.playerName) {
-        return _.assign(new State.PlayerState(), player)
+        return _.assign(new PlayerState(), player)
       }
     }
   } else if(typeof pid === 'number') {
-    return _.assign(new State.PlayerState(), this.gs.players[pid])
+    return _.assign(new PlayerState(), this.gs.players[pid])
   }
   return undefined
 }
 
 Instance.prototype.addPlayer = function(playerName) {
-  const p = new State.PlayerState(playerName)
+  const p = new PlayerState(playerName)
   // Validate new player name that it is not a duplicate
   for(let i=0; i<this.gs.players.length; i++) {
     if(this.gs.players[i].playerName === playerName) {

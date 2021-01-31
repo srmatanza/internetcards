@@ -64,7 +64,7 @@ import SeatedPlayer from '@/components/SeatedPlayer.vue'
 import _ from 'lodash'
 import axios from 'axios'
 
-import * as State from '@/state.js'
+import { GameState } from '@/state.js'
 import WSClient from '@/wsclient.js'
 
 export default {
@@ -189,7 +189,7 @@ export default {
     setGameState: function(newState) {
       if(newState.instance && newState.instance.gs) {
         this.instance = newState
-        this.currentGame = _.assign(new State.GameState(), newState.instance.gs)
+        this.currentGame = _.assign(new GameState(), newState.instance.gs)
       }
     },
     wsOnMessage: res => {

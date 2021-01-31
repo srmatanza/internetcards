@@ -2,7 +2,6 @@ import _ from 'lodash'
 import Logic from '@/logic.js'
 import Effects from '@/effects.js'
 import Instance from '@/instance.js'
-import * as State from '@/state.js'
 import * as CC from '@/cards.js'
 // Get this from hearts.json instead
 // import Hearts from '@/rulesets/hearts.js'
@@ -18,8 +17,6 @@ describe('Logic tests for actions and effects', () => {
         // Setup the game state for each test
         gi = new Instance()
         gi.gs.resetRound()
-        // gs.players.push(new State.PlayerState('Mike'))
-        // gs.players.push(new State.PlayerState('Comfort'))
         gi.addPlayer('Mike')
         gi.addPlayer('Comfort')
         // gs = Actions.deal(gs, { cards: 52 })

@@ -1,7 +1,7 @@
 // import _ from 'lodash'
 import * as Cards from '../src/cards.js'
 
-function Message(txt, typ) {
+export function Message(txt, typ) {
   this.msgText = txt || ''
   this.msgType = Message.prototype.INFO || typ
 
@@ -12,12 +12,12 @@ Message.prototype.INFO = 0
 Message.prototype.TUTORIAL = 1
 Message.prototype.HINT = 2
 
-function Rif() {
+export function Rif() {
   this._cards = []
   return this
 }
 
-function RuleSet() {
+export function RuleSet() {
   this.gameVariables = {}
   this.possiblePlayers = []
   this.initialPhase = ''
@@ -29,7 +29,7 @@ function RuleSet() {
   return this
 }
 
-function PlayerState(playerName) {
+export function PlayerState(playerName) {
   this.playerName = playerName||''
   this.idx = 0
 
@@ -51,7 +51,7 @@ PlayerState.prototype.resetPlayer = function() {
   this.cards.hand = []
 }
 
-function GameState() {
+export function GameState() {
   this.currentPlayerIdx = 0
   this.players = []
   this.deck = Cards.shuffleDeck(new Cards.Deck())
@@ -77,5 +77,3 @@ GameState.prototype.resetRound = function(bShuffle) {
     this.players[i].resetPlayer()
   }
 }
-
-export { Message, Rif, RuleSet, PlayerState, GameState }
