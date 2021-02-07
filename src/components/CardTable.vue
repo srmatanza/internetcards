@@ -52,7 +52,7 @@ export default {
       return ret
     },
     tableRifs: function() {
-      let ret = this.rifs._r.filter(rif => rif.name !== '_cards')
+      let ret = [...this.rifs].filter(rif => rif.name !== '_cards')
       if(this.bDebugMode) {
         ret = ret.filter(rif => !rif.name.startsWith('_'))
       }

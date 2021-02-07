@@ -22,10 +22,16 @@ const rifArrayHandler = {
       return target[prop]
     }
 
-    if(prop in target._r) { // pass through all other props to cards
-      return target._r[prop]
+    if(prop === 'length') {
+      return target._r.length + target._anon.length
     }
 
+    // e.g. rifs[0]
+    if(prop in target._anon) {
+      return target._anon[prop]
+    }
+
+    // e.g. rifs["hand"]
     for(const rif of target._r) {
       if(rif.name === prop) {
         return rif
@@ -38,12 +44,18 @@ const rifArrayHandler = {
 
 export function RifArray() {
   this._r = []
+  this._anon = []
   return new Proxy(this, rifArrayHandler)
 }
 
 RifArray.prototype.addRif = function(newRif) {
   if(this._r.length < 100) {
-    this._r.push(newRif)
+    if(newRif.name === '') {
+      newRif.setIdx(this._anon.length)
+      this._anon.push(newRif)
+    } else {
+      this._r.push(newRif)
+    }
   } else {
     throw new Error('Too many rifs')
   }
@@ -51,11 +63,12 @@ RifArray.prototype.addRif = function(newRif) {
 
 RifArray.prototype[Symbol.iterator] = function() {
   let _idx = 0
+  const _allRifs = [...this._anon, ...this._r]
   return {
     next: () => {
-      if(_idx < this._r.length) {
+      if(_idx < _allRifs.length) {
         return {
-          value: this._r[_idx++],
+          value: _allRifs[_idx++],
           done: false
         }
       } else {
@@ -81,11 +94,16 @@ const rifHandler = {
 
 export function Rif(name, orientation, display) {
   this.name = name || ''
+  this.idx = -1
   this.orientation = orientation || Rif.prototype.FACE_UP
   this.display = display || Rif.prototype.HORIZONTAL
 
   this.cards = []
   return new Proxy(this, rifHandler)
+}
+
+Rif.prototype.setIdx = function(idx) {
+  this.idx = idx
 }
 
 Rif.prototype[Symbol.iterator] = function() {
