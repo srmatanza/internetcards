@@ -50,7 +50,7 @@
             :bDebugMode="bDebugMode"
             v-on="setupListeners" />
         </div>
-        <CardTable :rifs="this.currentGame.cards"
+        <CardTable :rifs="this.currentGame.rifs"
                    :otherplayers="currentGame.players"
                    :bDebugMode="bDebugMode"
                    :gamevars="gameVars" />
@@ -94,6 +94,7 @@ import TopHeader from '@/components/TopHeader.vue'
 import CardTable from '@/components/CardTable.vue'
 
 import * as CC from '@/cards.js'
+import { Rif, RifArray } from '@/state.js'
 import Instance from '@/instance.js'
 import sharp2json from '@/sharp/transpile.js'
 
@@ -210,6 +211,13 @@ export default {
         slot.gs = _.cloneDeep(this.currentGame)
       } else {
         this.currentGame = _.cloneDeep(slot.gs)
+        this.currentGame.rifs = Object.assign(new RifArray(), this.currentGame.rifs)
+        for(const idx in this.currentGame.players) {
+          this.currentGame.players[idx].rifs = Object.assign(new RifArray(), this.currentGame.players[idx].rifs)
+          for(const jdx in this.currentGame.players[idx].rifs._r) {
+            this.currentGame.players[idx].rifs._r[jdx] = Object.assign(new Rif(), this.currentGame.players[idx].rifs._r[jdx])
+          }
+        }
       }
       for(const sl of this.stateStack) {
         sl.lastUsed = false
@@ -276,7 +284,7 @@ export default {
       return this.instance.isCurrentPlayer(pn)
     },
     paSelectCard: function(card, thisPlayer) {
-      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
+      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
       let sc
       if(_.includes(player.selectedCards, card)) {
         sc = _.filter(player.selectedCards, c => !_.isEqual(c, card))
@@ -289,7 +297,7 @@ export default {
       console.log('paSelectCard event handler', card.toString(), sc, this.playerSelections)
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
-      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
+      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
       if(_.isEqual(player.selectedPlayer, otherPlayer)) {
         player.selectedPlayer = ''
       } else {
@@ -298,6 +306,13 @@ export default {
       this.playerSelections[thisPlayer.playerName] = player
       this.playerSelections = _.assign({}, this.playerSelections)
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
+    },
+    paSelectRif: function(rif, thisPlayer) {
+      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
+      //
+      this.playerSelections[thisPlayer.playerName] = player
+      this.playerSelections = _.assign({}, this.playerSelections)
+      console.log('paSelectRif event handler', [], this.playerSelections)
     },
     shuffleDeck: function() {
       const newDeck = CC.shuffleDeck(this.currentGame.deck)
@@ -369,7 +384,8 @@ export default {
       })
       const giHandlers = {
         '__select-card': this.paSelectCard,
-        '__select-player': this.paSelectPlayer
+        '__select-player': this.paSelectPlayer,
+        '__select-rif': this.paSelectRif
       }
       return _.assign(ret, giHandlers)
     }

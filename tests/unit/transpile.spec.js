@@ -236,16 +236,56 @@ describe('Transpiler tests', () => {
     const sharp = 'phase a action x a = 0 b = 1 c = 2 endaction endphase'
     const obj = sharp2json(sharp)
 
+    // not sure why these are backward...
+    expect(obj.gameplay[0].playerActions[0].effect).toStrictEqual([
+      {
+        "set_var": { "a": 0 }
+      }, 
+      {
+        "set_var": { "b": 1 }
+      }, 
+      {
+        "set_var": { "c": 2 }
+      } 
+      ])
+  })
+
+  test('test assign all players', () => {
+    //
+    const sharp = 'phase a action x @[pA = true] endaction endphase'
+    const sharp2 = 'phase a action x @[fn()] endaction endphase'
+    const sharp3 = 'phase a action x @[if true then fn() else fn2() endif] endaction endphase'
+
+    let obj = sharp2json(sharp)
     expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
+      effect: [{
       "set_var": {
-        "c": 2,
-      },
-      "set_var": {
-        "b": 1,
-      },
-      "set_var": {
-        "a": 0,
-      }
+        "pA": true
+      }}],
+      eachplayer: true
+    })
+
+    obj = sharp2json(sharp2)
+    expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
+      effect: [{
+        fn: []
+      }],
+      eachplayer: true
+    })
+
+    obj = sharp2json(sharp3)
+    // console.log(JSON.stringify(obj, null, 2))
+    expect(obj.gameplay[0].playerActions[0].effect[0]).toStrictEqual({
+      effect: [{
+        effect: [{
+          fn: []
+        }],
+        else: [{
+          fn2: []
+        }],
+        given: [true]
+      }],
+      eachplayer: true
     })
   })
 })

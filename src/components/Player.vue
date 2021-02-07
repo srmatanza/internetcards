@@ -4,14 +4,14 @@
   {{ this.player.playerName }}
   </div>
   <div class="playerHand">
-    <span v-for="card in this.player.cards.hand"
+    <span v-for="card in playerHand"
           :key="printCard(card)"
           :class="{ selected: isSelected(card), redCard: isRedCard(card), blackCard: isBlackCard(card) }"
           @click="$emit('__' + 'select-card', card, player)">{{ printCard(card) }}</span>
   </div>
-  <div :key="rif" v-for="rif in playerRifs()">
-    <span>{{ rif }}</span>
-    <span v-for="card in player.cards[rif]"
+  <div :key="rif.name" v-for="rif in playerRifs">
+    <span v-show="rif.display!==0">{{ rif.name }}</span>
+    <span v-for="card in rif.cards"
           :key="printCard(card)"
           :class="{ selected: isSelected(card), redCard: isRedCard(card), blackCard: isBlackCard(card) }"
           >{{ printCard(card) }}</span>
@@ -45,6 +45,7 @@
 import _ from 'lodash'
 import * as CC from '@/cards.js'
 import Logic from '@/logic.js'
+import { Rif } from '@/state.js'
 
 export default {
   name: 'player',
@@ -67,17 +68,6 @@ export default {
     printCard: function(card) {
       // console.log('Printing card')
       return CC.printCard(card)
-    },
-    playerRifs: function() {
-      const ret = []
-      for(const rif in this.player.cards) {
-        if(Array.isArray(this.player.cards[rif]) && rif !== '_cards' && rif !== 'hand') {
-          if(this.bDebugMode || !rif.startsWith('_')) {
-            ret.push(rif)
-          }
-        }
-      }
-      return ret
     },
     isPlayerSelected: function(opName) {
       return _.isEqual(opName, this.playerSelection.selectedPlayer)
@@ -107,10 +97,12 @@ export default {
       if(!_.isUndefined(given)) {
         const phaseVars = {}
         const sp = this.otherplayers.filter(p => p.playerName === this.playerSelection.selectedPlayer)[0]
+        const selectedCardsRif = new Rif()
+        selectedCardsRif.cards = this.playerSelection.selectedCards
         const playerVars = {
           $player: this.player,
           $isYourTurn: this.currentplayer,
-          $selectedCards: this.playerSelection.selectedCards,
+          $selectedCards: selectedCardsRif,
           $selectedPlayer: sp || {}
         }
         const globalVarsForPlayer = {
@@ -132,10 +124,27 @@ export default {
   },
   computed: {
     playerSelection: function() {
-      return this.playerselections[this.player.playerName] || { selectedCards: [], selectedPlayer: '' }
+      return this.playerselections[this.player.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
     },
     bEmptyHand: function() {
-      return (this.player.cards.hand.length === 0)
+      return (this.player.rifs.hand.length === 0)
+    },
+    playerHand: function() {
+      if(this.player.rifs.hand) {
+        return this.player.rifs.hand.cards
+      }
+      return []
+    },
+    playerRifs: function() {
+      const ret = []
+      for(const rif of this.player.rifs) {
+        if(rif.name !== 'hand') {
+          if(this.bDebugMode || !rif.name.startsWith('_')) {
+            ret.push(rif)
+          }
+        }
+      }
+      return ret
     },
     playerVariables: function() {
       const ret = []

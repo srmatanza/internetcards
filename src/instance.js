@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import Effects from '../src/effects.js'
 import Logic from '../src/logic.js'
-import { GameState, PlayerState, RuleSet } from '../src/state.js'
+import { Rif, GameState, PlayerState, RuleSet } from '../src/state.js'
 
 function isSatisfied(given, player) {
   // console.log('isSatisfied: ', given)
@@ -12,6 +12,9 @@ function isSatisfied(given, player) {
   }
   return true
 }
+
+var eachPlayerDepth = 0
+var MAX_EACH_PLAYER_DEPTH = 1
 
 function handleEffect(effect, player) {
   console.debug('handleEffect: ', this.gs, effect, player)
@@ -23,8 +26,19 @@ function handleEffect(effect, player) {
         _.assign(player, this.gs.players[player.idx])
         this.gs = fn.call({}, this, effect[ef], player)
       } else if (typeof fn === 'symbol' && ef === 'effect') {
-        handleEffects.call(this, effect.effect, player)
-      } else if (_.isUndefined(fn)) {
+        if(effect.eachplayer && eachPlayerDepth <= MAX_EACH_PLAYER_DEPTH) {
+          eachPlayerDepth += 1
+          for(const pp of this.gs.players) {
+            handleEffects.call(this, effect.effect, pp)
+          }
+          eachPlayerDepth -= 1
+        } else {
+          if(eachPlayerDepth>MAX_EACH_PLAYER_DEPTH && effect.eachplayer === true) {
+            console.warn('This effect was not executed for each player because it was nested too deep')
+          }
+          handleEffects.call(this, effect.effect, player)
+        }
+      } else if (!(typeof fn === 'symbol' && ef === 'eachplayer') && _.isUndefined(fn)) {
         console.error('Undefined function for effect: ', ef)
       }
     }
@@ -122,10 +136,12 @@ Instance.prototype.isCurrentPlayer = function(playerName) {
 Instance.prototype.glomVars = function(player) {
   const phaseVars = {}
   const playerVars = _.assign(_.clone(this.currentRuleSet.playerVariables), player.playerVariables)
+  const selectedCardsRif = new Rif()
+  selectedCardsRif.cards = player.selectedCards
   const pv = {
     $player: this.gs.players[player.idx],
     $isYourTurn: this.isCurrentPlayer(player.playerName),
-    $selectedCards: player.selectedCards,
+    $selectedCards: selectedCardsRif,
     $selectedPlayer: this.getPlayer(player.selectedPlayer),
     $selectedHand: []
   }
@@ -134,7 +150,7 @@ Instance.prototype.glomVars = function(player) {
     $currentPlayer: player.idx,
     $possiblePlayers: this.currentRuleSet.possiblePlayers,
     $otherPlayers: this.gs.players,
-    $table: this.gs.cards
+    $table: this.gs.rifs
   }
 
   const gm = _.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv)

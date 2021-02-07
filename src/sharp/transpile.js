@@ -18,6 +18,7 @@ function GameListener() {
   this.actionStack = []
   this.cstStack = []
   this.getAtStack = []
+  this.bAllPlayersBlock = false
   return this
 }
 
@@ -28,8 +29,8 @@ GameListener.prototype.enterGame = function(ctx) {
   this.currentPropTarget = this.gameObj
 }
 GameListener.prototype.exitGame = function(ctx) {
-  console.log('Game Object')
-  console.log(JSON.stringify(this.gameObj, null, 2))
+  // console.log('Game Object')
+  // console.log(JSON.stringify(this.gameObj, null, 2))
 }
 
 GameListener.prototype.enterProp = function(ctx) {
@@ -116,6 +117,9 @@ GameListener.prototype.exitAssignment = function(ctx) {
   }
 
   const setVar = {}
+  if(this.bAllPlayersBlock) {
+    setVar.allplayers = true
+  }
   setVar[varAss] = {}
   setVar[varAss][varName] = rvalue
   this.currentStatementTarget.push(setVar)
@@ -126,6 +130,9 @@ GameListener.prototype.exitAssignment = function(ctx) {
 GameListener.prototype.enterFnStat = function(ctx) {
   const newExpr = []
   this.currentFnCall = {}
+  if(this.bAllPlayersBlock) {
+    this.currentFnCall.allplayers = true
+  }
   this.currentFnCall[ctx.ID().getText()] = newExpr
   this.currentExpr = newExpr
 }
@@ -135,6 +142,23 @@ GameListener.prototype.exitFnStat = function(ctx) {
 }
 
 GameListener.prototype.enterIfStat = function(ctx) {
+}
+
+GameListener.prototype.enterEachPlayerBlock = function(ctx) {
+  const effect = []
+  const newBlock = {
+    effect: effect,
+    eachplayer: true
+  }
+
+  // this.actionStack.push(this.currentAction)
+  this.currentStatementTarget.push(newBlock)
+  // this.currentAction = newBlock
+  this.cstStack.push(this.currentStatementTarget)
+  this.currentStatementTarget = effect
+}
+GameListener.prototype.exitEachPlayerBlock = function(ctx) {
+  this.currentStatementTarget = this.cstStack.pop()
 }
 
 GameListener.prototype.enterPredicate = function(ctx) {

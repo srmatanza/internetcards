@@ -3,9 +3,9 @@
     <h3>Table</h3>
     <div>
       <h4>Rifs</h4>
-      <div :key="rif" v-for="rif in tableRifs()">
-        {{ rif }}
-        <span v-for="card in rifs[rif]" :key="printCard(card)">[{{ printCard(card) }}]</span>
+      <div :key="rif.name" v-for="rif in tableRifs">
+        {{ rif.name }}
+        <span v-for="card in rif.cards" :key="printCard(card)">[{{ printCard(card) }}]</span>
       </div>
     </div>
     <div>
@@ -35,15 +35,6 @@ export default {
   methods: {
     printCard: function(card) {
       return CC.printCard(card)
-    },
-    tableRifs: function() {
-      const ret = []
-      for(const rif in this.rifs) {
-        if(Array.isArray(this.rifs[rif]) && rif !== '_cards') {
-          ret.push(rif)
-        }
-      }
-      return ret
     }
   },
   computed: {
@@ -57,6 +48,13 @@ export default {
         if(this.bDebugMode || !vv.name.startsWith('_')) {
           ret.push(vv)
         }
+      }
+      return ret
+    },
+    tableRifs: function() {
+      let ret = this.rifs._r.filter(rif => rif.name !== '_cards')
+      if(this.bDebugMode) {
+        ret = ret.filter(rif => !rif.name.startsWith('_'))
       }
       return ret
     }

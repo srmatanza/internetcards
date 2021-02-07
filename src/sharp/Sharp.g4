@@ -29,6 +29,7 @@ givenClause : 'given' expr+ ;
 stat : ID (ASS | PLAYERASS) expr      # assignment
      | ID '(' exprList? ')'           # fnStat
      | predicate elseblock? 'endif'   # ifStat
+     | '@[' stat+ ']'                 # eachPlayerBlock
      ;
 predicate : 'if' expr 'then' stat+ ;
 elseblock : 'else' stat+ ;

@@ -16,12 +16,12 @@ function _valSuit(card) {
   }
 }
 
-function handContainsCard(card, hand) {
+function handContainsCard(card, rif) {
   const val = parseInt(card[0])
   const suit = _.indexOf('_SHDC', card[1])
   const c = new CC.Card(suit, val)
-  for(let i = 0; i < hand.length; i++) {
-    const _c = hand[i]
+  for(let i = 0; i < rif.cards.length; i++) {
+    const _c = rif.cards[i]
     if(_c.val === c.val && _c.suit === c.suit) {
       return true
     }
@@ -29,7 +29,7 @@ function handContainsCard(card, hand) {
   return false
 }
 
-function handContainsSuit(suit, hand) {
+function handContainsSuit(suit, rif) {
   // console.debug('handContainsSuit: ', suit, hand)
   // iterate over all of the suits specified in suit
   const needles = []
@@ -41,8 +41,8 @@ function handContainsSuit(suit, hand) {
     }
   }
   for(const suitIndex of needles) {
-    for(let i = 0; i < hand.length; i++) {
-      const card = hand[i]
+    for(let i = 0; i < rif.cards.length; i++) {
+      const card = rif.cards[i]
       if(card.suit === suitIndex) {
         return true
       }
@@ -51,10 +51,10 @@ function handContainsSuit(suit, hand) {
   return false
 }
 
-function handContainsVal(val, hand) {
+function handContainsVal(val, rif) {
   const valIndex = typeof val === 'number' ? val : _.indexOf('_A23456789TJQK', val)
-  for(let i = 0; i < hand.length; i++) {
-    const card = hand[i]
+  for(let i = 0; i < rif.cards.length; i++) {
+    const card = rif.cards[i]
     if(card.val === valIndex) {
       return true
     }

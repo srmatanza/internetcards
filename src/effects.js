@@ -86,42 +86,36 @@ function changePhase(gi, args) {
 }
 
 function newRif(gi, args, player) {
-  // ensure that the first arg is an instanceof Player.Rif
-  const toHand = _computeArg(gi, args[0], player)
+  const toRifArray = _computeArg(gi, args[0], player)
   const rifName = args[1]
 
-  if(!(toHand instanceof Rif)) {
-    console.error('The first argument must be a Rif')
-    return
-  }
-
-  toHand[rifName] = []
+  toRifArray.addRif(new Rif(rifName))
 }
 
 function moveCards(gi, args, player) {
-  const fromHand = _computeArg(gi, args[0], player) // Uncomputed varname
-  const toHand = _computeArg(gi, args[1], player) // Uncomputed varname
+  const fromRif = _computeArg(gi, args[0], player) // Uncomputed varname
+  const toRif = _computeArg(gi, args[1], player) // Uncomputed varname
   let selectedCards
   if(args[2] !== undefined) {
     selectedCards = _computeArg(gi, args[2], player)
   } else {
-    selectedCards = fromHand
+    selectedCards = fromRif
   }
   // console.log('moveCards: ', fromHand, toHand, selectedCards)
 
   for(const card of selectedCards) {
-    toHand.push(card)
+    toRif.cards.push(card)
   }
   // Validate that the selected cards are in fromHand
-  if(selectedCards && selectedCards.length > 0 && !_includesCards(fromHand, selectedCards)) {
+  if(selectedCards && selectedCards.length > 0 && !_includesCards(fromRif.cards, selectedCards.cards)) {
     console.error('Error in move_cards; attempting to move cards that don\'t exist in the hand.')
     return
   }
 
-  const newHand = _filterOutCardsFromHand(selectedCards, fromHand)
-  fromHand.length = 0
+  const newHand = _filterOutCardsFromHand(selectedCards.cards, fromRif.cards)
+  fromRif.cards.length = 0
   for(const card of newHand) {
-    fromHand.push(card)
+    fromRif.cards.push(card)
   }
 }
 
@@ -182,13 +176,13 @@ function deal(gi, args, player) {
 
   for(let i = 0; i < numCards; i++) {
     const curPlayer = gi.gs.players[i%numPlayers]
-    _drawCardFromDeckToHand(gi.gs.deck, curPlayer.cards.hand)
+    _drawCardFromDeckToHand(gi.gs.deck, curPlayer.rifs.hand.cards)
   }
 }
 
 function message(gi, args, player) {
   let playerIdx = -1
-  let msgType = Message.prototype.INFO
+  let msgType = Message.INFO
   let msgText = ''
   let pMsg = null
   switch(args.length) {
@@ -269,5 +263,6 @@ export default {
   draw: callHandler(draw, ['number']),
   effect: Symbol('effect'),
   given: Symbol('given'),
-  else: Symbol('else')
+  else: Symbol('else'),
+  eachplayer: Symbol('eachplayer')
 }
