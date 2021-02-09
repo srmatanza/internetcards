@@ -3,19 +3,16 @@
   <div>
   {{ this.player.playerName }}
   </div>
-  <div class="playerHand">
-    <span v-for="card in playerHand"
-          :key="printCard(card)"
-          :class="{ selected: isSelected(card), redCard: isRedCard(card), blackCard: isBlackCard(card) }"
-          @click="$emit('__' + 'select-card', card, player)">{{ printCard(card) }}</span>
-  </div>
-  <div :key="rif.name" v-for="rif in playerRifs">
-    <span v-show="rif.display!==0">{{ rif.name }}</span>
-    <span v-for="card in rif.cards"
-          :key="printCard(card)"
-          :class="{ selected: isSelected(card), redCard: isRedCard(card), blackCard: isBlackCard(card) }"
-          >{{ printCard(card) }}</span>
-  </div>
+  <cardRif :rif="player.rifs['hand']"
+            :player="player"
+            :playerselections="playerselections"
+            v-on="setupListeners"></cardRif>
+  <cardRif v-for="(rif,idx) in playerRifs"
+            :key="idx"
+            :rif="rif"
+            :player="player"
+            :playerselections="playerselections"
+            v-on="setupListeners"></cardRif>
   <div>
     <ul v-if="bShowPlayers">
       <li v-for="op in this.otherplayers"
@@ -42,6 +39,8 @@
 </template>
 
 <script>
+import CardRif from '@/components/CardRif.vue'
+
 import _ from 'lodash'
 import * as CC from '@/cards.js'
 import Logic from '@/logic.js'
@@ -52,6 +51,9 @@ export default {
   data: function() {
     return {
     }
+  },
+  components: {
+    CardRif
   },
   props: [
     'player',
@@ -166,6 +168,13 @@ export default {
         }
       }
       return []
+    },
+    setupListeners: function() {
+      const vm = this
+      return {
+        '__select-card': (card, player) => vm.$emit('__select-card', card, player),
+        '__select-rif': (idx, player) => vm.$emit('__select-rif', idx, player)
+      }
     }
   }
 }

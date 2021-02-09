@@ -87,9 +87,8 @@ function changePhase(gi, args) {
 
 function newRif(gi, args, player) {
   const toRifArray = _computeArg(gi, args[0], player)
-  const rifName = args[1]
 
-  toRifArray.addRif(new Rif(rifName))
+  toRifArray.addRif(new Rif(...args.slice(1)))
 }
 
 function moveCards(gi, args, player) {

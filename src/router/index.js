@@ -39,6 +39,13 @@ const routes = [
     component: () => import('../views/Dashboard.vue')
   }
 ]
+if(process.env.NODE_ENV === 'development') {
+  routes.push({
+    path: '/rifTest',
+    name: 'Rifs',
+    component: () => import('../views/RifTest.vue')
+  })
+}
 
 const router = new VueRouter({
   mode: 'history',

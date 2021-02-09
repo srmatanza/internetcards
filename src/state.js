@@ -92,11 +92,12 @@ const rifHandler = {
   }
 }
 
-export function Rif(name, orientation, display) {
+export function Rif(name, orientation, display, selectable) {
   this.name = name || ''
   this.idx = -1
   this.orientation = orientation || Rif.prototype.FACE_UP
   this.display = display || Rif.prototype.HORIZONTAL
+  this.selectable = selectable || Rif.prototype.NONE
 
   this.cards = []
   return new Proxy(this, rifHandler)
@@ -123,12 +124,16 @@ Rif.prototype[Symbol.iterator] = function() {
 }
 
 InitializeEnums(Rif, {
-  FACE_UP: 0,
-  FACE_DOWN: 1,
-  TOP_ONLY: 2,
-  HORIZONTAL: 4,
-  VERTICAL: 8,
-  STACKED: 16
+  FACE_UP: 0, // orientation
+  FACE_DOWN: 1, // orientation
+  TOP_ONLY: 2, // orientation
+  HORIZONTAL: 3, // display
+  VERTICAL: 4, // display
+  STACKED: 5, // display
+  NONE: 6, // selectable
+  SINGLE: 7, // selectable
+  MULTIPLE: 8, // selectable
+  RANGE: 9 // selectable
 })
 
 export function RuleSet() {
@@ -150,7 +155,7 @@ export function PlayerState(playerName) {
   this.currentMessage = new Message()
 
   this.rifs = new RifArray()
-  this.rifs.addRif(new Rif('hand'))
+  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE))
 
   this.playerVariables = {}
 
@@ -163,7 +168,7 @@ PlayerState.prototype.toString = function() {
 
 PlayerState.prototype.resetPlayer = function() {
   this.rifs = new RifArray()
-  this.rifs.addRif(new Rif('hand'))
+  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE))
 }
 
 export function GameState() {
