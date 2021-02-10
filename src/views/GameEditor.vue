@@ -31,7 +31,7 @@
             :otherplayers="currentGame.players"
             :playerselections="playerSelections"
             :gamerules="gameRules"
-            :gamevars="gameVars"
+            :instance="instance"
             :currentphase="currentGame.currentPhase"
             :currentplayer="isCurrentPlayer(player.playerName)"
             :bDebugMode="bDebugMode"
@@ -44,7 +44,7 @@
             :otherplayers="currentGame.players"
             :playerselections="playerSelections"
             :gamerules="gameRules"
-            :gamevars="gameVars"
+            :instance="instance"
             :currentphase="currentGame.currentPhase"
             :currentplayer="true"
             :bDebugMode="bDebugMode"
@@ -284,15 +284,15 @@ export default {
       return this.instance.isCurrentPlayer(pn)
     },
     paSelectCard: function(card, thisPlayer) {
-      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
+      const ps = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
       let sc
-      if(_.includes(player.selectedCards, card)) {
-        sc = _.filter(player.selectedCards, c => !_.isEqual(c, card))
+      if(_.includes(ps.selectedCards, card)) {
+        sc = _.filter(ps.selectedCards, c => !_.isEqual(c, card))
       } else {
-        sc = _.concat(player.selectedCards, card)
+        sc = _.concat(ps.selectedCards, card)
       }
-      player.selectedCards = sc
-      this.playerSelections[thisPlayer.playerName] = player
+      ps.selectedCards = sc
+      this.playerSelections[thisPlayer.playerName] = ps
       this.playerSelections = _.assign({}, this.playerSelections)
       console.log('paSelectCard event handler', card.toString(), sc, this.playerSelections)
     },

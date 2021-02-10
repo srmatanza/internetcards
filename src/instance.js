@@ -136,12 +136,12 @@ Instance.prototype.isCurrentPlayer = function(playerName) {
 Instance.prototype.glomVars = function(player) {
   const phaseVars = {}
   const playerVars = _.assign(_.clone(this.currentRuleSet.playerVariables), player.playerVariables)
-  const selectedCardsRif = new Rif()
-  selectedCardsRif.cards = player.selectedCards
+  const scRif = new Rif()
+  scRif.cards = player.selectedCards || []
   const pv = {
     $player: this.gs.players[player.idx],
     $isYourTurn: this.isCurrentPlayer(player.playerName),
-    $selectedCards: selectedCardsRif,
+    $selectedCards: scRif,
     $selectedPlayer: this.getPlayer(player.selectedPlayer),
     $selectedHand: []
   }

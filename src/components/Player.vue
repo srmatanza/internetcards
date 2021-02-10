@@ -44,7 +44,6 @@ import CardRif from '@/components/CardRif.vue'
 import _ from 'lodash'
 import * as CC from '@/cards.js'
 import Logic from '@/logic.js'
-import { Rif } from '@/state.js'
 
 export default {
   name: 'player',
@@ -60,7 +59,7 @@ export default {
     'bShowPlayers',
     'otherplayers',
     'gamerules',
-    'gamevars',
+    'instance',
     'playerselections',
     'currentphase',
     'currentplayer',
@@ -95,30 +94,12 @@ export default {
       return 'custom_action'
     },
     isSatisfied: function(given) {
-      // console.log('isSatisfied: ', given)
       if(!_.isUndefined(given)) {
-        const phaseVars = {}
-        const sp = this.otherplayers.filter(p => p.playerName === this.playerSelection.selectedPlayer)[0]
-        const selectedCardsRif = new Rif()
-        selectedCardsRif.cards = this.playerSelection.selectedCards
-        const playerVars = {
-          $player: this.player,
-          $isYourTurn: this.currentplayer,
-          $selectedCards: selectedCardsRif,
-          $selectedPlayer: sp || {}
-        }
-        const globalVarsForPlayer = {
-          $playerCount: this.otherplayers.length,
-          $otherPlayers: this.otherplayers,
-          $possiblePlayers: this.gamerules.possiblePlayers
-        }
-
-        _.assign(playerVars, this.player.playerVariables)
-
-        const glomVars = _.assign({}, this.gamevars, globalVarsForPlayer, phaseVars, playerVars)
-
+        const ps = this.playerSelection
+        this.player = Object.assign(this.player, ps)
+        const glomVars = this.instance.glomVars(this.player)
         const bSat = [Logic.isSatisfied(given, glomVars)]
-        // console.log('isSatisfied: ', given, bSat, glomVars)
+        // console.debug('isSatisfied: ', given, bSat, glomVars)
         return !_.includes(bSat, false)
       }
       return true

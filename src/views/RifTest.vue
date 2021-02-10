@@ -2,7 +2,11 @@
   <div>
     <h1>RifTest!</h1>
     <div class="rifBox">
-      <cardRif v-for="(rif, idx) in testRifs" :key="idx" :rif="rif" :player="newPlayer()" :playerselections="playerselections"></cardRif>
+      <cardRif v-for="(rif, idx) in testRifs"
+               :key="idx"
+               :rif="rif"
+               :player="newPlayer()"
+               :playerselections="playerselections"></cardRif>
     </div>
   </div>
 </template>

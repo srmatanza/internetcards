@@ -21,7 +21,8 @@ export default {
   data: function() {
     return {
       selCards: this.selectedCards || [],
-      curPlayer: this.player || new PlayerState()
+      curPlayer: this.player || new PlayerState(),
+      orderedCards: this.rif.cards.map((c, i) => Object.assign({ idx: i }, c))
     }
   },
   props: [
@@ -33,7 +34,7 @@ export default {
     'player'
   ],
   mounted: function() {
-    // console.log('Mounted rif: ', this.rif)
+    // console.debug('oc: ', this.orderedCards, this.rif)
   },
   methods: {
     printCard: function(card) {

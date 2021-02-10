@@ -13,7 +13,7 @@ describe('RifArray and Rif tests', () => {
 
     rifs = Object.assign(new RifArray(), rifs)
     expect(rifs.curTrick.cards.length).toBe(1)
-    expect(rifs.curTrick[0].toString()).toBe('A♡')
+    expect(rifs.curTrick.cards[0].toString()).toBe('A♡')
     
     const rifToCheck = []
     for(let r of rifs) {
@@ -23,7 +23,7 @@ describe('RifArray and Rif tests', () => {
     expect(rifToCheck).toEqual(['curTrick', 'anotherTrick'])
   })
 
-  test('Rif is Proxyable', () => {
+  test('Rif is usable', () => {
     const r = new Rif('Sample', Rif.FACE_UP, Rif.HORIZONTAL)
     r.cards = [new Card(2, 1), new Card(2, 2), new Card(2, 3)]
 
@@ -31,12 +31,12 @@ describe('RifArray and Rif tests', () => {
     expect(r.orientation).toBe(Rif.FACE_UP)
     expect(r.display).toBe(Rif.HORIZONTAL)
 
-    expect(r.length).toBe(3)
+    expect(r.cards.length).toBe(3)
     const cardsToCheck = []
     for(let c of r) {
       cardsToCheck.push(c.toString())
     }
     expect(cardsToCheck).toEqual(['A♡', '2♡', '3♡'])
-    expect(r[0].toString()).toBe('A♡')
+    expect(r.cards[0].toString()).toBe('A♡')
   })
 })
