@@ -152,8 +152,9 @@ Instance.prototype.glomVars = function(player) {
     $otherPlayers: this.gs.players,
     $table: this.gs.rifs
   }
+  const Enums = { FACE_UP: 0, FACE_DOWN: 1, TOP_ONLY: 2, HORIZONTAL: 3, VERTICAL: 4, STACKED: 5, NONE: 6, SINGLE: 7, MULTIPLE: 8, RANGE: 9 }
 
-  const gm = _.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv)
+  const gm = _.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv, Enums)
   return gm
 }
 
