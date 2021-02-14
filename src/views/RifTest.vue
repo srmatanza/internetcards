@@ -5,8 +5,11 @@
       <cardRif v-for="(rif, idx) in testRifs"
                :key="idx"
                :rif="rif"
-               :player="newPlayer()"
-               :playerselections="playerselections"></cardRif>
+               :playerName="'__dealer'"
+               :bSelected="isSelected(rif)"
+               :cardSelections="getSelNode(rif)"
+               :playerselections="playerselections"
+               v-on="selectionListeners"></cardRif>
     </div>
   </div>
 </template>
@@ -16,11 +19,31 @@ import CardRif from '@/components/CardRif.vue'
 
 import { PlayerState, Rif } from '@/state.js'
 import { Card } from '@/cards.js'
+import { SelectionTree } from '@/selection.js'
 
 export default {
   name: 'rifTest',
   data: function() {
+    const rifArray = [
+      new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE),
+      new Rif('_score'),
+      new Rif('discard', Rif.FACE_DOWN, Rif.STACKED),
+      new Rif('draw', Rif.TOP_ONLY, Rif.STACKED)
+    ]
+    const headlessRifs = [
+      new Rif('', Rif.TOP_ONLY, Rif.VERTICAL),
+      new Rif('', Rif.FACE_UP, Rif.VERTICAL, Rif.SINGLE),
+      new Rif('', Rif.FACE_DOWN, Rif.VERTICAL),
+      new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.RANGE),
+      new Rif('', Rif.TOP_ONLY, Rif.HORIZONTAL, Rif.MULTIPLE)
+    ]
+    headlessRifs.forEach((rif, idx) => { rif.idx = idx; return rif })
+    rifArray.push(...headlessRifs)
+
+    const newTree = new SelectionTree()
     return {
+      rifArray: rifArray,
+      selectionTree: newTree
     }
   },
   components: {
@@ -29,29 +52,49 @@ export default {
   methods: {
     newPlayer: function() {
       return new PlayerState('__dealer')
+    },
+    getSelNode(rif) {
+      const ret = this.getTree.getCardsForRif(rif.getId(), '__dealer')
+      return ret
+    },
+    isSelected(rif) {
+      const bRet = this.selectionTree.isRifSelected(rif.getId(), '__dealer')
+      return bRet
+    },
+    paSelectRif(rifId, playerName) {
+      this.selectionTree.appendRif(rifId, playerName)
+    },
+    paSelectCard(cardIdx, rifId, playerName) {
+      console.log('select card: ', ...arguments)
+      this.selectionTree.selectCard(cardIdx, rifId, playerName)
     }
   },
   computed: {
+    getTree: function() {
+      return this.selectionTree
+    },
+    getTreeRifs: function() {
+      return this.selectionTree.rifs
+    },
+    getTreeCards: function() {
+      return this.selectionTree.cards
+    },
     playerselections: function() {
       return { selectedCards: [], selectedPlayer: '', selectedRif: {} }
     },
     testRifs: function() {
       const aceRun = [1, 2, 3, 4, 5].map(c => new Card(2, c))
-      const rifArray = [
-        new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE),
-        new Rif('_score'),
-        new Rif('', Rif.TOP_ONLY, Rif.VERTICAL),
-        new Rif('', Rif.FACE_UP, Rif.VERTICAL, Rif.SINGLE),
-        new Rif('', Rif.FACE_DOWN, Rif.VERTICAL),
-        new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.RANGE),
-        new Rif('', Rif.TOP_ONLY, Rif.HORIZONTAL, Rif.MULTIPLE),
-        new Rif('draw', Rif.TOP_ONLY, Rif.STACKED),
-        new Rif('discard', Rif.FACE_DOWN, Rif.STACKED)
-      ]
-      return rifArray.map(rif => {
+      return this.rifArray.map(rif => {
         rif.cards = Object.assign([], aceRun)
         return rif
       })
+    },
+    selectionListeners: function() {
+      const vm = this
+      return {
+        '__select-rif': vm.paSelectRif,
+        '__select-card': vm.paSelectCard
+      }
     }
   }
 }

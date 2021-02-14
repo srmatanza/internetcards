@@ -48,10 +48,15 @@ export function RifArray() {
   return new Proxy(this, rifArrayHandler)
 }
 
+RifArray.prototype.getRifById = function(rifId) {
+  // console.log('getRifById: ', [...this].filter(r => r.getId() === rifId), rifId)
+  return [...this].find(r => r.getId() === rifId)
+}
+
 RifArray.prototype.addRif = function(newRif) {
   if(this._r.length < 100) {
     if(newRif.name === '') {
-      newRif.setIdx(this._anon.length)
+      newRif.idx = this._anon.length
       this._anon.push(newRif)
     } else {
       this._r.push(newRif)
@@ -103,8 +108,11 @@ export function Rif(name, orientation, display, selectable) {
   return new Proxy(this, rifHandler)
 }
 
-Rif.prototype.setIdx = function(idx) {
-  this.idx = idx
+Rif.prototype.getId = function() {
+  if (this.name === '') {
+    return `__rif${this.idx}`
+  }
+  return this.name
 }
 
 Rif.prototype[Symbol.iterator] = function() {
@@ -155,7 +163,7 @@ export function PlayerState(playerName) {
   this.currentMessage = new Message()
 
   this.rifs = new RifArray()
-  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE))
+  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.MULTIPLE))
 
   this.playerVariables = {}
 
@@ -168,7 +176,7 @@ PlayerState.prototype.toString = function() {
 
 PlayerState.prototype.resetPlayer = function() {
   this.rifs = new RifArray()
-  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE))
+  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.MULTIPLE))
 }
 
 export function GameState() {
@@ -183,6 +191,35 @@ export function GameState() {
   this.rifs = new RifArray()
 
   return this
+}
+
+GameState.prototype.getRifById = function(rifId) {
+  const rifs = [this.rifs, ...(this.players.map(p => p.rifs))]
+  const rifsById = rifs.map(rr => rr.getRifById(rifId))
+  return rifsById.find(r => r)
+}
+
+GameState.prototype.getObjectsFromSelection = function(st) {
+  const pp = [...this.rifs].map(r => { return { pn: '__dealer', r: r } })
+  for(const p of this.players) {
+    pp.push(...[...p.rifs].map(r => { return { pn: p.playerName, r: r } }))
+  }
+
+  // Players
+  const sp = this.players.filter(p => st.players.includes(p.playerName))
+
+  // Rifs
+  const sr = pp.filter(p => st.isRifSelected(p.r.getId(), p.pn)).map(p => p.r)
+
+  // Cards
+  const sc = []
+  for(const sn of st.cards) {
+    const _p = this.players.find(p => sn.player === p.playerName)
+    const _r = [..._p.rifs].find(r => sn.rif === r.getId())
+    sc.push(_r.cards[sn.card])
+  }
+
+  return { selectedCards: sc, selectedPlayers: sp, selectedRifs: sr }
 }
 
 GameState.prototype.resetRound = function(bShuffle) {

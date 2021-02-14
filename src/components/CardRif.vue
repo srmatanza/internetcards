@@ -1,15 +1,15 @@
 <template>
 <div :class="[rifDisplay]">
-  <ul>
+  <ul :class="{ selected: bSelected}" @click="clickRif()">
     <li v-for="(card,idx) in rif"
         :key="idx"
         :class="{
-          selected: isSelected(card),
+          selected: isSelected(idx),
           redCard: isRedCard(card),
           blackCard: isBlackCard(card),
           faceDown: isFaceDown
         }"
-        @click="clickCard(card, player)">
+        @click.stop="clickCard(idx)">
         <span :style="{ opacity: isFaceDown ? '0%' : '100%' }">{{ printCard(card) }}</span></li>
   </ul>
 </div>
@@ -28,10 +28,11 @@ export default {
   props: [
     'rif',
     'bDebugMode',
-    'bRifSelected',
     'selectedCards',
     'playerselections',
-    'player'
+    'playerName',
+    'bSelected',
+    'cardSelections'
   ],
   mounted: function() {
     // console.debug('oc: ', this.orderedCards, this.rif)
@@ -49,23 +50,34 @@ export default {
     isBlackCard: function(card) {
       return card.suit === 1 || card.suit === 4
     },
-    isSelected: function(card) {
-      for(const cc of this.playerSelection.selectedCards) {
-        if(cc.val === card.val && cc.suit === card.suit) {
-          return true
-        }
+    isSelected: function(idx) {
+      if(this.cardSelections) {
+        return this.cardSelections.includes(idx)
       }
       return false
     },
-    clickCard: function(card, player) {
+    clickRif: function() {
+      //
       if(this.isSelectable) {
-        this.$emit('__' + 'select-card', card, player)
+        this.$emit('__' + 'select-rif', this.rifId, this.playerName)
+      }
+    },
+    clickCard: function(cardIdx) {
+      if(this.isSelectable) {
+        this.$emit('__' + 'select-card', cardIdx, this.rifId, this.playerName)
       }
     }
   },
   computed: {
+    rifId: function() {
+      return this.rif.getId()
+    },
     playerSelection: function() {
-      return this.playerselections[this.player.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
+      const defaultSel = { selectedCards: [], selectedPlayer: '', selectedRif: {} }
+      if(this.playerselections) {
+        return this.playerselections[this.playerName] || defaultSel
+      }
+      return defaultSel
     },
     isFaceDown: function() {
       return this.rif.orientation === Rif.FACE_DOWN
@@ -118,30 +130,33 @@ div.horizontal, div.stacked {
 
 .vertical ul {
   flex-flow: column wrap;
-  margin-top: 2.2em;
+  padding: 2.5em 1em 1em 1em;
 }
 
 .horizontal ul, .stacked ul {
   flex-flow: row wrap;
+  padding: 1em 1em 1em 1.6em;
+}
+
+ul.selected {
+  background: linear-gradient(0deg, #a993c8, #ff8589);
 }
 
 ul {
   font-size: 1.25em;
   display: flex;
+  background-color: #156ca2;
   list-style: none;
   user-select: none;
+  margin: 1em;
 }
 
-.horizontal li {
+.horizontal li, .stacked li {
   margin: .2em .2em .2em -.6em;
 }
 
 .vertical li {
-  margin: -1em .2em .2em .2em;
-}
-
-.stacked li {
-  margin: .2em .2em .2em -.6em;
+  margin: -1.4em .2em .2em .2em;
 }
 
 li {

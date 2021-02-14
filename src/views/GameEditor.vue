@@ -30,6 +30,7 @@
             :player="player"
             :otherplayers="currentGame.players"
             :playerselections="playerSelections"
+            :selectionTree="selectionTree"
             :gamerules="gameRules"
             :instance="instance"
             :currentphase="currentGame.currentPhase"
@@ -95,6 +96,7 @@ import CardTable from '@/components/CardTable.vue'
 
 import * as CC from '@/cards.js'
 import { Rif, RifArray } from '@/state.js'
+import { SelectionTree } from '@/selection.js'
 import Instance from '@/instance.js'
 import sharp2json from '@/sharp/transpile.js'
 
@@ -125,9 +127,11 @@ function createTextDownload(fileName, textFile) {
 export default {
   name: 'gameEditor',
   data: function() {
+    const newTree = new SelectionTree()
     return {
       instance: new Instance(),
       playerSelections: {},
+      selectionTree: newTree,
       sharpContent: '',
       newPlayerName: '',
       bGameSetup: false,
@@ -283,18 +287,18 @@ export default {
     isCurrentPlayer: function(pn) {
       return this.instance.isCurrentPlayer(pn)
     },
-    paSelectCard: function(card, thisPlayer) {
-      const ps = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
-      let sc
-      if(_.includes(ps.selectedCards, card)) {
-        sc = _.filter(ps.selectedCards, c => !_.isEqual(c, card))
-      } else {
-        sc = _.concat(ps.selectedCards, card)
+    paSelectCard: function(cardIdx, rifId, playerName) {
+      const rif = this.currentGame.getRifById(rifId)
+
+      if(rif && rif.selectable === Rif.SINGLE) {
+        this.selectionTree.selectCard(cardIdx, rifId, playerName)
+      } else if(rif && rif.selectable === Rif.MULTIPLE) {
+        this.selectionTree.appendCard(cardIdx, rifId, playerName)
       }
-      ps.selectedCards = sc
-      this.playerSelections[thisPlayer.playerName] = ps
-      this.playerSelections = _.assign({}, this.playerSelections)
-      console.log('paSelectCard event handler', card.toString(), sc, this.playerSelections)
+
+      const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
+      this.$set(this.playerSelections, playerName, ps)
+      console.log('selecting a card: ', ps, rif, ...arguments)
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
       const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
@@ -307,11 +311,7 @@ export default {
       this.playerSelections = _.assign({}, this.playerSelections)
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
-    paSelectRif: function(rif, thisPlayer) {
-      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
-      //
-      this.playerSelections[thisPlayer.playerName] = player
-      this.playerSelections = _.assign({}, this.playerSelections)
+    paSelectRif: function(rifId, playerName) {
       console.log('paSelectRif event handler', [], this.playerSelections)
     },
     shuffleDeck: function() {
@@ -381,6 +381,7 @@ export default {
           selectedPlayer: player.selectedPlayer || ''
         })
         this.playerSelections = {}
+        this.selectionTree.clear()
       })
       const giHandlers = {
         '__select-card': this.paSelectCard,

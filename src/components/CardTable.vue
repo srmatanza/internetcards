@@ -3,10 +3,7 @@
     <h3>Table</h3>
     <div>
       <h4>Rifs</h4>
-      <div :key="rif.name" v-for="rif in tableRifs">
-        {{ rif.name }}
-        <span v-for="card in rif.cards" :key="printCard(card)">[{{ printCard(card) }}]</span>
-      </div>
+      <cardRif v-for="(rif,idx) in tableRifs" :key="idx" :rif="rif" :playerName="'__dealer'"></cardRif>
     </div>
     <div>
       <h4>Game Variables</h4>
@@ -18,6 +15,7 @@
 </template>
 <script>
 import * as CC from '@/cards.js'
+import CardRif from '@/components/CardRif.vue'
 
 export default {
   name: 'cardTable',
@@ -25,6 +23,9 @@ export default {
     return {
       Cards: CC
     }
+  },
+  components: {
+    CardRif
   },
   props: [
     'rifs',

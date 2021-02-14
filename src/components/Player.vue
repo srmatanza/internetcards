@@ -3,14 +3,12 @@
   <div>
   {{ this.player.playerName }}
   </div>
-  <cardRif :rif="player.rifs['hand']"
-            :player="player"
-            :playerselections="playerselections"
-            v-on="setupListeners"></cardRif>
   <cardRif v-for="(rif,idx) in playerRifs"
             :key="idx"
             :rif="rif"
-            :player="player"
+            :playerName="player.playerName"
+            :bSelected="isSelected(rif)"
+            :cardSelections="getSelectedCards(rif)"
             :playerselections="playerselections"
             v-on="setupListeners"></cardRif>
   <div>
@@ -61,6 +59,7 @@ export default {
     'gamerules',
     'instance',
     'playerselections',
+    'selectionTree',
     'currentphase',
     'currentplayer',
     'bDebugMode'
@@ -79,13 +78,11 @@ export default {
     isBlackCard: function(card) {
       return card.suit === 1 || card.suit === 4
     },
-    isSelected: function(card) {
-      for(const cc of this.playerSelection.selectedCards) {
-        if(cc.val === card.val && cc.suit === card.suit) {
-          return true
-        }
-      }
-      return false
+    isSelected: function(rif) {
+      return this.selectionTree.isRifSelected(rif.getId(), this.player.playerName)
+    },
+    getSelectedCards: function(rif) {
+      return this.selectionTree.getCardsForRif(rif.getId(), this.player.playerName)
     },
     getAction: function(obj) {
       if(obj.action) {
@@ -121,10 +118,8 @@ export default {
     playerRifs: function() {
       const ret = []
       for(const rif of this.player.rifs) {
-        if(rif.name !== 'hand') {
-          if(this.bDebugMode || !rif.name.startsWith('_')) {
-            ret.push(rif)
-          }
+        if(this.bDebugMode || !rif.name.startsWith('_')) {
+          ret.push(rif)
         }
       }
       return ret
@@ -153,8 +148,8 @@ export default {
     setupListeners: function() {
       const vm = this
       return {
-        '__select-card': (card, player) => vm.$emit('__select-card', card, player),
-        '__select-rif': (idx, player) => vm.$emit('__select-rif', idx, player)
+        '__select-card': function() { vm.$emit('__select-card', ...arguments) },
+        '__select-rif': function() { vm.$emit('__select-rif', ...arguments) }
       }
     }
   }
