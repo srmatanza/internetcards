@@ -49,6 +49,19 @@ SelectionTree.prototype.selectRif = function(rifId, playerName) {
   }
 }
 
+SelectionTree.prototype.rangeCard = function(cardIdx, lastIdx, rifId, playerName) {
+  const idx = this.cards.findIndex(sn => sn.card === cardIdx && sn.rif === rifId && sn.player === playerName)
+  const firstInRif = this.cards.findIndex(sn => sn.rif === rifId && sn.player === playerName)
+  const keepers = this.cards.filter(sn => !(sn.rif === rifId && sn.player === playerName))
+  this.cards.splice(0)
+  this.cards.push(...keepers)
+  if(idx === -1 || idx !== firstInRif) {
+    for(let i = cardIdx; i<lastIdx; i++) {
+      this.cards.push(new SelectionNode(i, rifId, playerName))
+    }
+  }
+}
+
 SelectionTree.prototype.appendCard = function(cardIdx, rifId, playerName) {
   const idx = this.cards.findIndex(sn => sn.card === cardIdx && sn.rif === rifId && sn.player === playerName)
   if(idx > -1) {
@@ -63,7 +76,9 @@ SelectionTree.prototype.selectCard = function(cardIdx, rifId, playerName) {
   if(idx > -1) {
     this.cards.splice(idx, 1)
   } else {
+    const keepers = this.cards.filter(sn => !(sn.rif === rifId && sn.player === playerName))
     this.cards.splice(0)
+    this.cards.push(...keepers)
     this.cards.push(new SelectionNode(cardIdx, rifId, playerName))
   }
 }

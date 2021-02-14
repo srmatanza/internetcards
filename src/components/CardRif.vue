@@ -59,12 +59,12 @@ export default {
     clickRif: function() {
       //
       if(this.isSelectable) {
-        this.$emit('__' + 'select-rif', this.rifId, this.playerName)
+        this.$emit('__' + 'select-rif', this.rif, this.playerName)
       }
     },
     clickCard: function(cardIdx) {
       if(this.isSelectable) {
-        this.$emit('__' + 'select-card', cardIdx, this.rifId, this.playerName)
+        this.$emit('__' + 'select-card', cardIdx, this.rif, this.playerName)
       }
     }
   },

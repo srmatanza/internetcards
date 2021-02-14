@@ -34,8 +34,9 @@ export default {
       new Rif('', Rif.TOP_ONLY, Rif.VERTICAL),
       new Rif('', Rif.FACE_UP, Rif.VERTICAL, Rif.SINGLE),
       new Rif('', Rif.FACE_DOWN, Rif.VERTICAL),
+      new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE),
       new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.RANGE),
-      new Rif('', Rif.TOP_ONLY, Rif.HORIZONTAL, Rif.MULTIPLE)
+      new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.MULTIPLE)
     ]
     headlessRifs.forEach((rif, idx) => { rif.idx = idx; return rif })
     rifArray.push(...headlessRifs)
@@ -61,12 +62,18 @@ export default {
       const bRet = this.selectionTree.isRifSelected(rif.getId(), '__dealer')
       return bRet
     },
-    paSelectRif(rifId, playerName) {
-      this.selectionTree.appendRif(rifId, playerName)
+    paSelectRif(rif, playerName) {
+      this.selectionTree.appendRif(rif.getId(), playerName)
     },
-    paSelectCard(cardIdx, rifId, playerName) {
+    paSelectCard(cardIdx, rif, playerName) {
       console.log('select card: ', ...arguments)
-      this.selectionTree.selectCard(cardIdx, rifId, playerName)
+      if(rif.selectable === Rif.SINGLE) {
+        this.selectionTree.selectCard(cardIdx, rif.getId(), playerName)
+      } else if(rif.selectable === Rif.MULTIPLE) {
+        this.selectionTree.appendCard(cardIdx, rif.getId(), playerName)
+      } else if(rif.selectable === Rif.RANGE) {
+        this.selectionTree.rangeCard(cardIdx, rif.length, rif.getId(), playerName)
+      }
     }
   },
   computed: {

@@ -287,13 +287,11 @@ export default {
     isCurrentPlayer: function(pn) {
       return this.instance.isCurrentPlayer(pn)
     },
-    paSelectCard: function(cardIdx, rifId, playerName) {
-      const rif = this.currentGame.getRifById(rifId)
-
-      if(rif && rif.selectable === Rif.SINGLE) {
-        this.selectionTree.selectCard(cardIdx, rifId, playerName)
-      } else if(rif && rif.selectable === Rif.MULTIPLE) {
-        this.selectionTree.appendCard(cardIdx, rifId, playerName)
+    paSelectCard: function(cardIdx, rif, playerName) {
+      if(rif.selectable === Rif.SINGLE) {
+        this.selectionTree.selectCard(cardIdx, rif.getId(), playerName)
+      } else if(rif.selectable === Rif.MULTIPLE) {
+        this.selectionTree.appendCard(cardIdx, rif.getId(), playerName)
       }
 
       const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
@@ -311,7 +309,7 @@ export default {
       this.playerSelections = _.assign({}, this.playerSelections)
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
-    paSelectRif: function(rifId, playerName) {
+    paSelectRif: function(rif, playerName) {
       console.log('paSelectRif event handler', [], this.playerSelections)
     },
     shuffleDeck: function() {
