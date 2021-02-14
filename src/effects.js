@@ -36,7 +36,7 @@ function _includesCards(hand, cards) {
     for(const h in hand) {
       const cc = cards[c]
       const hh = hand[h]
-      if(cc.val === hh.val && cc.suit === hh.suit) {
+      if(cc.rank === hh.rank && cc.suit === hh.suit) {
         bb = false
         continue
       }
@@ -50,7 +50,7 @@ function _includesCards(hand, cards) {
 
 function _cardIncludes(sc, card) {
   for(const i in sc) {
-    if(sc[i].suit === card.suit && sc[i].val === card.val) {
+    if(sc[i].suit === card.suit && sc[i].rank === card.rank) {
       return true
     }
   }

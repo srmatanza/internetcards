@@ -4,25 +4,25 @@ import jsonLogic from 'json-logic-js'
 
 function _valSuit(card) {
   if(typeof card === 'string') {
-    const val = _.indexOf('_123456789TJQKA', card[0])
+    const rank = _.indexOf('_123456789TJQKA', card[0])
     const suit = _.indexOf('_SHDC', card[1])
-    // console.log('card[string]', card, val, suit)
-    return [val, suit]
+    // console.log('card[string]', card, rank, suit)
+    return [rank, suit]
   } else if(typeof card === 'object') {
     // console.log('card[object]', card)
-    return [card.val, card.suit]
+    return [card.rank, card.suit]
   } else {
     return [0, 0]
   }
 }
 
 function handContainsCard(card, rif) {
-  const val = parseInt(card[0])
+  const rank = parseInt(card[0])
   const suit = _.indexOf('_SHDC', card[1])
-  const c = new CC.Card(suit, val)
+  const c = new CC.Card(suit, rank)
   for(let i = 0; i < rif.cards.length; i++) {
     const _c = rif.cards[i]
-    if(_c.val === c.val && _c.suit === c.suit) {
+    if(_c.rank === c.rank && _c.suit === c.suit) {
       return true
     }
   }
@@ -51,11 +51,11 @@ function handContainsSuit(suit, rif) {
   return false
 }
 
-function handContainsVal(val, rif) {
-  const valIndex = typeof val === 'number' ? val : _.indexOf('_A23456789TJQK', val)
+function handContainsVal(rank, rif) {
+  const valIndex = typeof rank === 'number' ? rank : _.indexOf('_A23456789TJQK', rank)
   for(let i = 0; i < rif.cards.length; i++) {
     const card = rif.cards[i]
-    if(card.val === valIndex) {
+    if(card.rank === valIndex) {
       return true
     }
   }
@@ -90,15 +90,15 @@ function getSuitForCard(card) {
 }
 
 function getValForCard(card) {
-  const val = parseInt(card[0])
+  const rank = parseInt(card[0])
 
-  return val
+  return rank
 }
 
 function isHighCard(cA, cB) {
   console.log('isHighCard', cA, cB)
-  let vA = cA.val
-  let vB = cB.val
+  let vA = cA.rank
+  let vB = cB.rank
   if(vA === 1) {
     vA = 14
   }

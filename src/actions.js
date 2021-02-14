@@ -11,7 +11,7 @@ function _drawCardFromDeckToHand(deck, hand) {
 
 function _cardIncludes(sc, card) {
   for(const i in sc) {
-    if(sc[i].suit === card.suit && sc[i].val === card.val) {
+    if(sc[i].suit === card.suit && sc[i].rank === card.rank) {
       return true
     }
   }

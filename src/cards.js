@@ -7,11 +7,11 @@ function rng(seed) {
   return seedrandom(csd)()
 }
 
-function Card(suit, val) {
+function Card(suit, rank) {
   this.suit = suit || 1
-  this.val = val || 1
+  this.rank = rank || 1
   this.lt = function(anotherCard) {
-    return (this.val < anotherCard.val)
+    return (this.rank < anotherCard.rank)
   }
   this.toString = function() {
     return printCard(this)
@@ -27,7 +27,7 @@ function Deck(cards) {
   for (let i = 0; i < len; i++) {
     let nc
     if (cards) {
-      nc = new Card(cards[i].suit, cards[i].val)
+      nc = new Card(cards[i].suit, cards[i].rank)
     } else {
       nc = new Card(Math.floor(i/13)+1, (i%13)+1)
     }
@@ -68,12 +68,12 @@ function printCard(card, longValues) {
 
   if (longValues) {
     return (
-      wordSuits[card.val] +
+      wordSuits[card.rank] +
       wordValues[card.suit]
     )
   } else {
     return (
-      shortValues[card.val] +
+      shortValues[card.rank] +
       shortSuits[card.suit]
     )
   }
