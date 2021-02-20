@@ -61,7 +61,13 @@
         <div class="codeOptions">
           <h3>Card Game Rules</h3>
           <div>
-            <button @click="resetState()">Reset</button>
+            <button type="button" @click="resetState()">Reset</button>&nbsp;
+            <input type="text" v-model.trim="rngseed" />
+          </div>
+          <div>
+            <button type="button" disabled>Back</button>
+            <button type="button" @click="nextAction()" :disabled="!bCanSkip">Next</button>
+            <button type="button" @click="continueAction()" :disabled="!bCanSkip">Cont</button>
           </div>
           <div>
             <label for="gameSrc">Upload Source </label>
@@ -134,11 +140,14 @@ export default {
       selectionTree: newTree,
       sharpContent: '',
       newPlayerName: '',
+      rngseed: 'weenus',
+      bGameLocked: false,
       bGameSetup: false,
       bDebugMode: false,
       bOnlyShowCurrent: false,
       actionLog: [],
-      stateStack: _.map(['A', 'B', 'C', 'D'], nm => ({ name: nm, gs: {} })),
+      actPC: 0,
+      stateStack: _.map(['A', 'B', 'C', 'D'], nm => ({ name: nm, gs: {}, apc: 0 })),
       Cards: CC,
       editor: {}
     }
@@ -180,9 +189,11 @@ export default {
       }
     },
     resetState: function() {
+      this.actPC = 0
       this.bGameSetup = false
-      this.currentGame.players = []
+      const playerNames = this.currentGame.players.map(p => p.playerName)
       this.parseSharp()
+      playerNames.forEach(pn => this.instance.addPlayer(pn))
     },
     contentChanged: function() {
       clearTimeout(editTimeoutId)
@@ -252,7 +263,7 @@ export default {
         this.instance.setRuleSet(ruleset)
       } else {
         this.bGameSetup = true
-        this.instance.setupGameState(ruleset)
+        this.instance.setupGameState(ruleset, this.rngseed)
       }
     },
     printCard: function(card) {
@@ -315,6 +326,21 @@ export default {
     shuffleDeck: function() {
       const newDeck = CC.shuffleDeck(this.currentGame.deck)
       this.currentGame.deck = newDeck
+    },
+    continueAction: function() {
+      //
+      this.nextAction()
+      setTimeout(() => {
+        if(this.bCanSkip) {
+          this.continueAction()
+        }
+      }, 100)
+    },
+    nextAction: function() {
+      //
+      const act = this.actionLog[this.actPC++]
+      console.log('Next action: ', act.a, act.pn)
+      this.instance.runAction(act.a, act.pn, act.st)
     }
   },
   computed: {
@@ -333,6 +359,9 @@ export default {
       set: function(newGS) {
         this.instance.setGameState(newGS)
       }
+    },
+    bCanSkip: function() {
+      return this.actPC < this.actionLog.length
     },
     currentPlayer: function() {
       return this.instance.getCurrentPlayer()
@@ -371,22 +400,20 @@ export default {
       return {}
     },
     setupListeners: function() {
-      const ret = this.instance.paListeners((event, player) => {
-        this.actionLog.push({
-          action: event.id,
-          playerName: player.playerName,
-          selectedCards: player.selectedCards || [],
-          selectedPlayer: player.selectedPlayer || ''
-        })
-        this.playerSelections = {}
-        this.selectionTree.clear()
-      })
-      const giHandlers = {
+      return {
+        __custom_action: this.instance.fnRunAction((event, player) => {
+          this.actionLog.push({
+            a: event.id,
+            pn: player.playerName,
+            st: _.cloneDeep(this.selectionTree)
+          })
+          this.playerSelections = {}
+          this.selectionTree.clear()
+        }),
         '__select-card': this.paSelectCard,
         '__select-player': this.paSelectPlayer,
         '__select-rif': this.paSelectRif
       }
-      return _.assign(ret, giHandlers)
     }
   }
 }

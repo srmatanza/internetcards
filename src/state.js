@@ -1,5 +1,6 @@
 // import _ from 'lodash'
 import * as Cards from '../src/cards.js'
+import seedrandom from 'seedrandom'
 
 function InitializeEnums(Obj, ObjEnums) {
   Object.getOwnPropertyNames(ObjEnums).map(prop => {
@@ -179,10 +180,12 @@ PlayerState.prototype.resetPlayer = function() {
   this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.MULTIPLE))
 }
 
-export function GameState() {
+export function GameState(rngseed) {
+  const seed = rngseed || 'weenus'
+  this._fnrng = seedrandom(seed)
   this.currentPlayerIdx = 0
   this.players = []
-  this.deck = Cards.shuffleDeck(new Cards.Deck())
+  this.deck = Cards.shuffleDeck(new Cards.Deck(), this._fnrng)
 
   this.currentPhase = ''
   this.gameVariables = {}
@@ -200,6 +203,11 @@ GameState.prototype.getRifById = function(rifId) {
 }
 
 GameState.prototype.getObjectsFromSelection = function(st) {
+  // collate rifs into a playerName*rif tuple
+  // the weird syntax here is because the RifArray class
+  // implements the iterator method, but is not an array, so in order
+  // to use Array methods like map, you first have to array-ify it.
+  // Perhaps a method to return an array would be better, e.g. this.rifs.asArray().map
   const pp = [...this.rifs].map(r => { return { pn: '__dealer', r: r } })
   for(const p of this.players) {
     pp.push(...[...p.rifs].map(r => { return { pn: p.playerName, r: r } }))
@@ -225,7 +233,7 @@ GameState.prototype.getObjectsFromSelection = function(st) {
 GameState.prototype.resetRound = function(bShuffle) {
   const newDeck = new Cards.Deck()
   if(bShuffle) {
-    this.deck = Cards.shuffleDeck(newDeck)
+    this.deck = Cards.shuffleDeck(newDeck, this._fnrng)
   } else {
     this.deck = newDeck
   }

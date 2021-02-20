@@ -1,11 +1,3 @@
-import seedrandom from 'seedrandom'
-
-// const rng = seedrandom('hello.')
-
-function rng(seed) {
-  const csd = seed || 'weenus'
-  return seedrandom(csd)()
-}
 
 function Card(suit, rank) {
   this.suit = suit || 1
@@ -45,7 +37,8 @@ function Player(playerName) {
   this.points = 0
 }
 
-function shuffleDeck(deck) {
+function shuffleDeck(deck, fnRng) {
+  const rng = fnRng || Math.random
   const toShuf = deck.cards
   const len = toShuf.length
   const cards = []

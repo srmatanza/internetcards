@@ -55,8 +55,8 @@ function handleEffects(effects, player) {
   }
 }
 
-export default function Instance() {
-  this.gs = new GameState()
+export default function Instance(rngseed) {
+  this.gs = new GameState(rngseed)
   this.currentRuleSet = new RuleSet()
   return this
 }
@@ -78,9 +78,9 @@ Instance.prototype.setRuleSet = function(ruleSet) {
   this.currentRuleSet = ruleSet
 }
 
-Instance.prototype.setupGameState = function(ruleSet) {
+Instance.prototype.setupGameState = function(ruleSet, rngseed) {
   this.currentRuleSet = ruleSet
-  this.setGameState(new GameState())
+  this.setGameState(new GameState(rngseed))
   if(ruleSet.initialPhase) {
     this.gs.currentPhase = ruleSet.initialPhase
   } else {
@@ -158,27 +158,38 @@ Instance.prototype.glomVars = function(player) {
   return gm
 }
 
-Instance.prototype.paListeners = function(callbackFn) {
-  const mm = this
-  function wrapListener(name) {
-    return (e, p, ps) => {
-      console.debug(name + ' event handler: ', mm, e, p, ps)
-      _.assign(p, ps)
-      try {
-        // mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
-        p.selectedCards = ps.selectedCards
-        p.selectedPlayer = ps.selectedPlayer
-        handleEffects.call(mm, e.effect, p)
-        if(typeof callbackFn === 'function') {
-          callbackFn(e, p)
-        }
-      } catch(ex) {
-        console.error('Error running the ruleset: ', ex)
-      }
-    }
+Instance.prototype.runAction = function(act, playerName, st) {
+  console.debug('Run action: ', this, act, playerName, st)
+  const evt = this.getActionForCurrentPhase(act)
+  const player = this.gs.players.find(p => p.playerName === playerName)
+  const ps = this.gs.getObjectsFromSelection(st)
+
+  _.assign(player, ps)
+  try {
+    player.selectedCards = ps.selectedCards
+    player.selectedPlayer = ps.selectedPlayer
+    handleEffects.call(this, evt.effect, player)
+  } catch (ex) {
+    console.error('Error running the ruleset: ', ex)
   }
-  return {
-    __custom_action: wrapListener('__custom_action')
+}
+
+Instance.prototype.fnRunAction = function(callbackFn) {
+  const mm = this
+  return (e, p, ps) => {
+    console.debug('Run action w/callback: ', mm, e, p, ps)
+    _.assign(p, ps)
+    try {
+      // mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
+      p.selectedCards = ps.selectedCards
+      p.selectedPlayer = ps.selectedPlayer
+      handleEffects.call(mm, e.effect, p)
+      if(typeof callbackFn === 'function') {
+        callbackFn(e, p)
+      }
+    } catch(ex) {
+      console.error('Error running the ruleset: ', ex)
+    }
   }
 }
 
@@ -188,7 +199,7 @@ Instance.prototype.getActionForCurrentPhase = function(actionName) {
   for(const phase of phases) {
     if(phase.name === this.gs.currentPhase) {
       for(const action of phase.playerActions) {
-        if(action.name === actionName) {
+        if(action.id === actionName) {
           return action
         }
       }
