@@ -8,9 +8,9 @@ import * as CC from '@/cards.js'
 
 describe('Logic tests for actions and effects', () => {
     let gi
-    let givenHandContainsCard = { 'handContainsCard': [ '2C', {"var": "currentPlayer.rifs.hand" } ] }
-    let givenHandContainsSuit = { 'handContainsSuit': [ 'H', {"var": "currentPlayer.rifs.hand" } ] }
-    let cardEqQS = { cardEq: ['QS', { var: 'card' }] }
+    let givenHandContainsCard = { 'rifContainsCard': [ '2C', {"var": "currentPlayer.rifs.hand" } ] }
+    let givenHandContainsSuit = { 'rifContainsSuit': [ 'H', {"var": "currentPlayer.rifs.hand" } ] }
+    let cardEqQS = { cardIsEqual: ['QS', { var: 'card' }] }
 
     beforeEach(() => {
         //console.log("Calling beforeEach")
