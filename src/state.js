@@ -1,6 +1,7 @@
 // import _ from 'lodash'
 import * as Cards from '../src/cards.js'
 import seedrandom from 'seedrandom'
+import { SelectionTree } from './selection.js'
 
 function InitializeEnums(Obj, ObjEnums) {
   Object.getOwnPropertyNames(ObjEnums).map(prop => {
@@ -208,12 +209,13 @@ GameState.prototype.getRifById = function(rifId) {
   return rifsById.find(r => r)
 }
 
-GameState.prototype.getObjectsFromSelection = function(st) {
+GameState.prototype.getObjectsFromSelection = function(_st) {
   // collate rifs into a playerName*rif tuple
   // the weird syntax here is because the RifArray class
   // implements the iterator method, but is not an array, so in order
   // to use Array methods like map, you first have to array-ify it.
   // Perhaps a method to return an array would be better, e.g. this.rifs.asArray().map
+  const st = Object.assign(new SelectionTree(), _st)
   const pp = [...this.rifs].map(r => { return { pn: '__dealer', r: r } })
   for(const p of this.players) {
     pp.push(...[...p.rifs].map(r => { return { pn: p.playerName, r: r } }))

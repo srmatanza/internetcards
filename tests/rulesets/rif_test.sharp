@@ -1,0 +1,17 @@
+phase a
+    action a
+        name: "Deal"
+        deal(10)
+        new_rif($table, "aRif")
+        change_phase("b")
+    endaction
+endphase
+
+phase b
+    action a
+        name: "Play Card"
+        move_cards($player.rifs["hand"], $table["aRif"], $selectedCards)
+    given
+        $selectedCards.length > 0
+    endaction
+endphase

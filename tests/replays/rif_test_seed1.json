@@ -1,0 +1,148 @@
+{
+  "playerNames": [
+    "Moink",
+    "Comfort"
+  ],
+  "rngseed": "seed1",
+  "actionLog": [
+    {
+      "a": "a",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "a",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    }
+  ]
+}

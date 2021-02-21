@@ -17,7 +17,7 @@ var eachPlayerDepth = 0
 var MAX_EACH_PLAYER_DEPTH = 1
 
 function handleEffect(effect, player) {
-  console.debug('handleEffect: ', this.gs, effect, player)
+  // console.debug('handleEffect: ', this.gs, effect, player)
   if (isSatisfied.call(this, effect.given, player)) {
     for (const ef in effect) {
       const fn = Effects[ef]
@@ -159,7 +159,7 @@ Instance.prototype.glomVars = function(player) {
 }
 
 Instance.prototype.runAction = function(act, playerName, st) {
-  console.debug('Run action: ', this, act, playerName, st)
+  // console.debug('Run action: ', this, act, playerName, st)
   const evt = this.getActionForCurrentPhase(act)
   const player = this.gs.players.find(p => p.playerName === playerName)
   const ps = this.gs.getObjectsFromSelection(st)
@@ -177,7 +177,7 @@ Instance.prototype.runAction = function(act, playerName, st) {
 Instance.prototype.fnRunAction = function(callbackFn) {
   const mm = this
   return (e, p, ps) => {
-    console.debug('Run action w/callback: ', mm, e, p, ps)
+    // console.debug('Run action w/callback: ', mm, e, p, ps)
     _.assign(p, ps)
     try {
       // mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
@@ -194,7 +194,7 @@ Instance.prototype.fnRunAction = function(callbackFn) {
 }
 
 Instance.prototype.getActionForCurrentPhase = function(actionName) {
-  console.log('looking up action: ', actionName)
+  // console.log('looking up action: ', actionName)
   const phases = this.currentRuleSet.gameplay
   for(const phase of phases) {
     if(phase.name === this.gs.currentPhase) {
