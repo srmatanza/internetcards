@@ -62,6 +62,30 @@ function handContainsVal(rank, rif) {
   return false
 }
 
+function rifIsRun(rif) {
+  if(rif.length < 3) {
+    return false
+  }
+  const _r = Object.assign([], rif.cards)
+  _r.sort((a, b) => a.rank < b.rank)
+  let c = _r[0]
+  for(let i = 1; i < _r.length; i++) {
+    if(!(c.rank === _r[i].rank - 1 && c.suit === _r[i].suit)) {
+      return false
+    }
+    c = _r[i]
+  }
+  return true
+}
+
+function rifIsSet(rif) {
+  if(rif.length < 3) {
+    return false
+  }
+  const _r = Object.assign([], rif.cards)
+  return !_r.some(c => c.rank !== _r[0].rank)
+}
+
 function isYourTurn(currentplayer) {
   return currentplayer
 }
@@ -95,15 +119,14 @@ function getValForCard(card) {
   return rank
 }
 
-function isHighCard(cA, cB) {
-  console.log('isHighCard', cA, cB)
-  let vA = cA.rank
-  let vB = cB.rank
-  if(vA === 1) {
-    vA = 14
+function cardGt(cA, cB) {
+  const vA = cA.rank
+  const vB = cB.rank
+  if(vB === 1) { // cB is at least as high as cA
+    return false
   }
-  if(vB === 1) {
-    vB = 14
+  if(vA === 1) { // if cB is not an Ace, cA must be higher
+    return true
   }
   if(vA === vB) {
     return (cA.suit >= cB.suit)
@@ -115,6 +138,10 @@ function isHighCard(cA, cB) {
 function cardEq(cA, cB) {
   // console.log('cardEq: ', _valSuit(cA), _valSuit(cB))
   return _.isEqual(_valSuit(cA), _valSuit(cB))
+}
+
+function cardLt(cA, cB) {
+  return !cardGt(cA, cB) && !cardEq(cA, cB)
 }
 
 function flatten(array) {
@@ -132,17 +159,21 @@ function getAt(obj, idx) {
   return obj[idx]
 }
 
-jsonLogic.add_operation('handContainsCard', handContainsCard)
-jsonLogic.add_operation('handContainsSuit', handContainsSuit)
-jsonLogic.add_operation('handContainsVal', handContainsVal)
+jsonLogic.add_operation('rifContainsCard', handContainsCard)
+jsonLogic.add_operation('rifContainsSuit', handContainsSuit)
+jsonLogic.add_operation('rifContainsRank', handContainsVal)
+jsonLogic.add_operation('rifIsRun', rifIsRun)
+jsonLogic.add_operation('rifIsSet', rifIsSet)
+
 jsonLogic.add_operation('isYourTurn', isYourTurn)
 jsonLogic.add_operation('isOtherPlayerSelected', isOtherPlayerSelected)
 jsonLogic.add_operation('getSuitForCard', getSuitForCard)
-jsonLogic.add_operation('getValForCard', getValForCard)
-jsonLogic.add_operation('isHighCard', isHighCard)
+jsonLogic.add_operation('getRankForCard', getValForCard)
 jsonLogic.add_operation('flatten', flatten)
 jsonLogic.add_operation('playerVar', playerVar)
-jsonLogic.add_operation('cardEq', cardEq)
+jsonLogic.add_operation('cardIsEqual', cardEq)
+jsonLogic.add_operation('cardIsHigher', cardGt)
+jsonLogic.add_operation('cardIsLower', cardLt)
 jsonLogic.add_operation('getAt', getAt)
 
 export default {

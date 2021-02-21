@@ -89,7 +89,17 @@ function newRif(gi, args, player) {
   const toRifArray = _computeArg(gi, args[0], player)
   const computedArgs = args.slice(1).map(a => _computeArg(gi, a, player))
 
+  // validate that toRifArray is a RifArray
   toRifArray.addRif(new Rif(...computedArgs))
+}
+
+function setRif(gi, args, player) {
+  const toRif = _computeArg(gi, args[0], player)
+  // orientation, display, selectable
+  const computedArgs = args.slice(1).map(a => _computeArg(gi, a, player))
+
+  // validate that toRif is a Rif
+  toRif.setParams(...computedArgs)
 }
 
 function moveCards(gi, args, player) {
@@ -256,9 +266,10 @@ export default {
   advance_player: callHandler(advancePlayer, ['number']),
   move_cards: callHandler(moveCards),
   message: callHandler(message),
-  set_player: callHandler(setPlayer),
+  set_current_player: callHandler(setPlayer),
   new_round: callHandler(newRound),
   new_rif: callHandler(newRif),
+  set_rif: callHandler(setRif),
   deal: callHandler(deal),
   draw: callHandler(draw, ['number']),
   effect: Symbol('effect'),

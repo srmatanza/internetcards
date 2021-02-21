@@ -109,6 +109,12 @@ export function Rif(name, orientation, display, selectable) {
   return new Proxy(this, rifHandler)
 }
 
+Rif.prototype.setParams = function(orientation, display, selectable) {
+  this.orientation = orientation || this.orientation
+  this.display = display || this.display
+  this.selectable = selectable || this.selectable
+}
+
 Rif.prototype.getId = function() {
   if (this.name === '') {
     return `__rif${this.idx}`
