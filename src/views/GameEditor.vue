@@ -74,7 +74,8 @@
             <input type="file" id="gameSrc" name="gameSrc" accept=".sharp" @change="uploadSharp" />
           </div>
           <div>
-            <button @click="downloadSharp()" :disabled="!bCanDownload">Download Source</button>
+            <button @click="downloadSharp()" :disabled="!bCanDownload">Download Source</button>&nbsp;
+            <button @click="downloadActionLog()" :disabled="!bCanSaveActions">Download Actions</button>
           </div>
           <div id="stateWindow">
             <h3>Save Slots</h3>
@@ -256,7 +257,12 @@ export default {
       createTextDownload('download.sharp', this.editor.getValue())
     },
     downloadActionLog: function() {
-      createTextDownload('actions.log', JSON.stringify(this.actionLog, null, 2))
+      const replay = {
+        playerNames: this.currentGame.players.map(p => p.playerName),
+        rngseed: this.rngseed,
+        actionLog: this.actionLog
+      }
+      createTextDownload(`${this.rngseed}.log`, JSON.stringify(replay, null, 2))
     },
     setupGameState: function(ruleset) {
       if(this.bGameSetup) {
@@ -371,6 +377,9 @@ export default {
         return this.editor.getValue().length>0
       }
       return false
+    },
+    bCanSaveActions: function() {
+      return this.actionLog.length > 0
     },
     bRuleSetLoaded: function() {
       return this.instance.currentRuleSet !== undefined
