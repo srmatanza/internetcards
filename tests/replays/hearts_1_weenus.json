@@ -1,0 +1,1297 @@
+{
+  "playerNames": [
+    "Moink",
+    "Comfort",
+    "EG",
+    "Al"
+  ],
+  "rngseed": "weenus",
+  "actionLog": [
+    {
+      "a": "start_game",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "deal",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Moink"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Comfort"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "EG"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "EG"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Al"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Al"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "lead_round",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 5,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 8,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 5,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 12,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 4,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 5,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 9,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 7,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 7,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 9,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 4,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 6,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 6,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 8,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 6,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 6,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 5,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 3,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 4,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 4,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 3,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "score_round",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "new_round",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "deal",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Moink"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Moink"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Comfort"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Comfort"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "EG"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "EG"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "pass_cards",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 0,
+            "rif": "hand",
+            "player": "Al"
+          },
+          {
+            "card": 1,
+            "rif": "hand",
+            "player": "Al"
+          },
+          {
+            "card": 2,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "lead_round",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 5,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 4,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 7,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 7,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    },
+    {
+      "a": "lead_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 5,
+            "rif": "hand",
+            "player": "Comfort"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "EG",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 6,
+            "rif": "hand",
+            "player": "EG"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Al",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 3,
+            "rif": "hand",
+            "player": "Al"
+          }
+        ]
+      }
+    },
+    {
+      "a": "play_card",
+      "pn": "Moink",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": [
+          {
+            "card": 4,
+            "rif": "hand",
+            "player": "Moink"
+          }
+        ]
+      }
+    },
+    {
+      "a": "take_trick",
+      "pn": "Comfort",
+      "st": {
+        "players": [],
+        "rifs": [],
+        "cards": []
+      }
+    }
+  ]
+}

@@ -204,7 +204,7 @@ function message(gi, args, player) {
       msgText = _computeArg(gi, args[0], player)
       // also, parse msgText as a template for var substitution
       pMsg = new Message(msgText, msgType)
-      console.log('Setting message: ', pMsg)
+      console.info(pMsg)
       if(playerIdx === -1) {
         for(const pidx in gi.gs.players) {
           gi.gs.players[pidx].currentMessage = pMsg

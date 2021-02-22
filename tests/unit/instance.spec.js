@@ -3,6 +3,7 @@ import Instance from '@/instance.js'
 import sharp2json from '@/sharp/transpile.js'
 
 import rpRifTest1 from '../replays/rif_test_seed1.json'
+import rpHearts1 from '../replays/hearts_1_weenus.json'
 
 describe('game replay tests', () => {
   test('rif_test plays all the right cards', () => {
@@ -28,5 +29,35 @@ describe('game replay tests', () => {
     // console.log('State: ', JSON.stringify(instance.gs, null, 2))
     expect(instance.gs.players[0].rifs.hand.length).toBe(0)
     expect(instance.gs.players[1].rifs.hand.length).toBe(0)
+  })
+
+  test('hearts_test scoring issue', () => {
+    const sharp = fs.readFileSync('./tests/rulesets/hearts_1.sharp').toString()
+    const gameObj = sharp2json(sharp)
+    const replay = rpHearts1
+
+    const instance = new Instance()
+    instance.setupGameState(gameObj, replay.rngseed)
+    replay.playerNames.forEach(pn => instance.addPlayer(pn))
+
+    // Play until score_round
+    let actPC = 0
+    for(actPC = 0; actPC < replay.actionLog.length; actPC++) {
+      const act = replay.actionLog[actPC]
+      if(act.a === 'score_round') {
+        break
+      }
+      instance.runAction(act.a, act.pn, act.st)
+    }
+
+    console.log('now score the round')
+    console.log('phase: ', instance.gs.currentPhase)
+
+    const act = replay.actionLog[actPC]
+    instance.runAction(act.a, act.pn, act.st)
+    console.log('phase: ', instance.gs.currentPhase)
+    instance.gs.players.forEach(p => {
+      console.log(p.playerName + ': ', p.playerVariables)
+    })
   })
 })

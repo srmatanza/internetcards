@@ -147,7 +147,6 @@ Instance.prototype.glomVars = function(player) {
   }
   const globalVarsForPlayer = {
     $playerCount: this.getPlayerCount(),
-    $currentPlayer: player.idx,
     $possiblePlayers: this.currentRuleSet.possiblePlayers,
     $otherPlayers: this.gs.players,
     $table: this.gs.rifs
