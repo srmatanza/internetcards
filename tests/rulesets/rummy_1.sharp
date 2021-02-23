@@ -1,0 +1,98 @@
+# Actions: start game,
+#  deal,
+# draw card,
+# take from discard range,
+# lay down,
+# play card to a meld
+
+name: "Rummy"
+author: "Mike McEuen"
+contact: "srmatanza@gmail.com"
+initialPhase: "lobby"
+
+gvar _minPlayers = 2
+gvar _maxPlayers = 6
+gvar _cardsToDeal = [10, 7, 7, 6, 6]
+
+gvar bTookCards = false
+
+phase lobby
+  action start
+    name: "Start Game"
+    new_rif($table, "discard", null, null, RANGE)
+    change_phase("setup")
+  given
+    $playerCount >= _minPlayers
+    $playerCount <= _maxPlayers
+  endaction
+endphase
+
+phase setup
+  action deal
+    name: "Deal"
+    draw(1) # draw the discard first because it's easier
+    move_cards($player.rifs["hand"], $table["discard"])
+    deal(_cardsToDeal[$playerCount] * $playerCount)
+    bTookCards = false
+    change_phase("draw")
+  endaction
+endphase
+
+phase draw
+  action draw
+    name: "Draw"
+    draw(1)
+    change_phase("discard")
+  given
+    $isYourTurn
+  endaction
+
+  action take
+    name: "Take"
+    bTookCards = true
+    move_cards($table["discard"], $player.rifs["hand"], $selectedCards)
+    change_phase("discard")
+  given
+    $isYourTurn
+  endaction
+endphase
+
+phase discard
+  action meld
+    name: "Meld"
+    message("layoff")
+  given
+    $isYourTurn
+    rifIsRun($selectedCards) || rifIsSet($selectedCards)
+  endaction
+
+  action layoff
+    name: "Lay Off"
+    message("layoff")
+  given
+    $isYourTurn
+    $selectedCards.length == 1
+  endaction
+
+  action discard
+    name: "Discard"
+    move_cards($player.rifs["hand"], $table["discard"], $selectedCards)
+    advance_player(1)
+    change_phase("draw")
+  given
+    $isYourTurn
+    $selectedCards.length == 1
+  endaction
+endphase
+
+phase scoring
+  action score
+    name: "Score Round"
+    message("score")
+  endaction
+
+  action new_round
+    name: "New Round"
+    message("new round")
+  endaction
+endphase
