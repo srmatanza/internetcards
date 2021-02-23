@@ -178,8 +178,9 @@ export default {
             this.editor.session.addGutterDecoration(line, 'lineError')
             bErr = true
           },
-          reportAttemptingFullContext: () => {},
-          reportContextSensitivity: () => {}
+          reportAttemptingFullContext: () => { console.debug('reportAttemptingFullContext: ', ...arguments) },
+          reportContextSensitivity: () => { console.debug('reportContextSensitivity: ', ...arguments) },
+          reportAmbiguity: () => { console.debug('reportAmbiguity: ', ...arguments) }
         })
         if(!bErr) {
           console.log('Recompiled!')
