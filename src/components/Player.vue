@@ -12,7 +12,7 @@
             :playerselections="playerselections"
             v-on="setupListeners"></cardRif>
   <div>
-    <ul v-if="bShowPlayers">
+    <ul v-if="false">
       <li v-for="op in this.otherplayers"
           :key="op.playerName"
           :class="{ selected: isPlayerSelected(op.playerName) }"
@@ -54,14 +54,9 @@ export default {
   },
   props: [
     'player',
-    'bShowPlayers',
-    'otherplayers',
-    'gamerules',
     'instance',
     'playerselections',
     'selectionTree',
-    'currentphase',
-    'currentplayer',
     'bDebugMode'
   ],
   methods: {
@@ -144,6 +139,18 @@ export default {
         }
       }
       return []
+    },
+    otherplayers: function() {
+      return this.instance.gs.players
+    },
+    gamerules: function() {
+      return this.instance.currentRuleSet
+    },
+    currentphase: function() {
+      return this.instance.gs.currentPhase
+    },
+    currentplayer: function() {
+      return this.instance.isCurrentPlayer(this.player.playerName)
     },
     setupListeners: function() {
       const vm = this

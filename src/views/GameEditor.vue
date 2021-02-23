@@ -17,8 +17,9 @@
               <label>Debug Mode</label>
             </span>
             <span>
-              <input type="checkbox" id="chkShowCurrent" v-model="bOnlyShowCurrent" />
-              <label>Only show the current player</label>
+              <select v-if="currentGame.players.length" v-model="viewingPlayer">
+                <option v-for="player in currentGame.players" :key="player.playerName">{{ player.playerName }}</option>
+              </select>
             </span>
           </form>
         </div>
@@ -28,13 +29,9 @@
           <Player v-for="player in currentGame.players"
             :key="player.playerName"
             :player="player"
-            :otherplayers="currentGame.players"
             :playerselections="playerSelections"
             :selectionTree="selectionTree"
-            :gamerules="gameRules"
             :instance="instance"
-            :currentphase="currentGame.currentPhase"
-            :currentplayer="isCurrentPlayer(player.playerName)"
             :bDebugMode="bDebugMode"
             v-on="setupListeners" />
         </div>
@@ -42,12 +39,8 @@
           <Player
             :key="currentPlayer.playerName"
             :player="currentPlayer"
-            :otherplayers="currentGame.players"
             :playerselections="playerSelections"
-            :gamerules="gameRules"
             :instance="instance"
-            :currentphase="currentGame.currentPhase"
-            :currentplayer="true"
             :bDebugMode="bDebugMode"
             v-on="setupListeners" />
         </div>
@@ -141,6 +134,7 @@ export default {
       selectionTree: newTree,
       sharpContent: '',
       newPlayerName: '',
+      viewingPlayer: '',
       rngseed: 'weenus',
       bGameLocked: false,
       bGameSetup: false,
@@ -279,6 +273,9 @@ export default {
     addPlayer: function() {
       const playerName = this.newPlayerName
       console.log('method: addPlayer', playerName)
+      if(this.viewingPlayer === '') {
+        this.viewingPlayer = playerName
+      }
       if(this.playerName !== '') {
         this.$refs.playerNameInput.focus()
         this.newPlayerName = ''
