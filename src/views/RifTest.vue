@@ -111,6 +111,5 @@ export default {
 div.rifBox {
   display: flex;
   flex-flow: row wrap;
-  width: 50%;
 }
 </style>
