@@ -49,10 +49,10 @@ phase setup
     _pNextPlayer = ($player.idx+_gPassRecipient[gRoundIdx]) % $playerCount
     # do this here because it guarantees every player will do it
     if !_pScoreHandCreated then
-      new_rif($player.cards, "_score")
+      new_rif($player.rifs, "_score")
       _pScoreHandCreated = true
     endif
-    if handContainsCard("2C", $player.cards["hand"]) then
+    if handContainsCard("2C", $player.rifs["hand"]) then
       if handContainsCard("2C", $selectedCards) then
         set_player(_pNextPlayer)
         message("After everyone passes, you will lead the round with the 2C", 0, _pNextPlayer)
@@ -64,8 +64,8 @@ phase setup
     else
       message("", 0, $currentPlayer)
     endif
-    move_cards($player.cards["hand"],
-               $otherPlayers[_pNextPlayer].cards["hand"],
+    move_cards($player.rifs["hand"],
+               $otherPlayers[_pNextPlayer].rifs["hand"],
                $selectedCards)
   given
     _gCardsDealt
@@ -80,7 +80,7 @@ phase setup
     _gPlayedTrick = 1
     gTrickWinner = $player
     gLedCard = $selectedCards[0]
-    move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
+    move_cards($player.rifs["hand"], $table["currentTrick"], $selectedCards)
     message("Now play a card that matches the suit of the card that led the trick.")
     message("", 0, $currentPlayer)
     set_player($player.idx + 1)
@@ -111,12 +111,12 @@ phase trick_taking
     else
       message("", 0, $currentPlayer)
     endif
-    move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
+    move_cards($player.rifs["hand"], $table["currentTrick"], $selectedCards)
   given
     $isYourTurn
     $selectedCards.length == 1
     (gLedCard.suit == $selectedCards[0].suit ||
-     !handContainsSuit(gLedCard.suit, $player.cards["hand"]))
+     !handContainsSuit(gLedCard.suit, $player.rifs["hand"]))
   endaction
 endphase
 
@@ -124,10 +124,10 @@ phase trick_scoring
   action take_trick
     name: "Take the Trick"
     _gTrickTaken = true
-    if $player.cards["hand"].length == 0 then
+    if $player.rifs["hand"].length == 0 then
       change_phase("scoring")
     endif
-    move_cards($table["currentTrick"], $player.cards["_score"])
+    move_cards($table["currentTrick"], $player.rifs["_score"])
     message("")
   given
     !_gTrickTaken
@@ -146,16 +146,16 @@ phase trick_scoring
     if handContainsSuit("H", $selectedCards) then
       gHeartsBroken = true
     endif
-    move_cards($player.cards["hand"], $table["currentTrick"], $selectedCards)
+    move_cards($player.rifs["hand"], $table["currentTrick"], $selectedCards)
   given
     _gTrickTaken
     $selectedCards.length == 1
     gTrickWinner.playerName == $player.playerName
     (gHeartsBroken ||
      !handContainsSuit("H", $selectedCards) ||
-     (!handContainsSuit("S", $player.cards["hand"]) &&
-      !handContainsSuit("D", $player.cards["hand"]) &&
-      !handContainsSuit("C", $player.cards["hand"])
+     (!handContainsSuit("S", $player.rifs["hand"]) &&
+      !handContainsSuit("D", $player.rifs["hand"]) &&
+      !handContainsSuit("C", $player.rifs["hand"])
      )
     )
   endaction
@@ -165,7 +165,7 @@ phase scoring
   action score_round
     name: "Score Round"
     _gDoneScoring = true
-    _pPointsThisRound @= reduce($player.cards["_score"],
+    _pPointsThisRound @= reduce($player.rifs["_score"],
         accumulator + (
           if current.suit == 2 then 1
           elif cardEq("QS", current) then 13
