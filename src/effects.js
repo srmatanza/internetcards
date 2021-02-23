@@ -172,13 +172,6 @@ function newRound(gi) {
   gi.gs.resetRound(true)
 }
 
-function draw(gi, args, player) {
-  const numCards = args[0]
-  for(let i = 0; i < numCards; i++) {
-    _drawCardFromDeckToHand(gi.gs.deck, player.cards.hand)
-  }
-}
-
 function deal(gi, args, player) {
   const numPlayers = gi.getPlayerCount()
   const numCards = _computeArg(gi, args[0], player)
@@ -186,6 +179,16 @@ function deal(gi, args, player) {
 
   for(let i = 0; i < numCards; i++) {
     const curPlayer = gi.gs.players[i%numPlayers]
+    _drawCardFromDeckToHand(gi.gs.deck, curPlayer.rifs.hand.cards)
+  }
+}
+
+function draw(gi, args, player) {
+  const numCards = _computeArg(gi, args[0], player)
+  console.log(`drawing ${numCards} cards.`)
+
+  for(let i = 0; i < numCards; i++) {
+    const curPlayer = gi.gs.players[player.idx]
     _drawCardFromDeckToHand(gi.gs.deck, curPlayer.rifs.hand.cards)
   }
 }
@@ -271,7 +274,7 @@ export default {
   new_rif: callHandler(newRif),
   set_rif: callHandler(setRif),
   deal: callHandler(deal),
-  draw: callHandler(draw, ['number']),
+  draw: callHandler(draw),
   effect: Symbol('effect'),
   given: Symbol('given'),
   else: Symbol('else'),
