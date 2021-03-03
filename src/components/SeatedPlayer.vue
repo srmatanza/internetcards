@@ -1,40 +1,61 @@
 <template>
-  <div class="seatedPlayerBox"
-      :style="{ width: playerWidth + '%'}">
-    <div class="playerBox" :class="{ curplayer: isCurrentPlayer }">
-      <div>{{ this.playerName }}</div>
-      <div>
-        <ul>
-          <li v-for="(hand,idx) in hands" :key="idx">{{ hand }}</li>
-        </ul>
-      </div>
+  <div class="seatedPlayerBox">
+    <h3>{{ player.playerName }}</h3>
+    <div>
+      <cardRif :key="'hand'"
+               :rif="playerHand"
+               :bSelected="false"
+               :playerName="player.playerName" />
+      <cardRif v-for="(rif, idx) in playerRifs"
+               :key="idx"
+               :rif="rif"
+               :bSelected="isSelected(rif)"
+               :playerName="player.playerName"
+               v-on="setupListeners" />
     </div>
   </div>
 </template>
 <script>
+import CardRif from '@/components/CardRif.vue'
+import { Rif } from '@/state.js'
+
 export default {
   name: 'seatedPlayer',
   data: function() {
     return {
     }
   },
+  components: {
+    CardRif
+  },
   props: [
-    'playerName',
+    'player',
     'isCurrentPlayer',
-    'numPlayers',
-    'totalPlayers',
-    'hands'
+    'selectionTree'
   ],
+  methods: {
+    isSelected: function(rif) {
+      return this.selectionTree.isRifSelected(rif.getId(), this.player.playerName)
+    }
+  },
   computed: {
-    playerWidth: function() {
-      return (1 / this.numPlayers) * 200
+    setupListeners: function() {
+      const vm = this
+      return {
+        '__select-card': function() { vm.$emit('__select-card', ...arguments) },
+        '__select-rif': function() { vm.$emit('__select-rif', ...arguments) }
+      }
+    },
+    playerHand: function() {
+      const ret = new Rif('hand', Rif.FACE_DOWN, Rif.STACKED)
+      ret.cards = this.player.rifs.hand.cards
+      return ret
+    },
+    playerRifs: function() {
+      return [...this.player.rifs].filter(r => r.getId() !== 'hand')
     }
   }
 }
 </script>
 <style scoped>
-.seatedPlayerBox > div {
-  padding: 4px;
-  margin: 2px;
-}
 </style>

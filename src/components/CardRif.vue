@@ -1,16 +1,18 @@
 <template>
 <div :class="[rifDisplay]">
   <ul :class="{ selected: bSelected}" @click="clickRif()">
-    <li v-for="(card,idx) in rif"
+    <li v-if="isStacked" :class="['card', { faceDown: isFaceDown }]"></li>
+    <li v-for="(card,idx) in cardsInRif"
         :key="idx"
-        :class="{
+        :class="[{
           selected: isSelected(idx),
           redCard: isRedCard(card),
           blackCard: isBlackCard(card),
           faceDown: isFaceDown
-        }"
+        },'card']"
         @click.stop="clickCard(idx)">
         <span :style="{ opacity: isFaceDown ? '0%' : '100%' }">{{ printCard(card) }}</span></li>
+    <li v-if="isStacked" class="cardCount">x{{ rif.length }}</li>
   </ul>
 </div>
 </template>
@@ -29,13 +31,12 @@ export default {
     'rif',
     'bDebugMode',
     'selectedCards',
-    'playerselections',
     'playerName',
     'bSelected',
     'cardSelections'
   ],
   mounted: function() {
-    // console.debug('oc: ', this.orderedCards, this.rif)
+    // console.log('mounting rif: ', this.rif.getId(), this.cardsInRif, this.rif instanceof Rif)
   },
   methods: {
     printCard: function(card) {
@@ -45,10 +46,16 @@ export default {
       return card.toString()
     },
     isRedCard: function(card) {
-      return card.suit === 2 || card.suit === 3
+      if(card) {
+        return card.suit === 2 || card.suit === 3
+      }
+      return false
     },
     isBlackCard: function(card) {
-      return card.suit === 1 || card.suit === 4
+      if(card) {
+        return card.suit === 1 || card.suit === 4
+      }
+      return false
     },
     isSelected: function(idx) {
       if(this.cardSelections) {
@@ -72,12 +79,11 @@ export default {
     rifId: function() {
       return this.rif.getId()
     },
-    playerSelection: function() {
-      const defaultSel = { selectedCards: [], selectedPlayer: '', selectedRif: {} }
-      if(this.playerselections) {
-        return this.playerselections[this.playerName] || defaultSel
+    cardsInRif: function() {
+      if(this.isStacked) {
+        return [this.rif[0]]
       }
-      return defaultSel
+      return this.rif.cards
     },
     isFaceDown: function() {
       return this.rif.orientation === Rif.FACE_DOWN
@@ -124,9 +130,11 @@ export default {
 
 <style scoped>
 
+/*
 div.horizontal, div.stacked {
   flex-basis: 100%;
 }
+*/
 
 .vertical ul {
   flex-flow: column wrap;
@@ -146,26 +154,47 @@ ul {
   font-size: 1.25em;
   display: flex;
   background-color: #156ca2;
+  border-radius: 1em;
   list-style: none;
   user-select: none;
-  margin: 1em;
+  margin: .5em;
 }
 
-.horizontal li, .stacked li {
+.horizontal li {
   margin: .2em .2em .2em -.6em;
+}
+
+.stacked li:nth-child(1) {
+  margin: .2em .2em .2em .2em;
+}
+.stacked li:nth-child(2) {
+  margin-left: -2.25em;
+  margin-top: .4em;
 }
 
 .vertical li {
   margin: -1.4em .2em .2em .2em;
 }
 
-li {
+li.card {
   background-color: whitesmoke;
   text-align: center;
   width: 1.8em;
   padding: .9em .2em;
   border-radius: 5px;
   border: 1px solid #093048;
+}
+
+li.cardCount {
+  color: whitesmoke;
+  background-color: #ff595e;
+  font-size: .75em;
+  height: 1.2em;
+  border: solid .05em whitesmoke;
+  border-radius: .6em;
+  margin-left: -.4em;
+  margin-top: -.2em;
+  padding: .2em;
 }
 
 li.faceDown {

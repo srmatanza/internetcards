@@ -24,30 +24,16 @@
           </form>
         </div>
 
-        <h3>Players</h3>
-        <div id="divPlayers" class="statebox player" v-if="!bOnlyShowCurrent">
-          <Player v-for="player in currentGame.players"
-            :key="player.playerName"
-            :player="player"
+        <div id="currentPlayer" class="statebox player" v-if="viewingPlayer !== ''">
+          <Player
+            :key="currentPlayer.playerName"
+            :player="currentPlayer"
             :playerselections="playerSelections"
             :selectionTree="selectionTree"
             :instance="instance"
             :bDebugMode="bDebugMode"
             v-on="setupListeners" />
         </div>
-        <div id="currentPlayer" class="statebox player" v-if="bOnlyShowCurrent">
-          <Player
-            :key="currentPlayer.playerName"
-            :player="currentPlayer"
-            :playerselections="playerSelections"
-            :instance="instance"
-            :bDebugMode="bDebugMode"
-            v-on="setupListeners" />
-        </div>
-        <CardTable :rifs="this.currentGame.rifs"
-                   :otherplayers="currentGame.players"
-                   :bDebugMode="bDebugMode"
-                   :gamevars="gameVars" />
       </div>
 
       <div id="editorGrid" class="codeEditor">
@@ -92,7 +78,6 @@ import _ from 'lodash'
 
 import Player from '@/components/Player.vue'
 import TopHeader from '@/components/TopHeader.vue'
-import CardTable from '@/components/CardTable.vue'
 
 import * as CC from '@/cards.js'
 import { Rif, RifArray } from '@/state.js'
@@ -149,8 +134,7 @@ export default {
   },
   components: {
     Player,
-    TopHeader,
-    CardTable
+    TopHeader
   },
   mounted: function() {
     console.log('Game Editor mounted...')
@@ -307,6 +291,8 @@ export default {
         this.selectionTree.selectCard(cardIdx, rif.getId(), playerName)
       } else if(rif.selectable === Rif.MULTIPLE) {
         this.selectionTree.appendCard(cardIdx, rif.getId(), playerName)
+      } else if(rif.selectable === Rif.RANGE) {
+        this.selectionTree.rangeCard(cardIdx, rif.cards.length, rif.getId(), playerName)
       }
 
       const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
@@ -347,6 +333,19 @@ export default {
       this.instance.runAction(act.a, act.pn, act.st)
     }
   },
+  watch: {
+    instance: {
+      handler: function(a, b) {
+        if(b.getCurrentPlayer()) {
+          const pn = b.getCurrentPlayer().playerName
+          if(pn !== this.viewingPlayer) {
+            this.viewingPlayer = pn
+          }
+        }
+      },
+      deep: true
+    }
+  },
   computed: {
     links: function() {
       return [
@@ -368,7 +367,7 @@ export default {
       return this.actPC < this.actionLog.length
     },
     currentPlayer: function() {
-      return this.instance.getCurrentPlayer()
+      return this.instance.getPlayer(this.viewingPlayer)
     },
     bCanDownload: function() {
       if(this.editor.getValue) {

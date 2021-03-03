@@ -1,47 +1,69 @@
 <template>
-<div class="playerCard" :class="{ currentPlayer: currentplayer }">
-  <div>
-  {{ this.player.playerName }}
+<div id="tableSurface">
+  <div id="otherPlayers">
+    <SeatedPlayer v-for="player in otherplayers"
+                  :key="player.playerName"
+                  :selectionTree="selectionTree"
+                  :isCurrentPlayer="false"
+                  :player="player" />
   </div>
-  <cardRif v-for="(rif,idx) in playerRifs"
-            :key="idx"
-            :rif="rif"
-            :playerName="player.playerName"
-            :bSelected="isSelected(rif)"
-            :cardSelections="getSelectedCards(rif)"
-            :playerselections="playerselections"
-            v-on="setupListeners"></cardRif>
-  <div>
-    <ul v-if="false">
-      <li v-for="op in this.otherplayers"
-          :key="op.playerName"
-          :class="{ selected: isPlayerSelected(op.playerName) }"
-          @click="$emit('__' + 'select-player', op.playerName, player)">{{ op.playerName }}</li>
-    </ul>
+  <div id="tableRifs" class="rifRack">
+    <cardRif :rif="deckRif" />
+    <cardRif v-for="(rif,idx) in tableRifs"
+             :key="idx"
+             :rif="rif"
+             :bSelected="isSelected(rif)"
+             :cardSelections="getSelectedCards(rif, '__dealer')"
+             :playerName="'__dealer'"
+             v-on="setupListeners" />
   </div>
-  <div>
-    <ul>
-      <li :key="varName.name" v-for="varName in playerVariables">{{ varName.name }}: {{ varName.value }}</li>
-    </ul>
-  </div>
-  <div>
-    <button :disabled="!isSatisfied(obj.given)"
-            @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
-            v-for="obj in this.playerActions"
-            :key="obj.name">{{ obj.name ? obj.name : name }}</button>
-  </div>
-  <div class="msgBubble" v-show="this.player.currentMessage.msgText !== ''">
-    <span>{{ this.player.currentMessage.msgText }}</span>
+  <div class="playerCard" :class="{ currentPlayer: currentplayer }">
+    <div>
+    {{ this.player.playerName }}
+    </div>
+    <div class="rifRack">
+      <cardRif v-for="(rif,idx) in playerRifs"
+                :key="idx"
+                :rif="rif"
+                :playerName="player.playerName"
+                :bSelected="isSelected(rif)"
+                :cardSelections="getSelectedCards(rif)"
+                v-on="setupListeners" />
+    </div>
+    <div>
+      <ul v-if="false">
+        <li v-for="op in this.otherplayers"
+            :key="op.playerName"
+            :class="{ selected: isPlayerSelected(op.playerName) }"
+            @click="$emit('__' + 'select-player', op.playerName, player)">{{ op.playerName }}</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li :key="varName.name" v-for="varName in playerVariables">{{ varName.name }}: {{ varName.value }}</li>
+      </ul>
+    </div>
+    <div>
+      <button :disabled="!isSatisfied(obj.given)"
+              @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
+              v-for="obj in this.playerActions"
+              :key="obj.name">{{ obj.name ? obj.name : name }}</button>
+    </div>
+    <div class="msgBubble" v-show="this.player.currentMessage.msgText !== ''">
+      <span>{{ this.player.currentMessage.msgText }}</span>
+    </div>
   </div>
 </div>
 </template>
 
 <script>
 import CardRif from '@/components/CardRif.vue'
+import SeatedPlayer from '@/components/SeatedPlayer.vue'
 
 import _ from 'lodash'
 import * as CC from '@/cards.js'
 import Logic from '@/logic.js'
+import { Rif } from '@/state.js'
 
 export default {
   name: 'player',
@@ -50,7 +72,8 @@ export default {
     }
   },
   components: {
-    CardRif
+    CardRif,
+    SeatedPlayer
   },
   props: [
     'player',
@@ -76,8 +99,9 @@ export default {
     isSelected: function(rif) {
       return this.selectionTree.isRifSelected(rif.getId(), this.player.playerName)
     },
-    getSelectedCards: function(rif) {
-      return this.selectionTree.getCardsForRif(rif.getId(), this.player.playerName)
+    getSelectedCards: function(rif, playerName) {
+      const pn = playerName || this.player.playerName
+      return this.selectionTree.getCardsForRif(rif.getId(), pn)
     },
     getAction: function(obj) {
       if(obj.action) {
@@ -110,6 +134,18 @@ export default {
       }
       return []
     },
+    deckRif: function() {
+      const ret = new Rif('deck', Rif.FACE_DOWN, Rif.STACKED)
+      ret.cards = this.instance.gs.deck.cards
+      return ret
+    },
+    tableRifs: function() {
+      let ret = [...this.instance.gs.rifs]
+      if(this.bDebugMode) {
+        ret = ret.filter(rif => !rif.name.startsWith('_'))
+      }
+      return ret
+    },
     playerRifs: function() {
       const ret = []
       for(const rif of this.player.rifs) {
@@ -141,7 +177,7 @@ export default {
       return []
     },
     otherplayers: function() {
-      return this.instance.gs.players
+      return this.instance.gs.players.filter(p => p.playerName !== this.player.playerName)
     },
     gamerules: function() {
       return this.instance.currentRuleSet
@@ -191,7 +227,6 @@ export default {
 .playerCard {
   color: #edf7fd;
   background-color: #1982C4;
-  width: 545px;
   border-radius: 5px;
   padding: 15px;
   margin: 8px;
@@ -217,5 +252,18 @@ span.selected {
 
 button {
   margin-left: 1em;
+}
+
+#tableSurface {
+  border: 5px solid #76ab21;
+  background-color: #8ac926;
+  border-radius: 5px;
+  padding: 0px 15px 15px;
+  margin: 0px 8px 8px;
+}
+
+.rifRack {
+  display: flex;
+  flex-flow: row wrap;
 }
 </style>
