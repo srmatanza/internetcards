@@ -18,6 +18,8 @@ function _getRifName(rifId, playerName) {
   return `${rifId}:${playerName}`
 }
 
+const bSelectMultipleRifs = false
+
 SelectionTree.prototype.getCardsForRif = function(rifId, playerName) {
   const cardNodes = this.cards.filter(c => c.rif === rifId && c.player === playerName)
   return cardNodes.map(cn => cn.card)
@@ -34,6 +36,9 @@ SelectionTree.prototype.appendRif = function(rifId, playerName) {
   if(idx > -1) {
     this.rifs.splice(idx, 1)
   } else {
+    if(!bSelectMultipleRifs) {
+      this.rifs.splice(0)
+    }
     this.rifs.push(rifName)
   }
 }
@@ -50,6 +55,9 @@ SelectionTree.prototype.selectRif = function(rifId, playerName) {
 }
 
 SelectionTree.prototype.rangeCard = function(cardIdx, lastIdx, rifId, playerName) {
+  if(this.cards.every(c => c.player === playerName && c.rif === rifId) === false) {
+    this.cards.splice(0)
+  }
   const idx = this.cards.findIndex(sn => sn.card === cardIdx && sn.rif === rifId && sn.player === playerName)
   const firstInRif = this.cards.findIndex(sn => sn.rif === rifId && sn.player === playerName)
   const keepers = this.cards.filter(sn => !(sn.rif === rifId && sn.player === playerName))
@@ -63,6 +71,9 @@ SelectionTree.prototype.rangeCard = function(cardIdx, lastIdx, rifId, playerName
 }
 
 SelectionTree.prototype.appendCard = function(cardIdx, rifId, playerName) {
+  if(this.cards.every(c => c.player === playerName && c.rif === rifId) === false) {
+    this.cards.splice(0)
+  }
   const idx = this.cards.findIndex(sn => sn.card === cardIdx && sn.rif === rifId && sn.player === playerName)
   if(idx > -1) {
     this.cards.splice(idx, 1)
@@ -72,6 +83,9 @@ SelectionTree.prototype.appendCard = function(cardIdx, rifId, playerName) {
 }
 
 SelectionTree.prototype.selectCard = function(cardIdx, rifId, playerName) {
+  if(this.cards.every(c => c.player === playerName && c.rif === rifId) === false) {
+    this.cards.splice(0)
+  }
   const idx = this.cards.findIndex(sn => sn.card === cardIdx && sn.rif === rifId && sn.player === playerName)
   if(idx > -1) {
     this.cards.splice(idx, 1)

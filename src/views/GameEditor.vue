@@ -311,7 +311,12 @@ export default {
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
     paSelectRif: function(rif, playerName) {
-      console.log('paSelectRif event handler', [], this.playerSelections)
+      if(rif.selectable === Rif.RIF_ONLY) {
+        this.selectionTree.selectRif(rif, playerName)
+      }
+      const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
+      this.$set(this.playerSelections, playerName, ps)
+      console.log('paSelectRif event handler', ps, this.playerSelections)
     },
     shuffleDeck: function() {
       const newDeck = CC.shuffleDeck(this.currentGame.deck)

@@ -149,7 +149,8 @@ InitializeEnums(Rif, {
   NONE: 6, // selectable
   SINGLE: 7, // selectable
   MULTIPLE: 8, // selectable
-  RANGE: 9 // selectable
+  RANGE: 9, // selectable
+  RIF_ONLY: 10
 })
 
 export function RuleSet() {
