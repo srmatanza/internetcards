@@ -351,6 +351,10 @@ export default {
         }
       },
       deep: true
+    },
+    viewingPlayer: function(a, b) {
+      this.playerSelections = {}
+      this.selectionTree.clear()
     }
   },
   computed: {
