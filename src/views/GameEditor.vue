@@ -28,7 +28,6 @@
           <Player
             :key="currentPlayer.playerName"
             :player="currentPlayer"
-            :playerselections="playerSelections"
             :selectionTree="selectionTree"
             :instance="instance"
             :bDebugMode="bDebugMode"
@@ -298,17 +297,17 @@ export default {
       }
 
       const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
-      this.$set(this.playerSelections, playerName, ps)
+      this.$set(this.playerSelections, this.viewingPlayer, ps)
       console.log('selecting a card: ', ps, rif, ...arguments)
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
-      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
+      const player = this.playerSelections[this.viewingPlayer] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
       if(_.isEqual(player.selectedPlayer, otherPlayer)) {
         player.selectedPlayer = ''
       } else {
         player.selectedPlayer = otherPlayer
       }
-      this.playerSelections[thisPlayer.playerName] = player
+      this.playerSelections[this.viewingPlayer] = player
       this.playerSelections = _.assign({}, this.playerSelections)
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
@@ -317,7 +316,7 @@ export default {
         this.selectionTree.selectRif(rif, playerName)
       }
       const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
-      this.$set(this.playerSelections, playerName, ps)
+      this.$set(this.playerSelections, this.viewingPlayer, ps)
       console.log('paSelectRif event handler', ps, this.playerSelections)
     },
     shuffleDeck: function() {
@@ -373,6 +372,9 @@ export default {
       set: function(newGS) {
         this.instance.setGameState(newGS)
       }
+    },
+    playerSelection: function() {
+      return this.playerSelections[this.viewingPlayer]
     },
     bCanSkip: function() {
       return this.actPC < this.actionLog.length

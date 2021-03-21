@@ -78,7 +78,6 @@ export default {
   props: [
     'player',
     'instance',
-    'playerselections',
     'selectionTree',
     'bDebugMode'
   ],
@@ -123,7 +122,7 @@ export default {
   },
   computed: {
     playerSelection: function() {
-      return this.playerselections[this.player.playerName] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
+      return this.instance.gs.getObjectsFromSelection(this.selectionTree)
     },
     bEmptyHand: function() {
       return (this.player.rifs.hand.length === 0)
