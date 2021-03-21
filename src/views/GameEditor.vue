@@ -230,6 +230,8 @@ export default {
       sharpFile.text().then(text => {
         this.editor.setValue(text)
         this.parseSharp()
+      }).finally(() => {
+        evt.target.value = null
       })
     },
     downloadSharp: function() {
