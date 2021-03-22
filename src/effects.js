@@ -113,7 +113,7 @@ function moveCards(gi, args, player) {
   }
   // console.log('moveCards: ', fromHand, toHand, selectedCards)
 
-  for(const card of selectedCards) {
+  for(const card of selectedCards.cards) {
     toRif.cards.push(card)
   }
   // Validate that the selected cards are in fromHand

@@ -216,8 +216,10 @@ GameState.prototype.getObjectsFromSelection = function(_st) {
   // implements the iterator method, but is not an array, so in order
   // to use Array methods like map, you first have to array-ify it.
   // Perhaps a method to return an array would be better, e.g. this.rifs.asArray().map
+  //
+  // This is only non-trivial in cases where selectedCards contains cards from different rifs
   const st = Object.assign(new SelectionTree(), _st)
-  console.log('selecting from: ', st)
+  // console.log('selecting from: ', st)
   const pp = [...this.rifs].map(r => { return { pn: '__dealer', r: r } })
   for(const p of this.players) {
     pp.push(...[...p.rifs].map(r => { return { pn: p.playerName, r: r } }))

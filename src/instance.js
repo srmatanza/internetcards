@@ -133,15 +133,32 @@ Instance.prototype.isCurrentPlayer = function(playerName) {
   return this.gs.currentPlayerIdx === this.getPlayer(playerName).idx
 }
 
+function getFirstCard(st) {
+  if(st && st.cards && st.cards.length > 0) {
+    return st.cards[0]
+  }
+  return ''
+}
 Instance.prototype.glomVars = function(player) {
   const phaseVars = {}
   const playerVars = _.assign(_.clone(this.currentRuleSet.playerVariables), player.playerVariables)
-  const scRif = new Rif()
-  scRif.cards = player.selectedCards || []
+  const selCards = new Rif()
+  const ps = this.gs.getObjectsFromSelection(player.st)
+  const cc = getFirstCard(player.st)
+  // console.log('glomming: ', cc, player.st)
+  Object.assign(selCards, { rif: cc.rif, player: cc.player })
+  selCards.cards = ps.selectedCards || []
+
+  const selRif = {
+    name: '',
+    player: ''
+  }
+
   const pv = {
     $player: this.gs.players[player.idx],
     $isYourTurn: this.isCurrentPlayer(player.playerName),
-    $selectedCards: scRif,
+    $selectedCards: selCards,
+    $selectedRif: selRif,
     $selectedPlayer: this.getPlayer(player.selectedPlayer),
     $selectedHand: []
   }
@@ -154,6 +171,7 @@ Instance.prototype.glomVars = function(player) {
   const Enums = { FACE_UP: 0, FACE_DOWN: 1, TOP_ONLY: 2, HORIZONTAL: 3, VERTICAL: 4, STACKED: 5, NONE: 6, SINGLE: 7, MULTIPLE: 8, RANGE: 9 }
 
   const gm = _.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv, Enums)
+  // console.log('gloms: ', gm)
   return gm
 }
 
@@ -161,12 +179,12 @@ Instance.prototype.runAction = function(act, playerName, st) {
   // console.debug('Run action: ', this, act, playerName, st)
   const evt = this.getActionForCurrentPhase(act)
   const player = this.gs.players.find(p => p.playerName === playerName)
-  const ps = this.gs.getObjectsFromSelection(st)
+  const ps = { st }// this.gs.getObjectsFromSelection(st)
 
   _.assign(player, ps)
   try {
-    player.selectedCards = ps.selectedCards
-    player.selectedPlayer = ps.selectedPlayer
+    // player.selectedCards = ps.selectedCards
+    // player.selectedPlayer = ps.selectedPlayer
     handleEffects.call(this, evt.effect, player)
   } catch (ex) {
     console.error('Error running the ruleset: ', ex)
@@ -175,13 +193,13 @@ Instance.prototype.runAction = function(act, playerName, st) {
 
 Instance.prototype.fnRunAction = function(callbackFn) {
   const mm = this
-  return (e, p, ps) => {
+  return (e, p, st) => {
     // console.debug('Run action w/callback: ', mm, e, p, ps)
-    _.assign(p, ps)
+    _.assign(p, { st })
     try {
       // mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
-      p.selectedCards = ps.selectedCards
-      p.selectedPlayer = ps.selectedPlayer
+      // p.selectedCards = ps.selectedCards
+      // p.selectedPlayer = ps.selectedPlayer
       handleEffects.call(mm, e.effect, p)
       if(typeof callbackFn === 'function') {
         callbackFn(e, p)

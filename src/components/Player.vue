@@ -45,7 +45,7 @@
     </div>
     <div>
       <button :disabled="!isSatisfied(obj.given)"
-              @click="$emit('__'+getAction(obj), obj, player, playerSelection)"
+              @click="$emit('__'+getAction(obj), obj, player, selectionTree)"
               v-for="obj in this.playerActions"
               :key="obj.name">{{ obj.name ? obj.name : name }}</button>
     </div>
@@ -110,8 +110,8 @@ export default {
     },
     isSatisfied: function(given) {
       if(!_.isUndefined(given)) {
-        const ps = this.playerSelection
-        this.player = Object.assign(this.player, ps)
+        const st = this.selectionTree
+        this.player = Object.assign(this.player, { st })
         const glomVars = this.instance.glomVars(this.player)
         const bSat = [Logic.isSatisfied(given, glomVars)]
         // console.debug('isSatisfied: ', given, bSat, glomVars)
