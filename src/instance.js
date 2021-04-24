@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import Effects from '../src/effects.js'
 import Logic from '../src/logic.js'
-import { Rif, GameState, PlayerState, RuleSet } from '../src/state.js'
+import { Rif, RifEnums, GameState, PlayerState, RuleSet } from '../src/state.js'
 
 function isSatisfied(given, player) {
   // console.log('isSatisfied: ', given)
@@ -149,13 +149,21 @@ Instance.prototype.glomVars = function(player) {
   Object.assign(selCards, { rif: cc.rif, player: cc.player })
   selCards.cards = ps.selectedCards || []
 
-  const selRif = {
-    name: '',
-    player: ''
+  let selRif = {
+    owner: '',
+    name: ''
   }
+  if(ps.selectedRifs.length > 0) {
+    selRif = ps.selectedRifs[0]
+    selRif.owner = player.st.rifs[0].split(':')[1]
+    console.log('selRif: ', selRif.name, selRif.owner)
+  }
+
+  const dealer = new PlayerState('__dealer')
 
   const pv = {
     $player: this.gs.players[player.idx],
+    $playerRifs: this.gs.players[player.idx].rifs,
     $isYourTurn: this.isCurrentPlayer(player.playerName),
     $selectedCards: selCards,
     $selectedRif: selRif,
@@ -166,11 +174,11 @@ Instance.prototype.glomVars = function(player) {
     $playerCount: this.getPlayerCount(),
     $possiblePlayers: this.currentRuleSet.possiblePlayers,
     $otherPlayers: this.gs.players,
-    $table: this.gs.rifs
+    $table: dealer,
+    $tableRifs: this.gs.rifs
   }
-  const Enums = { FACE_UP: 0, FACE_DOWN: 1, TOP_ONLY: 2, HORIZONTAL: 3, VERTICAL: 4, STACKED: 5, NONE: 6, SINGLE: 7, MULTIPLE: 8, RANGE: 9 }
 
-  const gm = _.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv, Enums)
+  const gm = _.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv, RifEnums)
   // console.log('gloms: ', gm)
   return gm
 }

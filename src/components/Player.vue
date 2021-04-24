@@ -5,7 +5,8 @@
                   :key="player.playerName"
                   :selectionTree="selectionTree"
                   :isCurrentPlayer="false"
-                  :player="player" />
+                  :player="player"
+                  v-on="setupListeners" />
   </div>
   <div id="tableRifs" class="rifRack">
     <cardRif :rif="deckRif" />
@@ -134,7 +135,7 @@ export default {
       return []
     },
     deckRif: function() {
-      const ret = new Rif('deck', Rif.FACE_DOWN, Rif.STACKED)
+      const ret = new Rif('deck', Rif.ORIENT_FACEDOWN | Rif.DISP_STACKED)
       ret.cards = this.instance.gs.deck.cards
       return ret
     },

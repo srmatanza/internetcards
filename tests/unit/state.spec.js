@@ -24,12 +24,12 @@ describe('RifArray and Rif tests', () => {
   })
 
   test('Rif is usable', () => {
-    const r = new Rif('Sample', Rif.FACE_UP, Rif.HORIZONTAL)
+    const r = new Rif('Sample')
     r.cards = [new Card(2, 1), new Card(2, 2), new Card(2, 3)]
 
     expect(r.name).toBe('Sample')
-    expect(r.orientation).toBe(Rif.FACE_UP)
-    expect(r.display).toBe(Rif.HORIZONTAL)
+    expect(r.flags & Rif.ORIENT).toBe(0)
+    expect(r.flags & Rif.DISP).toBe(0)
 
     expect(r.cards.length).toBe(3)
     const cardsToCheck = []

@@ -1,5 +1,6 @@
 <template>
 <div :class="[rifDisplay]">
+  <span class="rifLabel">{{ rif.name }}</span>
   <ul :class="{ selected: bSelected}" @click="clickRif()">
     <li v-if="isStacked" :class="['card', { faceDown: isFaceDown }]"></li>
     <li v-for="(card,idx) in cardsInRif"
@@ -40,7 +41,7 @@ export default {
   },
   methods: {
     printCard: function(card) {
-      if(this.rif.orientation === Rif.FACE_DOWN) {
+      if(this.rif.flags & Rif.ORIENT_FACEDOWN) {
         return 'X'
       }
       return card.toString()
@@ -86,43 +87,37 @@ export default {
       return this.rif.cards
     },
     isFaceDown: function() {
-      return this.rif.orientation === Rif.FACE_DOWN
+      return this.rif.flags & Rif.ORIENT_FACEDOWN
     },
     isHorizontal: function() {
-      return this.rif.display === Rif.HORIZONTAL
+      return (this.rif.flags & Rif.DISP) === 0
     },
     isVertical: function() {
-      return this.rif.display === Rif.VERTICAL
+      return this.rif.flags & Rif.DISP_VERTICAL
     },
     isStacked: function() {
-      return this.rif.display === Rif.STACKED
+      return this.rif.flags & Rif.DISP_STACKED
     },
     isSelectable: function() {
-      return this.rif.selectable !== Rif.NONE
+      return this.rif.flags & Rif.SEL
     },
     rifDisplay: function() {
-      switch(this.rif.display) {
-        case Rif.HORIZONTAL:
-          return 'horizontal'
-        case Rif.VERTICAL:
-          return 'vertical'
-        case Rif.STACKED:
-          return 'stacked'
-        default:
-          return ''
+      if(this.rif.flags & Rif.DISP_VERTICAL) {
+        return 'vertical'
       }
+      if(this.rif.flags & Rif.DISP_STACKED) {
+        return 'stacked'
+      }
+      return 'horizontal'
     },
     rifOrientation: function() {
-      switch(this.rif.orientation) {
-        case Rif.FACE_UP:
-          return 'faceUp'
-        case Rif.FACE_DOWN:
-          return 'faceDown'
-        case Rif.TOP_ONLY:
-          return 'topOnly'
-        default:
-          return ''
+      if(this.rif.flags & Rif.ORIENT_FACEDOWN) {
+        return 'faceDown'
       }
+      if(this.rif.flags & Rif.ORIENT_TOPONLY) {
+        return 'topOnly'
+      }
+      return 'faceUp'
     }
   }
 }
@@ -135,6 +130,10 @@ div.horizontal, div.stacked {
   flex-basis: 100%;
 }
 */
+
+.rifLabel {
+  margin-bottom: -2em;
+}
 
 .vertical ul {
   flex-flow: column wrap;

@@ -47,7 +47,7 @@ export default {
       }
     },
     playerHand: function() {
-      const ret = new Rif('hand', Rif.FACE_DOWN, Rif.STACKED)
+      const ret = new Rif('hand', Rif.ORIENT_FACEDOWN | Rif.DISP_STACKED)
       ret.cards = this.player.rifs.hand.cards
       return ret
     },

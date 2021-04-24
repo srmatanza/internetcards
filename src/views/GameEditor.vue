@@ -46,6 +46,7 @@
             <button type="button" disabled>Back</button>
             <button type="button" @click="nextAction()" :disabled="!bCanSkip">Next</button>
             <button type="button" @click="continueAction()" :disabled="!bCanSkip">Cont</button>
+            <button type="button" @click="printGloms()">Glom</button>
           </div>
           <div>
             <label for="gameSrc">Upload Source </label>
@@ -166,6 +167,9 @@ export default {
       } catch(ex) {
         console.log('We caught an error: ', ex)
       }
+    },
+    printGloms: function() {
+      console.log('gloms: ', this.instance.glomVars(this.currentPlayer))
     },
     resetState: function() {
       this.actPC = 0
@@ -288,11 +292,11 @@ export default {
       return this.instance.isCurrentPlayer(pn)
     },
     paSelectCard: function(cardIdx, rif, playerName) {
-      if(rif.selectable === Rif.SINGLE) {
+      if(rif.flags & Rif.SEL_SINGLE) {
         this.selectionTree.selectCard(cardIdx, rif.getId(), playerName)
-      } else if(rif.selectable === Rif.MULTIPLE) {
+      } else if(rif.flags & Rif.SEL_MULTIPLE) {
         this.selectionTree.appendCard(cardIdx, rif.getId(), playerName)
-      } else if(rif.selectable === Rif.RANGE) {
+      } else if(rif.flags & Rif.SEL_RANGE) {
         this.selectionTree.rangeCard(cardIdx, rif.cards.length, rif.getId(), playerName)
       }
 
@@ -312,12 +316,12 @@ export default {
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
     paSelectRif: function(rif, playerName) {
-      if(rif.selectable === Rif.RIF_ONLY) {
-        this.selectionTree.selectRif(rif, playerName)
+      if(rif.flags & Rif.SEL_RIFONLY) {
+        this.selectionTree.selectRif(rif.getId(), playerName)
       }
       const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
       this.$set(this.playerSelections, this.viewingPlayer, ps)
-      console.log('paSelectRif event handler', ps, this.playerSelections)
+      console.log('paSelectRif event handler: ', rif, this.selectionTree, ps, this.playerSelections)
     },
     shuffleDeck: function() {
       const newDeck = CC.shuffleDeck(this.currentGame.deck)

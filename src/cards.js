@@ -31,12 +31,6 @@ function Deck(cards) {
   }
 }
 
-function Player(playerName) {
-  this.playerName = playerName||''
-  this.hand = []
-  this.points = 0
-}
-
 function shuffleDeck(deck, fnRng) {
   const rng = fnRng || Math.random
   const toShuf = deck.cards
@@ -72,4 +66,4 @@ function printCard(card, longValues) {
   }
 }
 
-export { Card, Deck, Player, shuffleDeck, printCard }
+export { Card, Deck, shuffleDeck, printCard }

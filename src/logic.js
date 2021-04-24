@@ -62,11 +62,16 @@ function handContainsVal(rank, rif) {
   return false
 }
 
-function rifIsRun(rif) {
-  if(rif.length < 3) {
+function rifIsRun() {
+  // concatenate all arguments into one big rif
+  const _r = []
+  for(const arg of arguments) {
+    _r.push(...arg.cards)
+  }
+
+  if(_r.length < 3) {
     return false
   }
-  const _r = Object.assign([], rif.cards)
   _r.sort((a, b) => a.rank < b.rank)
   let c = _r[0]
   for(let i = 1; i < _r.length; i++) {
@@ -78,12 +83,21 @@ function rifIsRun(rif) {
   return true
 }
 
-function rifIsSet(rif) {
-  if(rif.length < 3) {
+function rifIsSet() {
+  // concatenate all arguments into one big rif
+  const _r = []
+  for(const arg of arguments) {
+    _r.push(...arg.cards)
+  }
+
+  if(_r.length < 3) {
     return false
   }
-  const _r = Object.assign([], rif.cards)
   return !_r.some(c => c.rank !== _r[0].rank)
+}
+
+function rifIsSelected() {
+  return !(this.$selectedRif.owner === '')
 }
 
 function isYourTurn(currentplayer) {
@@ -164,6 +178,7 @@ jsonLogic.add_operation('rifContainsSuit', handContainsSuit)
 jsonLogic.add_operation('rifContainsRank', handContainsVal)
 jsonLogic.add_operation('rifIsRun', rifIsRun)
 jsonLogic.add_operation('rifIsSet', rifIsSet)
+jsonLogic.add_operation('rifIsSelected', rifIsSelected)
 
 jsonLogic.add_operation('isYourTurn', isYourTurn)
 jsonLogic.add_operation('isOtherPlayerSelected', isOtherPlayerSelected)

@@ -87,19 +87,27 @@ function changePhase(gi, args) {
 
 function newRif(gi, args, player) {
   const toRifArray = _computeArg(gi, args[0], player)
+  let rifName = ''
+  let flagIdx = 0
   const computedArgs = args.slice(1).map(a => _computeArg(gi, a, player))
+  console.log('newRif: ', ...computedArgs)
+  if(typeof computedArgs[0] === 'string') {
+    // Named rif
+    rifName = computedArgs[0]
+    flagIdx = 1
+  }
+  const flags = computedArgs.slice(flagIdx).reduce((acc, val) => acc | val)
 
   // validate that toRifArray is a RifArray
-  toRifArray.addRif(new Rif(...computedArgs))
+  toRifArray.addRif(new Rif(rifName, flags))
 }
 
 function setRif(gi, args, player) {
   const toRif = _computeArg(gi, args[0], player)
-  // orientation, display, selectable
-  const computedArgs = args.slice(1).map(a => _computeArg(gi, a, player))
+  const flags = args.slice(1).reduce((acc, val) => acc | val)
 
   // validate that toRif is a Rif
-  toRif.setParams(...computedArgs)
+  toRif.setFlags(flags)
 }
 
 function moveCards(gi, args, player) {
@@ -111,7 +119,7 @@ function moveCards(gi, args, player) {
   } else {
     selectedCards = fromRif
   }
-  // console.log('moveCards: ', fromHand, toHand, selectedCards)
+  console.log('moveCards: ', fromRif, toRif, selectedCards)
 
   for(const card of selectedCards.cards) {
     toRif.cards.push(card)

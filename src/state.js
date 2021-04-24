@@ -28,6 +28,10 @@ const rifArrayHandler = {
       return target._r.length + target._anon.length
     }
 
+    if(prop === 'lastRif') {
+      return target._anon[target._anon.length - 1]
+    }
+
     // e.g. rifs[0]
     if(prop in target._anon) {
       return target._anon[prop]
@@ -99,21 +103,18 @@ const rifHandler = {
   }
 }
 
-export function Rif(name, orientation, display, selectable) {
+export function Rif(name, flags) {
   this.name = name || ''
+  this.owner = ''
   this.idx = -1
-  this.orientation = orientation || Rif.prototype.FACE_UP
-  this.display = display || Rif.prototype.HORIZONTAL
-  this.selectable = selectable || Rif.prototype.NONE
+  this.flags = flags || 0
 
   this.cards = []
   return new Proxy(this, rifHandler)
 }
 
-Rif.prototype.setParams = function(orientation, display, selectable) {
-  this.orientation = orientation || this.orientation
-  this.display = display || this.display
-  this.selectable = selectable || this.selectable
+Rif.prototype.setFlags = function(flags) {
+  this.flags = flags
 }
 
 Rif.prototype.getId = function() {
@@ -139,19 +140,22 @@ Rif.prototype[Symbol.iterator] = function() {
   }
 }
 
-InitializeEnums(Rif, {
-  FACE_UP: 0, // orientation
-  FACE_DOWN: 1, // orientation
-  TOP_ONLY: 2, // orientation
-  HORIZONTAL: 3, // display
-  VERTICAL: 4, // display
-  STACKED: 5, // display
-  NONE: 6, // selectable
-  SINGLE: 7, // selectable
-  MULTIPLE: 8, // selectable
-  RANGE: 9, // selectable
-  RIF_ONLY: 10
-})
+export const RifEnums = {
+  ORIENT_FACEDOWN: 1<<0,
+  ORIENT_TOPONLY: 1<<1,
+  DISP_VERTICAL: 1<<2,
+  DISP_STACKED: 1<<3,
+  SEL_SINGLE: 1<<4,
+  SEL_MULTIPLE: 1<<5,
+  SEL_RANGE: 1<<6,
+  SEL_RIFONLY: 1<<7
+}
+
+RifEnums.ORIENT = RifEnums.ORIENT_FACEDOWN | RifEnums.ORIENT_TOPONLY
+RifEnums.DISP = RifEnums.DISP_VERTICAL | RifEnums.DISP_STACKED
+RifEnums.SEL = RifEnums.SEL_SINGLE | RifEnums.SEL_MULTIPLE | RifEnums.SEL_RANGE | RifEnums.SEL_RIFONLY
+
+InitializeEnums(Rif, RifEnums)
 
 export function RuleSet() {
   this.gameVariables = {}
@@ -172,7 +176,7 @@ export function PlayerState(playerName) {
   this.currentMessage = new Message()
 
   this.rifs = new RifArray()
-  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.MULTIPLE))
+  this.rifs.addRif(new Rif('hand', Rif.SEL_MULTIPLE))
 
   this.playerVariables = {}
 
@@ -185,7 +189,7 @@ PlayerState.prototype.toString = function() {
 
 PlayerState.prototype.resetPlayer = function() {
   this.rifs = new RifArray()
-  this.rifs.addRif(new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.MULTIPLE))
+  this.rifs.addRif(new Rif('hand', Rif.SEL_MULTIPLE))
 }
 
 export function GameState(rngseed) {

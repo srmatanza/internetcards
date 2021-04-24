@@ -25,18 +25,18 @@ export default {
   name: 'rifTest',
   data: function() {
     const rifArray = [
-      new Rif('hand', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE),
+      new Rif('hand', Rif.SEL_SINGLE),
       new Rif('_score'),
-      new Rif('discard', Rif.FACE_DOWN, Rif.STACKED),
-      new Rif('draw', Rif.TOP_ONLY, Rif.STACKED)
+      new Rif('discard', Rif.ORIENT_FACEDOWN | Rif.DISP_STACKED),
+      new Rif('draw', Rif.ORIENT_TOPONLY | Rif.DISP_STACKED)
     ]
     const headlessRifs = [
-      new Rif('', Rif.TOP_ONLY, Rif.VERTICAL),
-      new Rif('', Rif.FACE_UP, Rif.VERTICAL, Rif.SINGLE),
-      new Rif('', Rif.FACE_DOWN, Rif.VERTICAL),
-      new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.SINGLE),
-      new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.RANGE),
-      new Rif('', Rif.FACE_UP, Rif.HORIZONTAL, Rif.MULTIPLE)
+      new Rif('', Rif.ORIENT_TOPONLY | Rif.DISP_VERTICAL),
+      new Rif('', Rif.DISP_VERTICAL | Rif.SEL_SINGLE),
+      new Rif('', Rif.ORIENT_FACEDOWN | Rif.DISP_VERTICAL),
+      new Rif('', Rif.SEL_SINGLE),
+      new Rif('', Rif.SEL_RANGE),
+      new Rif('', Rif.SEL_MULTIPLE)
     ]
     headlessRifs.forEach((rif, idx) => { rif.idx = idx; return rif })
     rifArray.push(...headlessRifs)
@@ -67,11 +67,11 @@ export default {
     },
     paSelectCard(cardIdx, rif, playerName) {
       console.log('select card: ', ...arguments)
-      if(rif.selectable === Rif.SINGLE) {
+      if(rif.flags & Rif.SEL_SINGLE) {
         this.selectionTree.selectCard(cardIdx, rif.getId(), playerName)
-      } else if(rif.selectable === Rif.MULTIPLE) {
+      } else if(rif.flags & Rif.SEL_MULTIPLE) {
         this.selectionTree.appendCard(cardIdx, rif.getId(), playerName)
-      } else if(rif.selectable === Rif.RANGE) {
+      } else if(rif.flags & Rif.SEL_RANGE) {
         this.selectionTree.rangeCard(cardIdx, rif.length, rif.getId(), playerName)
       }
     }
