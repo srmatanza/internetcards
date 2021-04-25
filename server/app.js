@@ -311,7 +311,7 @@ app.post('/api/newgame', (req,res) => {
         console.debug('Creating a new game: ', gi)
 
         const _gid = gi.gameIdentifier
-        Handlers.postJoingame(gi.instance.gs, playerName)
+        Handlers.postJoingame(gi.instance, playerName)
         const playerSecret = uuid()
 
         req.session.gameId = _gid
@@ -358,7 +358,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
             return
         }
     }
-    const player = Handlers.postJoingame(gs, playerName)
+    const player = Handlers.postJoingame(gi.instance, playerName)
     const playerSecret = uuid()
 
     req.session.gameId = _gid
