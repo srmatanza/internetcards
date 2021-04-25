@@ -62,17 +62,24 @@ function handContainsVal(rank, rif) {
   return false
 }
 
-function rifIsRun() {
-  // concatenate all arguments into one big rif
+// concatenate all arguments into one big rif
+function _concatRifs(rifs) {
   const _r = []
-  for(const arg of arguments) {
-    _r.push(...arg.cards)
+  for(const r of rifs) {
+    _r.push(...r.cards)
   }
+
+  return _r
+}
+
+function rifIsRun() {
+  const _r = _concatRifs(arguments)
 
   if(_r.length < 3) {
     return false
   }
-  _r.sort((a, b) => a.rank < b.rank)
+  _r.sort((a, b) => a.rank - b.rank)
+  console.log('rifIsRun: ', _r)
   let c = _r[0]
   for(let i = 1; i < _r.length; i++) {
     if(!(c.rank === _r[i].rank - 1 && c.suit === _r[i].suit)) {
@@ -84,11 +91,7 @@ function rifIsRun() {
 }
 
 function rifIsSet() {
-  // concatenate all arguments into one big rif
-  const _r = []
-  for(const arg of arguments) {
-    _r.push(...arg.cards)
-  }
+  const _r = _concatRifs(arguments)
 
   if(_r.length < 3) {
     return false
@@ -98,6 +101,21 @@ function rifIsSet() {
 
 function rifIsSelected() {
   return !(this.$selectedRif.owner === '')
+}
+
+function tallyRifs() {
+  const _r = _concatRifs(arguments)
+  if(_r.length > 0) {
+    return _r.reduce((acc, c) => {
+      if(this.pointValues !== undefined) {
+        return this.pointValues(c) + acc
+      }
+
+      const val = Math.min(c.rank, 10)
+      return val + acc
+    }, 0)
+  }
+  return 0
 }
 
 function isYourTurn(currentplayer) {
@@ -190,6 +208,7 @@ jsonLogic.add_operation('cardIsEqual', cardEq)
 jsonLogic.add_operation('cardIsHigher', cardGt)
 jsonLogic.add_operation('cardIsLower', cardLt)
 jsonLogic.add_operation('getAt', getAt)
+jsonLogic.add_operation('tallyRifs', tallyRifs)
 
 export default {
   isSatisfied: function(given, gameVariables) {

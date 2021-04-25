@@ -136,4 +136,17 @@ describe('Logic tests for actions and effects', () => {
         bSat = Logic.computeRule(rule2, obj)
         expect(bSat).toEqual(99)
     })
+
+    test('tallyRifs computes the correct value for various pointValues', () => {
+        const playerOne = gi.gs.players[0]
+        const rule = {
+            tallyRifs: [
+                { var: "currentPlayer.rifs.hand" }
+            ]
+        }
+
+        let bSat = Logic.computeRule(rule,
+            _.assign({}, {currentPlayer: playerOne}))
+        expect(bSat).toEqual(170)
+    })
 })
