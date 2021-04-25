@@ -96,7 +96,9 @@ function newRif(gi, args, player) {
     rifName = computedArgs[0]
     flagIdx = 1
   }
-  const flags = computedArgs.slice(flagIdx).reduce((acc, val) => acc | val)
+  const flagArgs = computedArgs.slice(flagIdx)
+  flagArgs.push(0)
+  const flags = flagArgs.reduce((acc, val) => acc | val)
 
   // validate that toRifArray is a RifArray
   toRifArray.addRif(new Rif(rifName, flags))
@@ -104,7 +106,9 @@ function newRif(gi, args, player) {
 
 function setRif(gi, args, player) {
   const toRif = _computeArg(gi, args[0], player)
-  const flags = args.slice(1).reduce((acc, val) => acc | val)
+  const flagArgs = args.slice(1).map(a => _computeArg(gi, a, player))
+  flagArgs.push(0)
+  const flags = flagArgs.reduce((acc, val) => acc | val)
 
   // validate that toRif is a Rif
   toRif.setFlags(flags)
