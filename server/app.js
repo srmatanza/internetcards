@@ -119,7 +119,7 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify(new LogMsg("This connection is not associated with any game state.")))
             return
         }
-        const player = gi.instance.gs.getPlayer(jmsg.playerName)
+        const player = gi.instance.getPlayer(jmsg.playerName)
         if(_.isUndefined(player) || typeof player !== 'object') {
             ws.send(JSON.stringify(new LogMsg('Unable to find your player.')))
             return
@@ -343,7 +343,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
     }
     const gs = gi.instance.gs
     const ruleSet = gi.instance.currentRuleSet
-    if(gs.getPlayer(playerName)) {
+    if(gi.instance.getPlayer(playerName)) {
         const errRet = new ErrMsg(`A player named ${playerName} already joined this game.`)
         console.log(errRet)
         res.status(400).send(errRet)
@@ -351,7 +351,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
     }
     if(_.isArray(ruleSet.possiblePlayers)) {
         const maxPlayers = ruleSet.possiblePlayers.reduce( (a,n) => Math.max(a,n))
-        if(gs.getPlayerCount() >= maxPlayers) {
+        if(gi.instance.getPlayerCount() >= maxPlayers) {
             const errRet = new ErrMsg('The maximum number of players have already joined this game.')
             console.error(errRet)
             res.status(400).send(errRet)
@@ -385,7 +385,7 @@ app.post('/api/playeraction/:action', (req,res) => {
         return
     }
     const action = req.params.action
-    const player = gi.instance.gs.getPlayer(playerName)
+    const player = gi.instance.getPlayer(playerName)
     if(_.isUndefined(player) || typeof player !== 'object') {
         res.status(400).send(new ErrMsg('Unable to find your player.'))
         return

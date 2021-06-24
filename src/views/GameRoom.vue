@@ -1,55 +1,24 @@
 <template>
 <div>
   <TopHeader :links="links"/>
-  <div id="gameRoom" class="pure-g">
+  <div id="gameRoom">
 
-    <div class="pure-u-1 pure-u-md-1-3">
+    <div class="heading">
+      <h3>Game Joined!</h3>
+
       <div>
-        <h1>Game Joined!</h1>
         <p>{{ whoami.playerName }}: {{ whoami.gid }}</p>
       </div>
-    </div>
 
-    <div class="pure-u-1 pure-u-md-1-3">
-      <h2>Scoreboard</h2>
-      <div id="scoreboard">
-        <div v-for="player in otherPlayers" :key="player.playerName"><p>{{ player.playerName }}</p><p>{{ player.playerVariables.pPoints }}</p></div>
-      </div>
-    </div>
-  </div>
-  <div class="pure-g">
-    <!-- Player's hand and actions -->
-    <div class="pure-u-1 pure-u-md-1-3">
-      <div v-if="bGameLoaded" class="mainPlayer">
+      <div id="currentPlayer" class="statebox player" v-if="bGameSetup">
         <Player
-            :player="player"
-            :otherplayers="otherPlayers"
-            :playerselections="playerSelections"
-            :gamerules="gameRules"
-            :currentphase="currentphase"
-            :currentplayer="isCurrentPlayer(player.playerName)"
-            :globalvars="globalVarsForPlayer"
-            v-on="setupListeners" />
+          :key="whoami.playerName"
+          :player="currentPlayer"
+          :selectionTree="selectionTree"
+          :instance="instance"
+          :bDebugMode="bDebugMode"
+          v-on="setupListeners" />
       </div>
-    </div>
-    <!-- Half of the other players -->
-    <div class="pure-u-1 playerbox">
-      <SeatedPlayer v-for="sp in otherPlayers"
-                    :key="sp.playerName"
-                    :playerName="sp.playerName"
-                    :isCurrentPlayer="isCurrentPlayer(sp.playerName)"
-                    :numPlayers="otherPlayers.length"
-                    :hands="getHandsForPlayer(sp.playerName)" />
-      <div class="gameTable">
-        Deck, discard, etc.
-      </div>
-    </div>
-    <!-- Table view -->
-    <!-- Other half of the other players -->
-    <!-- Scoreboard -->
-  </div>
-  <div class="pure-g">
-    <div class="pure-u-1">
       <GameHistory :history="actionLog" />
     </div>
   </div>
@@ -59,12 +28,14 @@
 import Player from '@/components/Player.vue'
 import TopHeader from '@/components/TopHeader.vue'
 import GameHistory from '@/components/GameHistory.vue'
-import SeatedPlayer from '@/components/SeatedPlayer.vue'
+
+import { SelectionTree } from '@/selection.js'
+import { Rif } from '@/state.js'
+import Instance from '@/instance.js'
 
 import _ from 'lodash'
 import axios from 'axios'
 
-import { GameState } from '@/state.js'
 import WSClient from '@/wsclient.js'
 
 export default {
@@ -72,8 +43,7 @@ export default {
   components: {
     Player,
     TopHeader,
-    GameHistory,
-    SeatedPlayer
+    GameHistory
   },
   data() {
     let wsprotocol = 'wss://'
@@ -82,9 +52,12 @@ export default {
     }
     return {
       whoami: {},
-      instance: {},
+      instance: new Instance(),
       playerSelections: {},
+      selectionTree: new SelectionTree(),
       actionLog: [],
+      bGameSetup: false,
+      bDebugMode: false,
       reconnectionLimit: 15,
       WS_CONNECTION_STRING: wsprotocol + location.host + '/wsgame',
       ws: {}
@@ -110,76 +83,23 @@ export default {
         }
       ]
     },
-    bGameLoaded: function() {
-      return !_.isUndefined(this.currentGame)
-    },
-    currentGame: {
-      get: function() {
-        return this.instance.gs
-      },
-      set: function(newGS) {
-        this.instance.gs = newGS
-      }
-    },
-    player: function() {
-      if(this.bGameLoaded) {
-        const p = this.currentGame.getPlayer(this.whoami.playerName)
-        console.log('player cv: ', this.currentGame, p, this.whoami.playerName)
-        return p
-      }
-      return undefined
-    },
-    getPlayerVars: function() {
-      if(this.player) {
-        return this.player.playerVariables
-      }
-      return []
-    },
-    numPlayers: function() {
-      if(this.bGameLoaded) {
-        return this.currentGame.players.length
-      }
-      return -1
-    },
-    otherPlayers: function() {
-      if(this.bGameLoaded) {
-        return this.currentGame.players
-      }
-      return []
-    },
-    currentphase: function() {
-      return this.currentGame.currentPhase
-    },
-    gameRules: function() {
-      if(this.currentGame && this.currentGame.currentRuleSet) {
-        return this.currentGame.currentRuleSet
-      }
-      return {}
-    },
-    globalVarsForPlayer: function() {
-      return {
-        $playerCount: this.currentGame.getPlayerCount(),
-        $otherPlayers: this.otherPlayers
-      }
+    currentPlayer: function() {
+      return this.instance.getPlayer(this.whoami.playerName)
     },
     setupListeners: function() {
-      const mm = this
-      function wrapListener(name) {
-        return (e, p) => {
-          console.log(name + ' client event handler: ', e, p)
-          mm.ws.send(JSON.stringify({
-            do: 'playerAction',
-            action: name,
-            gameId: mm.whoami.gid,
-            playerSecret: mm.whoami.playerSecret,
-            playerName: mm.whoami.playerName,
-            playerSelections: mm.playerSelections[mm.player.playerName]
-          }))
-          mm.playerSelections = {}
-        }
-      }
       return {
-        __custom_action: wrapListener('custom_action'),
+        __custom_action: (e, p, st) => {
+          console.log('client event handler: ', e, p, st)
+          this.ws.send(JSON.stringify({
+            do: 'playerAction',
+            gameId: this.woami.gid,
+            playerSecret: this.whoami.playerSecret,
+            action: e,
+            playerName: this.whoami.playerName,
+            st: _.cloneDeep(this.selectionTree)
+          }))
+          this.selectionTree.clear()
+        },
         '__select-card': this.paSelectCard,
         '__select-player': this.paSelectPlayer
       }
@@ -187,24 +107,24 @@ export default {
   },
   methods: {
     setGameState: function(newState) {
-      if(newState.instance && newState.instance.gs) {
-        this.instance = newState
-        this.currentGame = _.assign(new GameState(), newState.instance.gs)
+      if(newState.instance) {
+        this.instance.setGameState(newState.instance.gs)
+        this.bGameSetup = true
       }
     },
-    wsOnMessage: res => {
+    wsOnMessage: function(res) {
       if(res.gameInstance && res.gameInstance.gameIdentifier === this.whoami.gid) {
         this.setGameState(res.gameInstance)
         if(res.loggedAction) {
           this.actionLog.push(res.loggedAction)
         }
       } else if(res.type === 'connection') {
-        console.log('Received a connection response')
+        console.debug('Received a connection response')
       } else {
         console.debug('Message does not contain game state.')
       }
     },
-    wsOnOpen: () => {
+    wsOnOpen: function() {
       const openMsg = JSON.stringify({
         do: 'connect',
         gameId: this.whoami.gid,
@@ -213,7 +133,7 @@ export default {
       console.log('Opening a connection: ', openMsg)
       this.ws.send(openMsg)
     },
-    wsOnClose: () => {
+    wsOnClose: function() {
       if(this.reconnectionLimit > 0) {
         console.log('Attempting to reconect')
         this.reconnectionLimit = this.reconnectionLimit - 1
@@ -222,39 +142,44 @@ export default {
         console.log('No longer attempting to reconnect, please manually refresh the page')
       }
     },
+    isCurrentPlayer: function(pn) {
+      return this.instance.isCurrentPlayer(pn)
+    },
     reloadGameState: function() {
       this.ws = _.assign(new WebSocket(this.WS_CONNECTION_STRING),
-        new WSClient(this.wsOnMessage, this.wsOnOpen, this.wsOnClose))
+        new WSClient(this.wsOnMessage.bind(this), this.wsOnOpen.bind(this), this.wsOnClose.bind(this)))
     },
-    isCurrentPlayer: function(pn) {
-      return this.currentGame.isCurrentPlayer(pn)
-    },
-    getHandsForPlayer: function(pn) {
-      return []
-    },
-    paSelectCard: function(card, thisPlayer) {
-      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
-      let sc
-      if(_.includes(player.selectedCards, card)) {
-        sc = _.filter(player.selectedCards, c => !_.isEqual(c, card))
-      } else {
-        sc = _.concat(player.selectedCards, card)
+    paSelectCard: function(cardIdx, rif, playerName) {
+      if(rif.flags & Rif.SEL_SINGLE) {
+        this.selectionTree.selectCard(cardIdx, rif.getId(), playerName)
+      } else if(rif.flags & Rif.SEL_MULTIPLE) {
+        this.selectionTree.appendCard(cardIdx, rif.getId(), playerName)
+      } else if(rif.flags & Rif.SEL_RANGE) {
+        this.selectionTree.rangeCard(cardIdx, rif.cards.length, rif.getId(), playerName)
       }
-      player.selectedCards = sc
-      this.playerSelections[thisPlayer.playerName] = player
-      this.playerSelections = _.assign({}, this.playerSelections)
-      console.log('paSelectCard event handler', card, sc, this.playerSelections)
+
+      // const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
+      // this.$set(this.playerSelections, this.viewingPlayer, ps)
+      console.log('selecting a card: ', rif, ...arguments)
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
-      const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
+      const player = this.playerSelections[this.viewingPlayer] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
       if(_.isEqual(player.selectedPlayer, otherPlayer)) {
         player.selectedPlayer = ''
       } else {
         player.selectedPlayer = otherPlayer
       }
-      this.playerSelections[thisPlayer.playerName] = player
+      this.playerSelections[this.viewingPlayer] = player
       this.playerSelections = _.assign({}, this.playerSelections)
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
+    },
+    paSelectRif: function(rif, playerName) {
+      if(rif.flags & Rif.SEL_RIFONLY) {
+        this.selectionTree.selectRif(rif.getId(), playerName)
+      }
+      // const ps = this.currentGame.getObjectsFromSelection(this.selectionTree)
+      // this.$set(this.playerSelections, this.viewingPlayer, ps)
+      console.log('paSelectRif event handler: ', rif, this.selectionTree, this.playerSelections)
     }
   }
 }

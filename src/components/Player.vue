@@ -64,7 +64,7 @@ import SeatedPlayer from '@/components/SeatedPlayer.vue'
 import _ from 'lodash'
 import * as CC from '@/cards.js'
 import Logic from '@/logic.js'
-import { Rif } from '@/state.js'
+import { Rif, RifArray } from '@/state.js'
 
 export default {
   name: 'player',
@@ -140,17 +140,19 @@ export default {
       return ret
     },
     tableRifs: function() {
-      let ret = [...this.instance.gs.rifs]
+      const rifs = _.assign(new RifArray(), this.instance.gs.rifs)
+      let ret = [...rifs]
       if(this.bDebugMode) {
         ret = ret.filter(rif => !rif.name.startsWith('_'))
       }
-      return ret
+      return ret.map(r => _.assign(new Rif(), r))
     },
     playerRifs: function() {
       const ret = []
-      for(const rif of this.player.rifs) {
+      const rifs = _.assign(new RifArray(), this.player.rifs)
+      for(const rif of rifs) {
         if(this.bDebugMode || !rif.name.startsWith('_')) {
-          ret.push(rif)
+          ret.push(_.assign(new Rif(), rif))
         }
       }
       return ret
