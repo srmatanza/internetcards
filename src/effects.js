@@ -101,6 +101,7 @@ function newRif(gi, args, player) {
   const flags = flagArgs.reduce((acc, val) => acc | val)
 
   // validate that toRifArray is a RifArray
+  // console.debug('toRifArray: ', toRifArray)
   toRifArray.addRif(new Rif(rifName, flags))
 }
 
@@ -219,7 +220,7 @@ function message(gi, args, player) {
       msgText = _computeArg(gi, args[0], player)
       // also, parse msgText as a template for var substitution
       pMsg = new Message(msgText, msgType)
-      console.info(pMsg)
+      console.debug('pMsg: ', pMsg, playerIdx)
       if(playerIdx === -1) {
         for(const pidx in gi.gs.players) {
           gi.gs.players[pidx].currentMessage = pMsg
@@ -270,6 +271,8 @@ function wrapEffect(fnCallback, gi, args, p, argTypes) {
 
 function callHandler(fnCallback, argTypes) {
   return function(gi, args, p) {
+    const _a = typeof args[Symbol.iterator] === 'function' ? args : []
+    console.debug(`Calling action for ${fnCallback.name}`, ..._a, p)
     return wrapEffect(fnCallback, gi, args, p, argTypes)
   }
 }

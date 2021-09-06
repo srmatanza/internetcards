@@ -36,7 +36,7 @@ phase setup
     name: "Deal"
     deal(52)
     _gCardsDealt = true
-    new_rif($table, "currentTrick")
+    new_rif($tableRifs, "currentTrick")
     message("Begin the round by passing three cards to a neighbor!")
   given
     !_gCardsDealt
@@ -52,17 +52,17 @@ phase setup
       new_rif($player.rifs, "_score")
       _pScoreHandCreated = true
     endif
-    if handContainsCard("2C", $player.rifs["hand"]) then
-      if handContainsCard("2C", $selectedCards) then
-        set_player(_pNextPlayer)
+    if rifContainsCard("2C", $player.rifs["hand"]) then
+      if rifContainsCard("2C", $selectedCards) then
+        set_current_player(_pNextPlayer)
         message("After everyone passes, you will lead the round with the 2C", 0, _pNextPlayer)
-        message("", 0, $currentPlayer)
+        message("", 0, $player.idx)
       else
-        set_player($currentPlayer)
-        message("After everyone passes, you will lead the round with the 2C", 0, $currentPlayer)
+        set_current_player($player.idx)
+        message("After everyone passes, you will lead the round with the 2C", 0, $player.idx)
       endif
     else
-      message("", 0, $currentPlayer)
+      message("", 0, $player.idx)
     endif
     move_cards($player.rifs["hand"],
                $otherPlayers[_pNextPlayer].rifs["hand"],
@@ -80,13 +80,13 @@ phase setup
     _gPlayedTrick = 1
     gTrickWinner = $player
     gLedCard = $selectedCards[0]
-    move_cards($player.rifs["hand"], $table["currentTrick"], $selectedCards)
+    move_cards($player.rifs["hand"], $tableRifs["currentTrick"], $selectedCards)
     message("Now play a card that matches the suit of the card that led the trick.")
-    message("", 0, $currentPlayer)
-    set_player($player.idx + 1)
+    message("", 0, $player.idx)
+    set_current_player($player.idx + 1)
   given
     $selectedCards.length == 1
-    handContainsCard("2C", $selectedCards)
+    rifContainsCard("2C", $selectedCards)
     gPlayerPassed == $playerCount
   endaction
 endphase
@@ -96,27 +96,27 @@ phase trick_taking
     name: "Play Card"
     advance_player(1)
     _gPlayedTrick = _gPlayedTrick + 1
-    if handContainsSuit("H", $selectedCards) then
+    if rifContainsSuit("H", $selectedCards) then
       gHeartsBroken = true
     endif
-    if $selectedCards[0].suit == gLedCard.suit && isHighCard($selectedCards[0], gLedCard) then
+    if $selectedCards[0].suit == gLedCard.suit && cardIsHigher($selectedCards[0], gLedCard) then
       gTrickWinner = $player
       gLedCard = $selectedCards[0]
     endif
     if _gPlayedTrick == $playerCount then
       change_phase("trick_scoring")
       _gPlayedTrick = 0
-      set_player(gTrickWinner.idx)
+      set_current_player(gTrickWinner.idx)
       message("You won the trick! Now take it and lead the next hand!", 0, gTrickWinner.idx)
     else
-      message("", 0, $currentPlayer)
+      message("", 0, $player.idx)
     endif
-    move_cards($player.rifs["hand"], $table["currentTrick"], $selectedCards)
+    move_cards($player.rifs["hand"], $tableRifs["currentTrick"], $selectedCards)
   given
     $isYourTurn
     $selectedCards.length == 1
     (gLedCard.suit == $selectedCards[0].suit ||
-     !handContainsSuit(gLedCard.suit, $player.rifs["hand"]))
+     !rifContainsSuit(gLedCard.suit, $player.rifs["hand"]))
   endaction
 endphase
 
@@ -127,7 +127,7 @@ phase trick_scoring
     if $player.rifs["hand"].length == 0 then
       change_phase("scoring")
     endif
-    move_cards($table["currentTrick"], $player.rifs["_score"])
+    move_cards($tableRifs["currentTrick"], $player.rifs["_score"])
     message("")
   given
     !_gTrickTaken
@@ -143,19 +143,19 @@ phase trick_scoring
     gTrickWinner = $player
     gLedCard = $selectedCards[0]
     advance_player(1)
-    if handContainsSuit("H", $selectedCards) then
+    if rifContainsSuit("H", $selectedCards) then
       gHeartsBroken = true
     endif
-    move_cards($player.rifs["hand"], $table["currentTrick"], $selectedCards)
+    move_cards($player.rifs["hand"], $tableRifs["currentTrick"], $selectedCards)
   given
     _gTrickTaken
     $selectedCards.length == 1
     gTrickWinner.playerName == $player.playerName
     (gHeartsBroken ||
-     !handContainsSuit("H", $selectedCards) ||
-     (!handContainsSuit("S", $player.rifs["hand"]) &&
-      !handContainsSuit("D", $player.rifs["hand"]) &&
-      !handContainsSuit("C", $player.rifs["hand"])
+     !rifContainsSuit("H", $selectedCards) ||
+     (!rifContainsSuit("S", $player.rifs["hand"]) &&
+      !rifContainsSuit("D", $player.rifs["hand"]) &&
+      !rifContainsSuit("C", $player.rifs["hand"])
      )
     )
   endaction
