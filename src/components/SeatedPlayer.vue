@@ -1,7 +1,7 @@
 <template>
   <div class="seatedPlayerBox">
-    <h3>{{ player.playerName }}</h3>
-    <div>
+    <div class="rifRack">
+      <h3>{{ player.playerName }}</h3>
       <cardRif :key="'hand'"
                :rif="playerHand"
                :bSelected="false"
@@ -31,7 +31,8 @@ export default {
   props: [
     'player',
     'isCurrentPlayer',
-    'selectionTree'
+    'selectionTree',
+    'bDebugMode'
   ],
   methods: {
     isSelected: function(rif) {
@@ -52,10 +53,21 @@ export default {
       return ret
     },
     playerRifs: function() {
-      return [...this.player.rifs].filter(r => r.getId() !== 'hand')
+      return [...this.player.rifs].filter(r => {
+        return (r.getId() !== 'hand' && (this.bDebugMode === true || !r.getId().startsWith('_')))
+      })
     }
   }
 }
 </script>
 <style scoped>
+.rifRack {
+  font-size: .75em;
+  display: flex;
+  flex-flow: row-reverse wrap;
+}
+
+.rifRack > h3 {
+  width: 5em;
+}
 </style>

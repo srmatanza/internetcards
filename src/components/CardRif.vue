@@ -1,6 +1,6 @@
 <template>
 <div :class="[rifDisplay]">
-  <span class="rifLabel">{{ rif.name }}</span>
+  <span v-if="rif.name !== 'hand'" class="rifLabel">{{ rif.name }}</span>
   <ul :class="{ selected: bSelected}" @click="clickRif()">
     <li v-if="isStacked" :class="['card', { faceDown: isFaceDown }]"></li>
     <li v-for="(card,idx) in cardsInRif"

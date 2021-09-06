@@ -6,6 +6,7 @@
                   :selectionTree="selectionTree"
                   :isCurrentPlayer="false"
                   :player="player"
+                  :bDebugMode="bDebugMode"
                   v-on="setupListeners" />
   </div>
   <div id="tableRifs" class="rifRack">
