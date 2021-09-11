@@ -59,7 +59,7 @@ export default {
       bGameSetup: false,
       bDebugMode: false,
       reconnectionLimit: 15,
-      WS_CONNECTION_STRING: wsprotocol + location.host + '/wsgame',
+      WS_CONNECTION_STRING: wsprotocol + location.hostname + '/wsgame',
       ws: {}
     }
   },
