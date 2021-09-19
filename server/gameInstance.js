@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 import Instance from '../src/instance.js'
 
 function genGameId() {

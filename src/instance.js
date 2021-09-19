@@ -1,14 +1,12 @@
-import _ from 'lodash'
-
 import Effects from '../src/effects.js'
 import Logic from '../src/logic.js'
 import { Rif, RifEnums, GameState, PlayerState, RuleSet } from '../src/state.js'
 
 function isSatisfied(given, player) {
   // console.log('isSatisfied: ', given)
-  if(!_.isUndefined(given)) {
+  if(given !== undefined) {
     const bSat = [Logic.isSatisfied(given, this.glomVars(player))]
-    return !_.includes(bSat, false)
+    return !bSat.includes(false)
   }
   return true
 }
@@ -23,7 +21,7 @@ function handleEffect(effect, player) {
       const fn = Effects[ef]
       if (typeof fn === 'function') {
         // Update player variables between effect calls
-        _.assign(player, this.gs.players[player.idx])
+        Object.assign(player, this.gs.players[player.idx])
         this.gs = fn.call({}, this, effect[ef], player)
       } else if (typeof fn === 'symbol' && ef === 'effect') {
         if(effect.eachplayer && eachPlayerDepth <= MAX_EACH_PLAYER_DEPTH) {
@@ -38,7 +36,7 @@ function handleEffect(effect, player) {
           }
           handleEffects.call(this, effect.effect, player)
         }
-      } else if (!(typeof fn === 'symbol' && ef === 'eachplayer') && _.isUndefined(fn)) {
+      } else if (!(typeof fn === 'symbol' && ef === 'eachplayer') && fn === undefined) {
         console.error('Undefined function for effect: ', ef)
       }
     }
@@ -92,11 +90,11 @@ Instance.prototype.getPlayer = function(pid) {
   if(typeof pid === 'string') {
     for(const player of this.gs.players) {
       if(pid === player.playerName) {
-        return _.assign(new PlayerState(), player)
+        return Object.assign(new PlayerState(), player)
       }
     }
   } else if(typeof pid === 'number') {
-    return _.assign(new PlayerState(), this.gs.players[pid])
+    return Object.assign(new PlayerState(), this.gs.players[pid])
   }
   return undefined
 }
@@ -111,7 +109,7 @@ Instance.prototype.addPlayer = function(playerName) {
     }
   }
   const playerVars = this.currentRuleSet.playerVariables
-  _.assign(p.playerVariables, playerVars)
+  Object.assign(p.playerVariables, playerVars)
   p.idx = this.gs.players.length
   this.gs.players.push(p)
   return p
@@ -141,7 +139,7 @@ function getFirstCard(st) {
 }
 Instance.prototype.glomVars = function(player) {
   const phaseVars = {}
-  const playerVars = _.assign(_.clone(this.currentRuleSet.playerVariables), player.playerVariables)
+  const playerVars = Object.assign(JSON.parse(JSON.stringify(this.currentRuleSet.playerVariables)), player.playerVariables)
   const selCards = new Rif()
   const ps = this.gs.getObjectsFromSelection(player.st)
   const cc = getFirstCard(player.st)
@@ -178,7 +176,7 @@ Instance.prototype.glomVars = function(player) {
     $tableRifs: this.gs.rifs
   }
 
-  const gm = _.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv, RifEnums)
+  const gm = Object.assign({}, this.gs.gameVariables, globalVarsForPlayer, playerVars, phaseVars, pv, RifEnums)
   // console.log('gloms: ', gm)
   return gm
 }
@@ -189,7 +187,7 @@ Instance.prototype.runAction = function(act, playerName, st) {
   const player = this.gs.players.find(p => p.playerName === playerName)
   const ps = { st }// this.gs.getObjectsFromSelection(st)
 
-  _.assign(player, ps)
+  Object.assign(player, ps)
   try {
     // player.selectedCards = ps.selectedCards
     // player.selectedPlayer = ps.selectedPlayer
@@ -203,7 +201,7 @@ Instance.prototype.fnRunAction = function(callbackFn) {
   const mm = this
   return (e, p, st) => {
     // console.debug('Run action w/callback: ', mm, e, p, ps)
-    _.assign(p, { st })
+    Object.assign(p, { st })
     try {
       // mm.gs = fn.call(mm, mm.gs, e, p.idx, ps)
       // p.selectedCards = ps.selectedCards

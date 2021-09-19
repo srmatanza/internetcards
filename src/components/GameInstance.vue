@@ -33,8 +33,6 @@
 </template>
 
 <script>
-import _ from 'lodash'
-
 import GameState from '@/components/GameState.vue'
 import RuleSet from '@/components/RuleSet.vue'
 import Player from '@/components/Player.vue'
@@ -69,7 +67,7 @@ export default {
     axios
       .get('/api/rulesets/hearts')
       .then(res => {
-        if(!_.isUndefined(res.data)) {
+        if(res.data !== undefined) {
           this.setupGameState(res.data)
         }
       })
@@ -120,10 +118,10 @@ export default {
     paSelectCard: function(card, thisPlayer) {
       const player = this.playerSelections[thisPlayer.playerName] || { selectedCards: [], selectedPlayer: '' }
       let sc
-      if(_.includes(player.selectedCards, card)) {
-        sc = _.filter(player.selectedCards, c => !_.isEqual(c, card))
+      if(player.selectedCards.includes(card)) {
+        sc = player.selectedCards.filter(c => JSON.stringify(c) !== JSON.stringify(card))
       } else {
-        sc = _.concat(player.selectedCards, card)
+        sc = player.selectedCards.concat(card)
       }
       player.selectedCards = sc
       this.playerSelections[thisPlayer.playerName] = player
@@ -199,7 +197,7 @@ export default {
         '__select-card': this.paSelectCard,
         '__select-player': this.paSelectPlayer
       }
-      return _.assign(ret, giHandlers)
+      return Object.assign(ret, giHandlers)
     }
   }
 }

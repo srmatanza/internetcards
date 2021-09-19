@@ -1,4 +1,3 @@
-// import _ from 'lodash'
 import * as Cards from '../src/cards.js'
 import seedrandom from 'seedrandom'
 import { SelectionTree } from './selection.js'
@@ -56,7 +55,9 @@ export function RifArray() {
 
 RifArray.prototype.getRifById = function(rifId) {
   // console.log('getRifById: ', [...this].filter(r => r.getId() === rifId), rifId)
-  return [...this].find(r => r.getId() === rifId)
+  const retRif = [...this].find(r => r.getId() === rifId)
+  // Ensure that we always return a proper Rif from any RifArray data
+  return Object.assign(new Rif(), JSON.stringify(retRif))
 }
 
 RifArray.prototype.addRif = function(newRif) {
@@ -79,7 +80,7 @@ RifArray.prototype[Symbol.iterator] = function() {
     next: () => {
       if(_idx < _allRifs.length) {
         return {
-          value: _allRifs[_idx++],
+          value: Object.assign(new Rif(), JSON.parse(JSON.stringify(_allRifs[_idx++]))),
           done: false
         }
       } else {

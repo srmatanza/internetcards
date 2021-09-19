@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import GameInstance from '../server/gameInstance.js'
 import CardHistory from '../server/history.js'
 
@@ -35,7 +34,7 @@ export default {
       const action = gi.getActionForCurrentPhase(actionName)
 
       // Concat the supplied player with the player from the gamestate. Validate?
-      if(_.isUndefined(player.playerName) || !gs.getPlayer(player.playerName)) {
+      if(player.playerName === undefined || !gs.getPlayer(player.playerName)) {
         console.debug(`Invalid playerName for: ${player}\n`)
         return undefined
       }
@@ -43,7 +42,7 @@ export default {
 
       const result = {}
       result.gameInstance = gi.runAction(actionName, action, player, playerSelections)
-      if(!_.isUndefined(result)) {
+      if(result !== undefined) {
         const la = CardHistory.addAction(gameId, action.id, player.playerName, playerSelections)
         // Hide selectedCards for all actions
         result.loggedAction = {

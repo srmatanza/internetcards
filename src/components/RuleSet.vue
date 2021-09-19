@@ -31,7 +31,6 @@
 </template>
 
 <script>
-import _ from 'lodash'
 // import * as CC from '../cards.js'
 // import * as Actions from '../actions.js'
 
@@ -49,7 +48,9 @@ export default {
   ],
   computed: {
     possiblePlayers: function() {
-      return _.sortBy(this.rules.possiblePlayers).join(', ')
+      let ret = Object.assign([], this.rules.possiblePlayers).join(', ')
+      ret.sort()
+      return ret
     }
   },
   methods: {

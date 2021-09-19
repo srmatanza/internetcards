@@ -62,7 +62,6 @@
 import CardRif from '@/components/CardRif.vue'
 import SeatedPlayer from '@/components/SeatedPlayer.vue'
 
-import _ from 'lodash'
 import * as CC from '@/cards.js'
 import Logic from '@/logic.js'
 import { Rif, RifArray } from '@/state.js'
@@ -89,7 +88,7 @@ export default {
       return CC.printCard(card)
     },
     isPlayerSelected: function(opName) {
-      return _.isEqual(opName, this.playerSelection.selectedPlayer)
+      return opName === this.playerSelection.selectedPlayer
     },
     isRedCard: function(card) {
       return card.suit === 2 || card.suit === 3
@@ -111,13 +110,13 @@ export default {
       return 'custom_action'
     },
     isSatisfied: function(given) {
-      if(!_.isUndefined(given)) {
+      if(given !== undefined) {
         const st = this.selectionTree
         this.player = Object.assign(this.player, { st })
         const glomVars = this.instance.glomVars(this.player)
         const bSat = [Logic.isSatisfied(given, glomVars)]
         // console.debug('isSatisfied: ', given, bSat, glomVars)
-        return !_.includes(bSat, false)
+        return !bSat.includes(false)
       }
       return true
     }
@@ -141,19 +140,19 @@ export default {
       return ret
     },
     tableRifs: function() {
-      const rifs = _.assign(new RifArray(), this.instance.gs.rifs)
+      const rifs = Object.assign(new RifArray(), this.instance.gs.rifs)
       let ret = [...rifs]
       if(this.bDebugMode) {
         ret = ret.filter(rif => !rif.name.startsWith('_'))
       }
-      return ret.map(r => _.assign(new Rif(), r))
+      return ret.map(r => Object.assign(new Rif(), r))
     },
     playerRifs: function() {
       const ret = []
-      const rifs = _.assign(new RifArray(), this.player.rifs)
+      const rifs = Object.assign(new RifArray(), this.player.rifs)
       for(const rif of rifs) {
         if(this.bDebugMode || !rif.name.startsWith('_')) {
-          ret.push(_.assign(new Rif(), rif))
+          ret.push(Object.assign(new Rif(), rif))
         }
       }
       return ret

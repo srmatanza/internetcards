@@ -39,7 +39,6 @@
 
 <script>
 import axios from 'axios'
-// import _ from 'lodash'
 import TopHeader from '@/components/TopHeader.vue'
 
 export default {

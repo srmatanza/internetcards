@@ -1,4 +1,3 @@
-import _ from 'lodash'
 
 function _drawCardFromDeckToHand(deck, hand) {
   if (deck.length === 0) {
@@ -21,21 +20,21 @@ function _cardIncludes(sc, card) {
 
 function _filterOutCardsFromHand(selectedCards, hand) {
   // remove the selected cards from the player's hand
-  return _.filter(hand, card => !_cardIncludes(selectedCards, card))
+  return hand.filter(card => !_cardIncludes(selectedCards, card))
 }
 
 export default {
   newRound: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
     gs.resetRound()
     return gs
   },
   customAction: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
     return gs
   },
   deal: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
     const numPlayers = gs.getPlayerCount()
     const numCards = event.cards
 
@@ -47,7 +46,7 @@ export default {
     return gs
   },
   draw: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
     const player = gs.players[playerIdx]
     const numCards = event.cards
 
@@ -58,7 +57,7 @@ export default {
     return gs
   },
   pass: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
     const player = gs.getPlayer(playerIdx)
     const toPlayer = gs.getPlayer(ps.selectedPlayer)
     console.log('pass func: ', player, toPlayer)
@@ -75,7 +74,7 @@ export default {
     return gs
   },
   takeTrick: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
     const player = gs.players[playerIdx]
 
     player.tricks = _.concat(player.tricks, gs.trick)
@@ -84,7 +83,7 @@ export default {
     return gs
   },
   playCard: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
     const player = gs.players[playerIdx]
 
     player.hand = _filterOutCardsFromHand(ps.selectedCards, player.hand)
@@ -94,12 +93,12 @@ export default {
     return gs
   },
   meld: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
 
     return gs
   },
   layoff: function(gameState, event, playerIdx, ps) {
-    const gs = _.cloneDeep(gameState)
+    const gs = JSON.parse(JSON.stringify(gameState))
 
     return gs
   }

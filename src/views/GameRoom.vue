@@ -33,7 +33,6 @@ import { SelectionTree } from '@/selection.js'
 import { Rif } from '@/state.js'
 import Instance from '@/instance.js'
 
-import _ from 'lodash'
 import axios from 'axios'
 
 import WSClient from '@/wsclient.js'
@@ -67,7 +66,7 @@ export default {
     axios
       .get('/api/whoami')
       .then(res => {
-        if(_.isUndefined(res.data.gid) || _.isUndefined(res.data.playerName)) {
+        if(res.data.gid === undefined || res.data.playerName === undefined) {
           this.$router.push('/')
         }
         this.whoami = res.data
@@ -96,7 +95,7 @@ export default {
             playerSecret: this.whoami.playerSecret,
             action: e,
             playerName: this.whoami.playerName,
-            st: _.cloneDeep(this.selectionTree)
+            st: JSON.parse(JSON.stringify(this.selectionTree))
           }))
           this.selectionTree.clear()
         },
@@ -146,7 +145,7 @@ export default {
       return this.instance.isCurrentPlayer(pn)
     },
     reloadGameState: function() {
-      this.ws = _.assign(new WebSocket(this.WS_CONNECTION_STRING),
+      this.ws = Object.assign(new WebSocket(this.WS_CONNECTION_STRING),
         new WSClient(this.wsOnMessage.bind(this), this.wsOnOpen.bind(this), this.wsOnClose.bind(this)))
     },
     paSelectCard: function(cardIdx, rif, playerName) {
@@ -164,13 +163,13 @@ export default {
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
       const player = this.playerSelections[this.viewingPlayer] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
-      if(_.isEqual(player.selectedPlayer, otherPlayer)) {
+      if(JSON.stringify(player.selectedPlayer) === JSON.stringify(otherPlayer)) {
         player.selectedPlayer = ''
       } else {
         player.selectedPlayer = otherPlayer
       }
       this.playerSelections[this.viewingPlayer] = player
-      this.playerSelections = _.assign({}, this.playerSelections)
+      this.playerSelections = Object.assign({}, this.playerSelections)
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
     paSelectRif: function(rif, playerName) {

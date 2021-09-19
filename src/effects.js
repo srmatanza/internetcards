@@ -1,6 +1,6 @@
 /* eslint-disable valid-typeof */
 /* eslint-disable no-fallthrough */
-import _ from 'lodash'
+
 import Logic from '../src/logic.js'
 import { Message, Rif } from '../src/state.js'
 
@@ -60,7 +60,7 @@ function _cardIncludes(sc, card) {
 
 function _filterOutCardsFromHand(selectedCards, hand) {
   // remove the selected cards from the player's hand
-  return _.filter(hand, card => !_cardIncludes(selectedCards, card))
+  return hand.filter(card => !_cardIncludes(selectedCards, card))
 }
 
 function _isGameVar(gi, variable) {
@@ -143,7 +143,7 @@ function moveCards(gi, args, player) {
 }
 
 function setVar(gi, gameVars, player) {
-  const vars = _.cloneDeep(gameVars)
+  const vars = JSON.parse(JSON.stringify(gameVars))
   // figure out if vars is a global or player variable
   const pvars = {}
   const gvars = {}
@@ -160,14 +160,14 @@ function setVar(gi, gameVars, player) {
       console.error('Undefined variable: ', vidx)
     }
   }
-  _.assign(gi.gs.gameVariables, gvars)
-  _.assign(gi.gs.players[player.idx].playerVariables, pvars)
+  Object.assign(gi.gs.gameVariables, gvars)
+  Object.assign(gi.gs.players[player.idx].playerVariables, pvars)
 }
 
 function setVarEachPlayer(gi, playerVars, player) {
   for(const p of gi.gs.players) {
-    const newVars = _computeVarsForPlayer(gi, _.cloneDeep(playerVars), p)
-    _.assign(gi.gs.players[p.idx].playerVariables, newVars)
+    const newVars = _computeVarsForPlayer(gi, JSON.parse(JSON.stringify(playerVars)), p)
+    Object.assign(gi.gs.players[p.idx].playerVariables, newVars)
   }
 }
 
@@ -264,7 +264,6 @@ function wrapEffect(fnCallback, gi, args, p, argTypes) {
     console.error(`${fnCallback.name} function invocation error: `, ex.message)
     return gi.gs
   }
-  // const _gs = _.cloneDeep(gi.gs)
   fnCallback.call({}, gi, args, p)
   return gi.gs
 }

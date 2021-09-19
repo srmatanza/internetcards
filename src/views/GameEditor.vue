@@ -74,8 +74,6 @@
 </template>
 
 <script>
-import _ from 'lodash'
-
 import Player from '@/components/Player.vue'
 import TopHeader from '@/components/TopHeader.vue'
 
@@ -127,7 +125,7 @@ export default {
       bOnlyShowCurrent: false,
       actionLog: [],
       actPC: 0,
-      stateStack: _.map(['A', 'B', 'C', 'D'], nm => ({ name: nm, gs: {}, apc: 0 })),
+      stateStack: ['A', 'B', 'C', 'D'].map(nm => ({ name: nm, gs: {}, apc: 0 })),
       Cards: CC,
       editor: {}
     }
@@ -183,10 +181,10 @@ export default {
       editTimeoutId = setTimeout(this.parseSharp, 500)
     },
     isSlotEmpty: function(slot) {
-      return _.isEqual(slot.gs, {})
+      return JSON.stringify(slot.gs) === '{}'
     },
     isSlotChanged: function(slot) {
-      return !_.isEqual(slot.gs, this.currentGame)
+      return JSON.stringify(slot.gs) !== JSON.stringify(this.currentGame)
     },
     getSlotText: function(slot) {
       if(this.isSlotEmpty(slot)) {
@@ -199,16 +197,16 @@ export default {
     },
     saveSlot: function(slot, evt) {
       // only gets called if this slot is already current
-      slot.gs = _.cloneDeep(this.currentGame)
+      slot.gs = JSON.parse(JSON.stringify(this.currentGame))
     },
     selectSlot: function(slot, evt) {
-      if(_.isEqual(this.currentGame, {})) {
+      if(JSON.stringify(this.currentGame) === '{}') {
         return
       }
-      if(_.isEqual(slot.gs, {})) {
-        slot.gs = _.cloneDeep(this.currentGame)
+      if(JSON.stringify(slot.gs) === '{}') {
+        slot.gs = JSON.parse(JSON.stringify(this.currentGame))
       } else {
-        this.currentGame = _.cloneDeep(slot.gs)
+        this.currentGame = JSON.parse(JSON.stringify(slot.gs))
         this.currentGame.rifs = Object.assign(new RifArray(), this.currentGame.rifs)
         for(const idx in this.currentGame.players) {
           this.currentGame.players[idx].rifs = Object.assign(new RifArray(), this.currentGame.players[idx].rifs)
@@ -306,13 +304,13 @@ export default {
     },
     paSelectPlayer: function(otherPlayer, thisPlayer) {
       const player = this.playerSelections[this.viewingPlayer] || { selectedCards: [], selectedPlayer: '', selectedRif: {} }
-      if(_.isEqual(player.selectedPlayer, otherPlayer)) {
+      if(JSON.stringify(player.selectedPlayer) === JSON.stringify(otherPlayer)) {
         player.selectedPlayer = ''
       } else {
         player.selectedPlayer = otherPlayer
       }
       this.playerSelections[this.viewingPlayer] = player
-      this.playerSelections = _.assign({}, this.playerSelections)
+      this.playerSelections = Object.assign({}, this.playerSelections)
       console.log('paSelectPlayer event handler', otherPlayer, this.playerSelections)
     },
     paSelectRif: function(rif, playerName) {
@@ -428,7 +426,7 @@ export default {
           this.actionLog.push({
             a: event.id,
             pn: player.playerName,
-            st: _.cloneDeep(this.selectionTree)
+            st: JSON.parse(JSON.stringify(this.selectionTree))
           })
           this.playerSelections = {}
           this.selectionTree.clear()

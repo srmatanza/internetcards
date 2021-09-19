@@ -53,7 +53,6 @@
 </div>
 </template>
 <script>
-import _ from 'lodash'
 import axios from 'axios'
 import TopHeader from '@/components/TopHeader.vue'
 
@@ -78,7 +77,7 @@ export default {
     axios
       .get('/api/rulesets')
       .then(res => {
-        if(!_.isUndefined(res.data)) {
+        if(res.data !== undefined) {
           this.ruleSets = res.data
         }
       })

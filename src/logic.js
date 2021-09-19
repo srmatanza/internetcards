@@ -1,11 +1,10 @@
-import _ from 'lodash'
 import * as CC from '../src/cards.js'
 import jsonLogic from 'json-logic-js'
 
 function _valSuit(card) {
   if(typeof card === 'string') {
-    const rank = _.indexOf('_123456789TJQKA', card[0])
-    const suit = _.indexOf('_SHDC', card[1])
+    const rank = '_123456789TJQKA'.indexOf(card[0])
+    const suit = '_SHDC'.indexOf(card[1])
     // console.log('card[string]', card, rank, suit)
     return [rank, suit]
   } else if(typeof card === 'object') {
@@ -18,7 +17,7 @@ function _valSuit(card) {
 
 function handContainsCard(card, rif) {
   const rank = parseInt(card[0])
-  const suit = _.indexOf('_SHDC', card[1])
+  const suit = '_SHDC'.indexOf(card[1])
   const c = new CC.Card(suit, rank)
   for(let i = 0; i < rif.cards.length; i++) {
     const _c = rif.cards[i]
@@ -37,7 +36,7 @@ function handContainsSuit(suit, rif) {
     needles.push(suit)
   } else if(typeof suit === 'string') {
     for(const hs of suit.split('')) {
-      needles.push(_.indexOf('_SHDC', hs))
+      needles.push('_SHDC'.indexOf(hs))
     }
   }
   for(const suitIndex of needles) {
@@ -52,7 +51,7 @@ function handContainsSuit(suit, rif) {
 }
 
 function handContainsVal(rank, rif) {
-  const valIndex = typeof rank === 'number' ? rank : _.indexOf('_A23456789TJQK', rank)
+  const valIndex = typeof rank === 'number' ? rank : '_A23456789TJQK'.indexOf(rank)
   for(let i = 0; i < rif.cards.length; i++) {
     const card = rif.cards[i]
     if(card.rank === valIndex) {
@@ -140,7 +139,7 @@ function isOtherPlayerSelected() {
 
 function getSuitForCard(card) {
   console.log('getSuitForCard', card)
-  const suit = _.indexOf('_SHDC', card.suit)
+  const suit = '_SHDC'.indexOf(card.suit)
 
   return suit
 }
@@ -169,7 +168,7 @@ function cardGt(cA, cB) {
 
 function cardEq(cA, cB) {
   // console.log('cardEq: ', _valSuit(cA), _valSuit(cB))
-  return _.isEqual(_valSuit(cA), _valSuit(cB))
+  return JSON.stringify(_valSuit(cA)) === JSON.stringify(_valSuit(cB))
 }
 
 function cardLt(cA, cB) {

@@ -1,5 +1,4 @@
 import uuid from 'uuid-random'
-import _ from 'lodash'
 
 import fs from 'fs'
 import path from 'path'
@@ -87,8 +86,8 @@ wss.on('connection', (ws) => {
         console.log('Received a message: ', jmsg)
         switch(jmsg.do) {
             case 'connect': {
-                if(_.isUndefined(jmsg.gameId) ||
-                   _.isUndefined(jmsg.playerSecret)) {
+                if(jmsg.gameId === undefined ||
+                   jmsg.playerSecret === undefined) {
                     ws.send(JSON.stringify(new LogMsg(`Invalid connection message: ${message}`)))
                     return
                 }
@@ -106,10 +105,10 @@ wss.on('connection', (ws) => {
             default:
                 console.error('Unknown action')
         }
-        if(_.isUndefined(jmsg.gameId) ||
-           _.isUndefined(jmsg.playerSecret) ||
-           _.isUndefined(jmsg.playerName) ||
-           _.isUndefined(jmsg.action)) {
+        if(jmsg.gameId === undefined ||
+           jmsg.playerSecret === undefined ||
+           jmsg.playerName === undefined ||
+           jmsg.action === undefined) {
             ws.send(JSON.stringify(new LogMsg("Empty message")))
             return
         }
@@ -120,7 +119,7 @@ wss.on('connection', (ws) => {
             return
         }
         const player = gi.instance.getPlayer(jmsg.playerName)
-        if(_.isUndefined(player) || typeof player !== 'object') {
+        if(player === undefined || typeof player !== 'object') {
             ws.send(JSON.stringify(new LogMsg('Unable to find your player.')))
             return
         }
@@ -131,7 +130,7 @@ wss.on('connection', (ws) => {
         }
 
         const ret = Handlers.postPlayeraction(jmsg.gameId, jmsg.action, player, playerSelections)
-        if(_.isUndefined(ret)) {
+        if(ret === undefined) {
             ws.send(JSON.stringify(new LogMsg('Unable to post player action')))
         }
 
@@ -159,12 +158,12 @@ app.get('/api/whoami', (req,res) => {
 
 app.get('/api/history', (req, res) => {
     const _gid = req.session.gameId
-    if(_.isUndefined(_gid)) {
+    if(_gid === undefined) {
         res.status(400).send(new ErrMsg('You are not attached to a currently running game.'))
         return
     }
     let h = CardHistory.getHistory(_gid)
-    if(_.isUndefined(h)) {
+    if(h === undefined) {
         h = []     
     }
 
@@ -174,7 +173,7 @@ app.get('/api/history', (req, res) => {
 app.get('/api/history/:gameId', (req, res) => {
     const _gid = req.params.gameId
     let h = CardHistory.getHistory(_gid)
-    if(_.isUndefined(_gid)) {
+    if(_gid === undefined) {
         h = []
     }
 
@@ -183,7 +182,7 @@ app.get('/api/history/:gameId', (req, res) => {
 
 app.get('/api/gamestate', (req,res) => {
     const _gid = req.session.gameId
-    if(_.isUndefined(_gid)) {
+    if(_gid === undefined) {
         const errRet = {
             Msg: 'This user is not attached to a currently running game.'
         }
@@ -284,7 +283,7 @@ app.post('/api/newgame', (req,res) => {
     if(req.session.authd) {
         console.log('POST newgame: ', req.body)
         const ruleset = req.body.ruleset
-        if(_.isUndefined(ruleset)) {
+        if(ruleset === undefined) {
             console.error('Missing ruleset from body')
             res.status(400).send(new ErrMsg('A new game request must include the ruleset.'))
             return
@@ -329,7 +328,7 @@ app.post('/api/newgame', (req,res) => {
 app.post('/api/joingame/:gameId', (req,res) => {
     const _gid = req.params.gameId
     const playerName = req.body.playerName
-    if(_.isUndefined(playerName) || playerName === '') {
+    if(playerName === undefined || playerName === '') {
         const errRet = new ErrMsg('You must submit a valid player name.')
         res.status(400).send(errRet)
         return
@@ -349,7 +348,7 @@ app.post('/api/joingame/:gameId', (req,res) => {
         res.status(400).send(errRet)
         return
     }
-    if(_.isArray(ruleSet.possiblePlayers)) {
+    if(Array.isArray(ruleSet.possiblePlayers)) {
         const maxPlayers = ruleSet.possiblePlayers.reduce( (a,n) => Math.max(a,n))
         if(gi.instance.getPlayerCount() >= maxPlayers) {
             const errRet = new ErrMsg('The maximum number of players have already joined this game.')
@@ -373,7 +372,7 @@ app.post('/api/playeraction/:action', (req,res) => {
     const _gid = req.session.gameId
     const playerName = req.session.playerName
     console.debug('playeraction.body', req.body)
-    if(_.isUndefined(_gid) || _.isUndefined(playerName)) {
+    if(_gid === undefined || playerName === undefined) {
         res.status(400).send(new ErrMsg('You are not attached to a currently running game.'))
         return
     }
@@ -386,7 +385,7 @@ app.post('/api/playeraction/:action', (req,res) => {
     }
     const action = req.params.action
     const player = gi.instance.getPlayer(playerName)
-    if(_.isUndefined(player) || typeof player !== 'object') {
+    if(player === undefined || typeof player !== 'object') {
         res.status(400).send(new ErrMsg('Unable to find your player.'))
         return
     }
@@ -396,7 +395,7 @@ app.post('/api/playeraction/:action', (req,res) => {
     }
 
     const ret = Handlers.postPlayeraction(_gid, action, player, playerSelections)
-    if(_.isUndefined(ret)) {
+    if(ret === undefined) {
         res.status(400).send(new ErrMsg('Error posting playeraction'))
         return
     }
